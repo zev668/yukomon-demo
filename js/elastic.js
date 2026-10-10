@@ -39,5 +39,41 @@
   app.addEventListener('click',e=>{if(performance.now()<suppress){e.preventDefault();e.stopPropagation();}},{capture:true});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){gesture=null;clear(active);}});
   new MutationObserver(()=>{if(active&&!active.el.isConnected){gesture=null;clear(active);}}).observe(app,{childList:true,subtree:true});
-  document.querySelector('#tabbar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||reduced())return;const icon=b.querySelector('svg');gsap.killTweensOf(icon);gsap.fromTo(icon,{y:-4,scale:.82,rotation:b.dataset.tab==='catch'?-35:-8},{y:0,scale:1,rotation:0,duration:.45,ease:'back.out(2)',clearProps:'transform'});});
+
+  // ---------- 底部导航：黄色滑块跟随选中项 ----------
+  const bar=document.querySelector('#tabbar');
+  const ind=document.createElement('i');ind.className='tab-ind';ind.setAttribute('aria-hidden','true');bar.prepend(ind);
+  let placed=false;
+  function moveInd(animate){const on=bar.querySelector('button.on');if(!on)return;const x=on.offsetLeft,w=on.offsetWidth;
+    if(!animate||!placed||reduced()){gsap.set(ind,{x,width:w});placed=true;return;}
+    gsap.to(ind,{x,width:w,duration:.55,ease:'expo.out',overwrite:'auto'});
+    gsap.fromTo(ind,{scaleY:1},{keyframes:{scaleY:[1,.86,1.04,1]},duration:.5,ease:'power1.out'});}
+  new MutationObserver(()=>moveInd(true)).observe(bar,{subtree:true,attributes:true,attributeFilter:['class']});
+  addEventListener('resize',()=>moveInd(false));
+  requestAnimationFrame(()=>moveInd(false));
+  bar.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||reduced())return;const icon=b.querySelector('svg'),label=b.querySelector('span');gsap.killTweensOf([icon,label]);
+    gsap.fromTo(icon,{y:-4,scale:.8,rotation:b.dataset.tab==='catch'?-90:-10},{y:0,scale:1,rotation:0,duration:.5,ease:'back.out(2.2)',clearProps:'transform'});
+    gsap.fromTo(label,{y:3,autoAlpha:.4},{y:0,autoAlpha:1,duration:.35,ease:'power2.out',clearProps:'all'});});
+
+  // ---------- 全局按压微动效：所有可点元素按下轻缩、松开带一点回弹 ----------
+  const PRESS='button,.btn,.pill,[role=button],.cell,.entry,.rank-row,.tile[data-act],.met-row,.album-btn,.head-act,.like';
+  let pressed=null;
+  function up(){const el=pressed;pressed=null;if(!el)return;gsap.to(el,{scale:1,duration:.5,ease:'elastic.out(1,0.5)',overwrite:'auto',clearProps:'transform'});}
+  app.addEventListener('pointerdown',e=>{
+    if(reduced()||e.button>0)return;const el=e.target.closest(PRESS);
+    if(!el||el.disabled||el.closest('#tabbar')||el.matches('.shutter')||el.closest('.yk-card,.card-stage'))return;
+    pressed=el;const big=el.offsetWidth>220||el.offsetHeight>120;
+    gsap.to(el,{scale:big?.985:.94,duration:.14,ease:'power2.out',overwrite:'auto'});
+  },{passive:true});
+  ['pointerup','pointercancel','pointerleave'].forEach(t=>app.addEventListener(t,up,{passive:true}));
+  addEventListener('blur',up);
+  // 底部导航按压只压图标所在按钮，避免和滑块抢
+  bar.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(!b||reduced())return;gsap.to(b,{scale:.94,duration:.12,overwrite:'auto'});});
+  ['pointerup','pointercancel','pointerleave'].forEach(t=>bar.addEventListener(t,e=>{const b=e.target.closest('button');if(b)gsap.to(b,{scale:1,duration:.45,ease:'elastic.out(1,0.5)',overwrite:'auto',clearProps:'transform'});}));
+
+  // ---------- 选中态切换：pill / 分段按钮 被选中时轻弹一下 ----------
+  new MutationObserver(list=>{if(reduced())return;for(const m of list){const t=m.target;
+    if(m.oldValue&&!/\bon\b/.test(m.oldValue)&&t.classList.contains('on')&&t.matches('.pill,.cam-modes button,.board-switch button,.variant .pill')){
+      gsap.fromTo(t,{scale:.9},{scale:1,duration:.45,ease:'back.out(3)',clearProps:'transform'});}}})
+    .observe(app,{subtree:true,attributes:true,attributeFilter:['class'],attributeOldValue:true});
 })();

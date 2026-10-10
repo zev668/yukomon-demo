@@ -1,5 +1,5 @@
 /* Yukomon demo —— 页面逻辑：记录渔获、图鉴、排行榜、钓手图鉴页、鱼卡解锁、分享链接
- * 鱼种由用户自己选择，提交即入册；没有识别/上传环节。动效统一走 motion.js（GSAP）。 */
+ * 鱼种由用户自己选择，提交即解锁；没有识别/上传环节。动效统一走 motion.js（GSAP）。 */
 (function () {
   'use strict';
   const S = window.YK_STORE, C = window.YK_CARD, A = window.YK_AUDIO, F = window.YK_FISH, M = window.YK_MOTION;
@@ -31,6 +31,10 @@
     camera: svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'),
     fish: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-4.5 7-6 11-6 3 0 5.5 2.5 7 6-1.5 3.5-4 6-7 6-4 0-8-1.5-11-6z"/><path d="M3 12l-1-4M3 12l-1 4"/><circle cx="16" cy="11" r="0.8"/></svg>',
     heart: svg('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'),
+    logo: `<svg class="brand" viewBox="6 179 674 326" aria-hidden="true"><path d="M141.205 479.932L74.1064 498.459V490.447L140.704 475.926L141.205 479.932ZM214.312 250.096L121.176 323.202L140.704 469.917L74.1064 480.934L78.1123 343.732L12.0156 257.105L65.0938 207.533L104.15 279.639L170.748 207.533L165.74 185L214.312 250.096ZM321.469 289.152C320.968 291.823 321.168 298.967 325.975 306.178C330.781 313.388 336.657 320.531 338.994 323.202L269.393 352.245L334.988 388.298L314.959 420.345L267.39 370.271C265.387 382.289 265.287 408.026 280.909 414.836C274.499 417.24 253.535 436.535 243.854 445.882C239.676 437.144 238.653 414.586 237.55 390.082C234.209 419.307 224.905 442.116 204.297 443.378C179.761 444.88 137.77 417.212 134.695 380.786C131.959 348.356 162.135 305.878 179.761 310.684C197.369 315.486 225.534 328.605 235.366 352.596C233.082 326.266 228.603 305.152 217.316 306.178L269.393 289.152L267.39 323.202L321.469 289.152ZM347.507 396.31L324.473 429.858L318.965 424.851L336.49 391.803L347.507 396.31ZM493.977 279.639C495.646 290.655 502.489 317.894 516.51 338.725C534.035 364.762 541.046 370.771 546.554 372.774C538.942 377.582 518.679 392.136 509.499 398.812L484.463 345.735C479.289 353.58 468.94 370.872 468.939 377.281C468.939 383.69 470.609 387.296 471.443 388.298C458.591 380.286 432.287 362.961 429.883 357.753C429.883 366.966 424.375 374.778 429.883 413.835L391.827 416.339C390.659 405.156 388.522 379.284 389.323 365.264C390.325 347.738 391.827 295.662 380.811 289.152C380.811 289.152 402.343 284.145 419.868 279.639C421.868 290.638 461.807 330.59 461.93 330.713L467.938 294.16L493.977 279.639ZM196.786 344.734C187.273 340.228 187.772 353.748 183.767 357.253C180.562 360.056 177.09 358.421 175.755 357.253C172.751 369.771 183.767 394.306 196.786 392.805C209.805 391.302 206.3 349.241 196.786 344.734ZM327.733 341.729C329.736 323.703 364.787 323.202 382.813 329.211C390.324 341.229 382.814 384.292 367.291 391.803C337.247 391.802 328.401 358.421 327.733 341.729ZM671.981 289.152L649.949 381.287L614.397 342.23C614.064 350.075 615.199 366.966 622.409 371.773C611.994 373.776 598.374 376.614 592.866 377.782C589.695 355.082 582.651 306.277 579.847 292.657C580.514 293.659 582.751 295.862 586.356 296.663C589.962 297.464 604.55 295.662 611.394 294.66C612.896 306.01 619.005 330.713 631.423 338.725C632.625 329.911 637.932 292.991 640.436 275.633L671.981 289.152ZM530.53 322.201C539.21 311.185 559.372 292.257 570.589 304.675C584.609 320.197 585.11 361.258 578.601 367.768C572.09 374.277 522.519 356.751 522.519 318.195L530.53 322.201ZM358.891 342.831C349.579 342.541 348.583 365.441 360.928 362.036C372.741 358.777 368.202 343.122 358.891 342.831ZM568.83 331.715C565.224 322.502 552.64 326.541 546.798 329.712C544.294 341.729 559.817 348.74 565.826 349.741C571.835 350.743 573.337 343.232 568.83 331.715ZM673.484 283.144L641.938 270.625V264.616L673.484 283.144ZM614.309 257.621C613.808 240.095 618.715 205.746 642.35 208.55C665.984 211.354 659.647 235.978 653.365 240.096C641.763 247.7 620.818 244.602 614.309 257.621ZM569.242 214.058C567.822 192.597 601.192 196.275 598.03 217.141C596.027 230.36 597.116 240.597 598.785 250.11C585.265 244.602 570.632 235.055 569.242 214.058Z" fill="currentColor"/></svg>`,
+    lock: svg('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+    rank: `<svg class="i fill" viewBox="0 0 200 200" aria-hidden="true"><path d="M168.796 96.3788H139.722V169H169.033C175.083 169 180 163.992 180 157.837V107.726C180.004 101.475 174.993 96.4008 168.796 96.3788ZM130.134 41.1958C130.134 35.0194 125.212 30 119.167 30H81.8309C75.7816 30 70.862 35.026 70.862 41.1958L70.8663 169H130.138V96.9771H130.129V41.1958M21 79.1957V157.837C21 163.989 25.9219 169 31.9668 169H61.2865V67.9295H32.198C26.0222 67.9273 21.0131 72.9665 21 79.1957Z" fill="currentColor"/></svg>`,
+    trophy: svg('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M10 17h4"/>'),
     pin: svg('<path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>'),
     locate: svg('<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>'),
   };
@@ -74,12 +78,12 @@
     if (!rec || rec.closing) return;
     rec.closing = true;
     layers.splice(layers.indexOf(rec), 1);
-    const done = () => { rec.cleanups.forEach((fn) => fn()); rec.node.remove(); };
+    const done = () => { rec.cleanups.forEach((fn) => fn()); rec.node.remove(); if (!$('#layers .layer.page')) gsap.set('#view', { clearProps: 'transform,opacity,visibility' }); };
     if (instant) return done();
     if (rec.kind === 'unlock') return gsap.to(rec.node, { autoAlpha: 0, duration: 0.2, ease: 'none', onComplete: done });
     (rec.kind === 'page' ? M.pageOut(rec.node) : M.sheetOut(rec.node)).eventCallback('onComplete', done);
   }
-  const closeAll = () => layers.slice().forEach((r) => closeLayer(r, true));
+  const closeAll = () => { layers.slice().forEach((r) => closeLayer(r, true)); gsap.killTweensOf('#view'); gsap.set('#view', { clearProps: 'transform,opacity,visibility' }); };
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeLayer(layers[layers.length - 1]);
     else if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('div[role="button"]')) { e.preventDefault(); e.target.click(); }
@@ -104,7 +108,7 @@
   }
 
   // ---------- 主视图：渔获 / 图鉴 / 排行榜 ----------
-  const state = { tab: 'dex', rank: 'nation', draft: null, stamp: null };
+  const state = { tab: 'dex', rank: 'nation', board: 'unlock', draft: null, stamp: null };
   const myCtx = { me: true, filter: 'all' };
   function render(animate) {
     const view = $('#view');
@@ -112,11 +116,16 @@
     view.scrollTop = 0;
     view.className = 'view-' + state.tab;
     $$('#tabbar button').forEach((b) => b.classList.toggle('on', b.dataset.tab === state.tab));
+    if (state.tab !== 'catch') { stopCamera(); lastPubStep = null; }
+    document.body.classList.toggle('cam-on', state.tab === 'catch' && publishStep === 'capture');
     if (state.tab === 'catch') renderPublish(view);
     else if (state.tab === 'dex') mountDex(view, myCtx, animate);
     else renderRank(view);
-    if (animate) M.viewIn(view);
+    if (animate) M.viewIn(view, TAB_ORDER[state.tab] - TAB_ORDER[prevTab]);
+    prevTab = state.tab;
   }
+  const TAB_ORDER = { dex: 0, catch: 1, rank: 2 };
+  let prevTab = state.tab;
   function go(tab) { state.tab = tab; render(true); }
 
   // ============================================================
@@ -179,8 +188,62 @@
   }
 
   let publishStep = 'capture';
+  // 应用内取景：切到「发布」即打开相机。拍照 = 截一帧；拍视频 = MediaRecorder 录制，再按一次停止
+  const cam = { stream: null, facing: 'environment', mode: 'image', rec: null, chunks: [], timer: null, started: 0 };
+  function stopCamera() {
+    if (cam.rec && cam.rec.state !== 'inactive') { cam.rec.onstop = null; try { cam.rec.stop(); } catch (e) {} }
+    cam.rec = null; clearInterval(cam.timer); cam.timer = null;
+    if (cam.stream) cam.stream.getTracks().forEach((t) => t.stop());
+    cam.stream = null;
+  }
+  async function startCamera(view) {
+    const video = $('.cam-live', view), msg = $('.cam-msg', view);
+    if (!video) return;
+    stopCamera();
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msg.hidden = false; msg.innerHTML = '<b>当前环境不能直接打开相机</b><span>请用 HTTPS 链接或 APP 打开；也可以点右侧「相册」选择照片或视频</span>'; return; }
+    try {
+      const want = { video: { facingMode: { ideal: cam.facing }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: cam.mode === 'video' };
+      let stream;
+      try { stream = await navigator.mediaDevices.getUserMedia(want); } catch (e) { if (!want.audio) throw e; stream = await navigator.mediaDevices.getUserMedia({ video: want.video }); }
+      if (!video.isConnected || state.tab !== 'catch' || publishStep !== 'capture') { stream.getTracks().forEach((t) => t.stop()); return; }
+      cam.stream = stream; video.srcObject = stream; video.muted = true; await video.play().catch(() => {});
+      video.classList.toggle('mirror', cam.facing === 'user');
+      msg.hidden = true;
+    } catch (e) {
+      msg.hidden = false;
+      msg.innerHTML = e && e.name === 'NotAllowedError' ? '<b>没有相机权限</b><span>请在系统设置里允许使用相机，或点右侧「相册」选择</span><button class="btn sm" data-retry>重新打开相机</button>' : '<b>相机打开失败</b><span>可以点右侧「相册」选择照片或视频</span><button class="btn sm" data-retry>重试</button>';
+      const r = $('[data-retry]', msg); if (r) r.onclick = () => startCamera(view);
+    }
+  }
+  async function useMedia(d, file, source) {
+    if (file.size > 60 * 1024 * 1024) return toast('请选择小于 60MB 的视频或图片');
+    const old = d.videoId;
+    if (file.type.startsWith('video/')) {
+      const info = await window.YK_MEDIA.probeVideo(file), id = S.uuid();
+      if (await window.YK_MEDIA.put(id, file) == null) throw new Error('storage');
+      d.photo = info.poster; d.videoId = id; d.duration = info.duration;
+    } else { d.photo = await window.YK_MEDIA.compressImage(file); d.videoId = null; d.duration = 0; }
+    if (old && old !== d.videoId) window.YK_MEDIA.del(old);
+    d.source = source;
+    saveDraft(); stopCamera(); publishStep = 'preview'; render();
+  }
+  let lastPubStep = null;
   function renderPublish(view) {
     const d = draft();
+    if (publishStep !== 'capture') stopCamera();
+    // 步骤之间的过渡：前进从右推入，后退从左推入；取景页淡入
+    const ORDER = { capture: 0, preview: 1, edit: 2 };
+    const dir = lastPubStep == null ? 0 : Math.sign(ORDER[publishStep] - ORDER[lastPubStep]);
+    if (lastPubStep !== publishStep && lastPubStep != null && !M.reduced()) {
+      requestAnimationFrame(() => {
+        const root = view.firstElementChild;
+        if (!root) return;
+        gsap.fromTo(root, { x: 40 * dir, autoAlpha: dir ? 0.2 : 0 }, { x: 0, autoAlpha: 1, duration: 0.45, ease: 'expo.out', clearProps: 'transform,opacity,visibility' });
+        if (publishStep === 'preview') gsap.from($$('.publish-media, .confirm-bar .btn', view), { y: 16, scale: 0.97, autoAlpha: 0, duration: 0.5, stagger: 0.06, ease: 'expo.out', clearProps: 'all' });
+        if (publishStep === 'edit') gsap.from($$('.screen > *', view).slice(0, 8), { y: 16, autoAlpha: 0, duration: 0.45, stagger: 0.035, ease: 'expo.out', clearProps: 'all' });
+      });
+    }
+    lastPubStep = publishStep;
     if (publishStep === 'edit' && d.photo) {
       renderCatchForm(view);
       const mount = $('.mount', view);
@@ -189,46 +252,81 @@
       return;
     }
     const preview = publishStep === 'preview' && d.photo;
-    view.innerHTML = `<div class="publish-capture ${preview ? 'is-preview' : ''}">
-      <header><button class="icon-btn" data-pub-exit aria-label="返回">${ICON.back}</button><b>${preview ? '确认渔获' : '发布渔获'}</b></header>
-      <div class="publish-media">${preview ? `<img src="${esc(d.photo)}" alt="待发布渔获">` : `<div class="capture-empty">${ICON.camera}<h2>记录这一刻</h2><p>拍照、拍视频，或从相册选择</p><small>点击快门打开系统相机</small></div>`}</div>
-      <div class="capture-actions">${preview ? '<button class="btn" data-retake>重新拍摄</button><button class="btn accent" data-next>下一步 →</button>' : `<button class="btn" data-sample>示例</button><button class="shutter" data-shoot aria-label="拍摄"></button><button class="btn" data-album>相册</button>`}</div>
-      ${preview ? '' : '<div class="capture-modes"><button class="pill on" data-mode="image">拍照</button><button class="pill" data-mode="video">拍视频</button></div>'}
-      <input type="file" data-capture accept="image/*" capture="environment" hidden><input type="file" data-library accept="image/*,video/*" hidden></div>`;
-    let mode = 'image';
-    $('[data-pub-exit]', view).onclick = () => { if (preview) { publishStep = 'capture'; render(); } else go('dex'); };
     if (preview) {
-      $('[data-retake]', view).onclick = () => { publishStep = 'capture'; render(); };
+      view.innerHTML = `<div class="publish-capture is-preview">
+        <header><button class="icon-btn" data-pub-exit aria-label="返回">${ICON.back}</button><b>确认渔获</b></header>
+        <div class="publish-media"><img src="${esc(d.photo)}" alt="待发布渔获"></div>
+        <div class="confirm-bar"><button class="btn ghost" data-retake>重拍</button><button class="btn accent next" data-next>下一步</button></div></div>`;
+      $('[data-pub-exit]', view).onclick = $('[data-retake]', view).onclick = () => { publishStep = 'capture'; render(); };
       $('[data-next]', view).onclick = () => { publishStep = 'edit'; render(); };
-      if (d.videoId) window.YK_MEDIA.get(d.videoId).then(blob => {
+      if (d.videoId) window.YK_MEDIA.get(d.videoId).then((blob) => {
         if (!blob || !view.querySelector('.is-preview')) return;
         const host = $('.publish-media', view), video = document.createElement('video');
         video.controls = true; video.playsInline = true; video.poster = d.photo;
         const url = URL.createObjectURL(blob); video.src = url; host.replaceChildren(video);
         const observer = new MutationObserver(() => { if (!video.isConnected) { video.pause(); URL.revokeObjectURL(url); observer.disconnect(); } });
-        observer.observe(view, {childList:true,subtree:true});
+        observer.observe(view, { childList: true, subtree: true });
       });
       return;
     }
-    $$('[data-mode]', view).forEach(b => b.onclick = () => { mode = b.dataset.mode; $$('[data-mode]', view).forEach(x => x.classList.toggle('on', x === b)); $('[data-capture]', view).accept = mode + '/*'; });
-    $('[data-shoot]', view).onclick = () => $('[data-capture]', view).click();
+    const canRec = typeof window.MediaRecorder === 'function';
+    view.innerHTML = `<div class="publish-capture cam" data-mode="${cam.mode}">
+      <div class="cam-stage"><video class="cam-live" playsinline muted autoplay></video>
+        <div class="cam-msg"><b>正在打开相机…</b></div>
+        <div class="cam-rec" hidden><i></i><span class="num">00:00</span></div></div>
+      <header class="cam-top"><button class="icon-btn glass" data-pub-exit aria-label="关闭">${ICON.close}</button><span class="grow"></span><button class="icon-btn glass" data-flip aria-label="翻转镜头">${svg('<path d="M4 9a8 8 0 0 1 14-3l2 2M20 15a8 8 0 0 1-14 3l-2-2"/><path d="M20 4v4h-4M4 20v-4h4"/>')}</button></header>
+      <div class="cam-bottom">
+        <div class="cam-modes" role="tablist"><button role="tab" class="${cam.mode === 'image' ? 'on' : ''}" data-cmode="image">拍照</button><button role="tab" class="${cam.mode === 'video' ? 'on' : ''}" data-cmode="video" ${canRec ? '' : 'disabled title="当前浏览器不支持录像，请用相册选择视频"'}>拍视频</button></div>
+        <div class="cam-row"><span class="cam-side"></span>
+          <button class="shutter ${cam.mode === 'video' ? 'video' : ''}" data-shoot aria-label="${cam.mode === 'video' ? '开始录像' : '拍照'}"><i></i></button>
+          <span class="cam-side"><button class="album-btn" data-album aria-label="相册">${d.photo ? `<img src="${esc(d.photo)}" alt="">` : ICON.camera}<span>相册</span></button></span></div>
+      </div>
+      <input type="file" data-library accept="image/*,video/*" hidden></div>`;
+    const root = $('.publish-capture', view), live = $('.cam-live', view), shoot = $('[data-shoot]', view);
+    $('[data-pub-exit]', view).onclick = () => { stopCamera(); go('dex'); };
+    $('[data-flip]', view).onclick = () => { if (cam.rec) return; cam.facing = cam.facing === 'user' ? 'environment' : 'user'; startCamera(view); };
+    $$('[data-cmode]', view).forEach((b) => (b.onclick = () => {
+      if (cam.rec || b.dataset.cmode === cam.mode) return;
+      cam.mode = b.dataset.cmode; root.dataset.mode = cam.mode;
+      $$('[data-cmode]', view).forEach((x) => x.classList.toggle('on', x === b));
+      shoot.classList.toggle('video', cam.mode === 'video');
+      shoot.setAttribute('aria-label', cam.mode === 'video' ? '开始录像' : '拍照');
+      if (!M.reduced()) gsap.fromTo($('i', shoot), { scale: 0.6 }, { scale: 1, duration: 0.35, ease: 'back.out(2.4)' });
+      if (cam.mode === 'video') startCamera(view); // 录像需要麦克风，重新取流
+    }));
     $('[data-album]', view).onclick = () => $('[data-library]', view).click();
-    $('[data-sample]', view).onclick = () => { d.photo = plate(S.SPECIES[0], String(Date.now())); d.source = 'camera'; d.videoId = null; saveDraft(); publishStep = 'preview'; render(); };
-    $$('input[type=file]', view).forEach(input => input.onchange = async () => {
-      const file = input.files[0]; if (!file) return;
-      try {
-        if (file.size > 60 * 1024 * 1024) return toast('请选择小于 60MB 的视频或图片');
-        const old = d.videoId;
-        if (file.type.startsWith('video/')) {
-          const info = await window.YK_MEDIA.probeVideo(file), id = S.uuid();
-          if (await window.YK_MEDIA.put(id, file) == null) throw new Error('storage');
-          d.photo = info.poster; d.videoId = id; d.duration = info.duration;
-        } else { d.photo = await window.YK_MEDIA.compressImage(file); d.videoId = null; d.duration = 0; }
-        if (old) window.YK_MEDIA.del(old);
-        d.source = input.hasAttribute('data-capture') ? 'camera' : 'album';
-        saveDraft(); publishStep = 'preview'; render();
-      } catch (e) { toast('媒体读取或保存失败，请换一个文件重试'); }
-    });
+    $('[data-library]', view).onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await useMedia(d, f, 'album'); } catch (err) { toast('媒体读取或保存失败，请换一个文件重试'); } };
+    shoot.onclick = async () => {
+      if (!cam.stream) return toast('相机还没打开，可以先从相册选择');
+      if (cam.mode === 'image') {
+        if (!live.videoWidth) return;
+        A.haptic('light');
+        if (!M.reduced()) gsap.fromTo($('.cam-stage', view), { filter: 'brightness(2.2)' }, { filter: 'brightness(1)', duration: 0.35, clearProps: 'filter' });
+        const url = window.YK_MEDIA.frame(live, live.videoWidth, live.videoHeight, 1280, cam.facing === 'user');
+        d.photo = url; d.videoId = null; d.duration = 0; d.source = 'camera';
+        saveDraft(); stopCamera(); publishStep = 'preview'; return render();
+      }
+      // 录像：再按一次结束
+      if (cam.rec) { cam.rec.stop(); return; }
+      const type = ['video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'].find((t) => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
+      let rec;
+      try { rec = new MediaRecorder(cam.stream, type ? { mimeType: type } : undefined); } catch (e) { return toast('当前设备无法录像，请用相册选择视频'); }
+      cam.rec = rec; cam.chunks = []; cam.started = performance.now();
+      root.classList.add('recording'); shoot.setAttribute('aria-label', '停止录像');
+      const badge = $('.cam-rec', view); badge.hidden = false;
+      const tick = () => { const s = Math.floor((performance.now() - cam.started) / 1000); $('span', badge).textContent = `${pad2(Math.floor(s / 60))}:${pad2(s % 60)}`; if (s >= 60 && cam.rec) cam.rec.stop(); };
+      cam.timer = setInterval(tick, 250);
+      rec.ondataavailable = (e) => { if (e.data && e.data.size) cam.chunks.push(e.data); };
+      rec.onstop = async () => {
+        clearInterval(cam.timer); cam.timer = null; cam.rec = null;
+        root.classList.remove('recording'); badge.hidden = true;
+        const blob = new Blob(cam.chunks, { type: (rec.mimeType || 'video/webm').split(';')[0] });
+        if (!blob.size) return toast('没有录到内容，再试一次');
+        try { await useMedia(d, new File([blob], 'catch.' + (blob.type.includes('mp4') ? 'mp4' : 'webm'), { type: blob.type }), 'camera'); } catch (e) { toast('视频保存失败，请重试'); }
+      };
+      rec.start(500); A.haptic('medium');
+    };
+    startCamera(view);
   }
 
   function renderCatchForm(view) {
@@ -455,7 +553,7 @@
       ${ur ? '<div class="blackout"></div><div class="crack"></div>' : ''}<div class="flash"></div>
       <button class="skip">跳过</button>
       <div class="stage">
-        <div class="headline">${ur ? '巨物卡解锁' : isNew ? '新鱼种入册' : '星级提升'}</div>
+        <div class="headline">${ur ? '巨物卡解锁' : isNew ? '新鱼种解锁' : '星级提升'}</div>
         <div class="card-host"></div>
         <div class="sub">${ur ? `${esc(sp.name)} · ${card.giant.lengthCm}cm` : `图鉴 ${dex.unlocked} / ${dex.total}`}
           ${!ur && !isNew ? `<br><span class="pill">${esc(sp.name)}升到 ${card.stars} 星</span>` : ''}
@@ -513,11 +611,12 @@
     const by = {}, totalBy = {};
     RARITIES.forEach((r) => { by[r] = 0; totalBy[r] = 0; });
     S.SPECIES.forEach((sp) => { totalBy[sp.rarity]++; if (cards[sp.no]) by[sp.rarity]++; });
-    const filters = [['all', '全部'], ['have', '已入册'], ['miss', '未入册'], ...RARITIES.map((r) => [r, r])];
+    const filters = [['all', '全部'], ['have', '已解锁'], ['miss', '未解锁'], ...RARITIES.map((r) => [r, r])];
     const bio = data.bio || (ctx.me ? '还没有个性签名，去设置里写一句' : '');
 
     const unit = (n, u) => `<b><span data-n="${n}">${n}</span><small>${u}</small></b>`;
     root.innerHTML = `<div class="screen dex-page">
+      ${ctx.me ? `<div class="brand-bar" aria-label="Yukomon 鱼可梦">${ICON.logo}</div>` : ''}
       <div class="collector">${mono(data.name)}
         <div class="who"><h1>${esc(data.name)}</h1>${bio ? `<p class="bio">${esc(bio)}</p>` : ''}</div>
         ${ctx.me ? `<button class="icon-btn" data-act="settings" aria-label="设置">${ICON.gear}</button>` : ''}
@@ -549,20 +648,26 @@
       list.forEach((sp, i) => {
         const card = cards[sp.no], g = card && card.giant.status === 'approved';
         const cell = el(`<div class="cell" data-sp="${sp.no}" role="button" tabindex="0" ${i < 12 ? 'data-stagger' : ''}>
-          ${card ? '' : `<div class="slot">${tagno(sp.no)}<span class="grade ${sp.rarity}">${sp.rarity}</span>${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div></div>`}
-          <div class="cap"><span>${card ? esc(sp.name) : '未入册'}</span>${card ? `<span class="num muted">×${card.catchCount}</span>` : ''}</div></div>`);
-        if (card) cell.prepend(C.render(sp, { card, thumb: true, variant: g ? 'ur' : 'normal', giantInfo: g ? giantInfo(card, data.catches) : null }));
+          ${card ? '' : `<div class="slot">${tagno(sp.no)}<span class="grade ${sp.rarity}">${sp.rarity}</span>${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`}</div>`);
+        if (card) cell.prepend(withCorner(C.render(sp, { card, thumb: true, variant: g ? 'ur' : 'normal', giantInfo: g ? giantInfo(card, data.catches) : null }), `<b class="num">${card.catchCount}</b>条`));
         tray.append(cell);
       });
     };
     fill();
     $('.dex-filter', root).onclick = (e) => {
       const b = e.target.closest('[data-f]');
-      if (!b) return;
+      if (!b || b.classList.contains('on')) return;
       ctx.filter = b.dataset.f;
       $$('.dex-filter .pill', root).forEach((x) => x.classList.toggle('on', x === b));
-      fill();
-      if (!M.reduced()) gsap.from($$('.cell', tray).slice(0, 12), { y: 8, autoAlpha: 0, duration: 0.3, stagger: 0.02 });
+      b.scrollIntoView({ behavior: M.reduced() ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+      if (M.reduced()) return fill();
+      // 旧格子轻快下沉淡出，新格子错落浮起
+      gsap.killTweensOf(tray);
+      gsap.to(tray, { autoAlpha: 0, y: 6, duration: 0.12, ease: 'power2.in', onComplete() {
+        fill();
+        gsap.set(tray, { autoAlpha: 1, y: 0, clearProps: 'all' });
+        gsap.from($$('.cell', tray).slice(0, 12), { y: 18, scale: 0.96, autoAlpha: 0, duration: 0.45, stagger: 0.025, ease: 'expo.out', clearProps: 'transform,opacity,visibility' });
+      } });
     };
     tray.onclick = (e) => {
       const x = e.target.closest('[data-sp]');
@@ -575,7 +680,7 @@
     if (s) s.onclick = settingsPage;
     const m = $('[data-act="met"]', root);
     if (m) m.onclick = () => metSheet(met, ctx);
-    // 刚解锁的那一格：滚到视野里，盖章入册
+    // 刚解锁的那一格：滚到视野里，盖章解锁
     if (ctx.me && state.stamp) {
       const cell = $(`[data-sp="${state.stamp}"]`, tray);
       state.stamp = null;
@@ -583,12 +688,24 @@
     }
   }
   function lockedSheet(sp) {
-    sheet(`No.${sp.no} 未入册`, `<div style="width:170px;margin:4px auto 10px;opacity:.3">${F.fishSVG(sp, { silhouette: true })}</div>
+    sheet(`No.${sp.no} 未解锁`, `<div style="width:170px;margin:4px auto 10px;opacity:.3">${F.fishSVG(sp, { silhouette: true })}</div>
       <p style="margin:0 0 12px;text-align:center">${esc(sp.hint)}</p>
       <div class="facts"><div class="kv"><span>稀有度</span><span>${rb(sp.rarity)} ${C.RV[sp.rarity].name}</span></div><div class="kv"><span>栖息地</span><span>${C.HAB[sp.habitat].name}</span></div><div class="kv"><span>分布</span><span>${esc(sp.region)}</span></div><div class="kv"><span>旺季</span><span>${esc(sp.season)}</span></div><div class="kv"><span>钓法</span><span>${esc(sp.method)}</span></div></div>`);
   }
-  const likeChip = (c) => { if (!c.speciesId) return ''; const l = S.likesOf(c); return `<span class="likes ${l.liked ? 'on' : ''}">${ICON.heart}<span class="num">${l.count}</span></span>`; };
-  const catchRow = (c, i, title) => `<div class="entry" data-i="${i}" role="button" tabindex="0"><img class="ph" src="${esc(photoOf(c))}" alt="" loading="lazy"><div class="grow"><div class="t">${esc(title)}</div><div class="m">${c.lengthCm ? `<span class="num">${c.lengthCm}cm</span>` : ''}<span>${esc(c.location ? c.location.city : '')}</span>${likeChip(c)}</div></div><div class="d">${C.fmtDate(c.createdAt)}</div></div>`;
+  // 卡片右下角信息标签：放进卡片自身结构（已解锁 → 卡片正面；未解锁 → 剪影槽位），随卡片一起滚动与分层
+  const cornerTag = (html) => (html === null ? `<span class="corner locked">${ICON.lock}未解锁</span>` : html ? `<span class="corner">${html}</span>` : '');
+  const withCorner = (cardEl, html) => { const face = cardEl.querySelector('.card-front') || cardEl; if (html) face.insertAdjacentHTML('beforeend', cornerTag(html)); return cardEl; };
+  // 点赞徽标：上鱼记录横条和渔获详情大图右下角共用同一份结构与样式（.like）
+  const likeChip = (c) => { if (!c.speciesId) return ''; const l = S.likesOf(c); return `<span class="like static ${l.liked ? 'on' : ''}" aria-label="${l.count} 个赞">${ICON.heart}<span class="num">${l.count}</span></span>`; };
+  // 上鱼记录横条：上面是尺寸（强调）+ 地点 · 时间，下面是用户写的描述（弱化）；点赞固定在最右
+  const catchRow = (c, i, title) => {
+    const city = c.location ? c.location.city : '';
+    return `<div class="entry" data-i="${i}" role="button" tabindex="0"><img class="ph" src="${esc(photoOf(c))}" alt="" loading="lazy">
+      <div class="grow">
+        <div class="t">${c.lengthCm ? `<b class="size num">${c.lengthCm}<small>cm</small></b>` : '<b class="size none">未量</b>'}<span class="where">${city ? `${ICON.pin}${esc(city)}` : ''}<span class="when num">${C.fmtDate(c.createdAt)}</span></span></div>
+        <div class="m">${esc(title)}</div>
+      </div>${likeChip(c)}</div>`;
+  };
   function metSheet(met, ctx) {
     const rec = sheet('遇见过的保护鱼类', `<div class="entry-list">${met.map((c, i) => catchRow(c, i, c.protectedName)).join('')}</div>`);
     $('.entry-list', rec.node).onclick = (e) => { const x = e.target.closest('[data-i]'); if (x) { closeLayer(rec); catchDetail(met[+x.dataset.i], ctx); } };
@@ -598,6 +715,42 @@
   // 排行榜
   // ============================================================
   function renderRank(view) {
+    const boardTabs = `<div class="board-switch" role="tablist"><i class="ind" aria-hidden="true"></i><button role="tab" class="${state.board === 'unlock' ? 'on' : ''}" data-board="unlock">解锁榜</button><button role="tab" class="${state.board === 'giant' ? 'on' : ''}" data-board="giant">巨物榜</button></div>`;
+    const scopeRow = (note) => `<div class="scope"><button class="pill ${state.rank === 'nation' ? 'on' : ''}" data-scope="nation">全国</button><button class="pill ${state.rank === 'city' ? 'on' : ''}" data-scope="city">${esc(S.db.me.city)}</button><span class="grow"></span><span class="board-note">${note}</span></div>`;
+    const b = rankBody();
+    // 标题块（榜单切换 + 全国/城市）合成一个吸顶头，中间不留缝
+    view.innerHTML = `<div class="screen rank-page"><div class="rank-head">${boardTabs}${scopeRow(b.note)}</div><div class="rank-body">${b.html}</div></div>`;
+    b.mount(view);
+    gsap.set($('.board-switch .ind', view), { xPercent: state.board === 'giant' ? 100 : 0 });
+    view.onclick = (e) => {
+      const bb = e.target.closest('[data-board]');
+      if (bb) { if (bb.dataset.board !== state.board) { const dir = bb.dataset.board === 'giant' ? 1 : -1; state.board = bb.dataset.board; swapRankBody(view, dir); } return; }
+      const s = e.target.closest('[data-scope]');
+      if (s) { if (s.dataset.scope !== state.rank) { state.rank = s.dataset.scope; swapRankBody(view, 0); } return; }
+      const x = e.target.closest('[data-sp]');
+      if (x) { if (S.db.cards[x.dataset.sp]) sizeRankPage(S.byId[x.dataset.sp]); else { toast('请先解锁该鱼种~'); M.nudge(x); } return; }
+      const u = e.target.closest('[data-user]');
+      if (u) openProfile(u.dataset.user);
+    };
+  }
+  function rankBody() {
+    if (state.board === 'giant') {
+      const cards = S.db.cards;
+      return {
+        note: `已解锁 <span class="num">${Object.keys(cards).length}</span> / ${S.SPECIES.length} 种`,
+        html: `<p class="board-hint">选择一种鱼，查看${state.rank === 'city' ? esc(S.db.me.city) : '全国'}钓到的最大尺寸排行</p><div class="tray giant-tray"></div>`,
+        mount(view) {
+          const tray = $('.giant-tray', view);
+          S.SPECIES.forEach((sp, i) => {
+            const card = cards[sp.no], g = card && card.giant.status === 'approved';
+            const cell = el(`<div class="cell" data-sp="${sp.no}" role="button" tabindex="0" ${i < 12 ? 'data-stagger' : ''}>
+              ${card ? '' : `<div class="slot">${tagno(sp.no)}<span class="grade ${sp.rarity}">${sp.rarity}</span>${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`}</div>`);
+            if (card) cell.prepend(withCorner(C.render(sp, { card, thumb: true, variant: g ? 'ur' : 'normal', giantInfo: g ? giantInfo(card, S.db.catches) : null }), card.bestLengthCm ? `<b class="num">${card.bestLengthCm}</b>cm` : ''));
+            tray.append(cell);
+          });
+        },
+      };
+    }
     const r = S.rankOf(state.rank);
     const row = (u, extra = '', i = 99) => `<button class="rank-row ${u.rank <= 3 ? 'top' : ''} ${extra}" data-user="${u.id}" ${i < 12 ? 'data-stagger' : ''}>
       <span class="n">${u.rank}</span>${mono(u.nickname, 'sm')}
@@ -609,18 +762,89 @@
       <span class="head"><span class="medal">1</span><span class="grow"><span class="nm">${esc(first.nickname)}${first.me ? ' · 我' : ''}</span><small>${esc(first.city)}${first.urs ? ` · 巨物 ${first.urs} 张` : ''}</small></span></span>
       <span class="big"><b>${first.count}</b><span>种鱼</span></span>
       <span class="best" title="${esc(S.byId[first.best].name)}">${F.fishSVG(S.byId[first.best])}</span></button>` : '';
-    view.innerHTML = `<div class="screen rank-page">
-      <div class="scope"><button class="pill ${state.rank === 'nation' ? 'on' : ''}" data-scope="nation">全国</button><button class="pill ${state.rank === 'city' ? 'on' : ''}" data-scope="city">${esc(S.db.me.city)}</button><span class="grow"></span><span class="board-note">前 ${r.top.length} 名 · 共 <span class="num">${r.total}</span> 人</span></div>
-      ${leader}
-      <div class="board">${r.top.slice(1).map((u, i) => row(u, u.me ? 'is-me' : '', i)).join('')}</div>
-      ${r.me ? row(r.me, 'rank-me') : '<div class="rank-row rank-me none">用现场拍摄记录一条渔获，就能上榜。</div>'}
-    </div>`;
-    view.onclick = (e) => {
-      const s = e.target.closest('[data-scope]');
-      if (s) { state.rank = s.dataset.scope; return render(true); }
-      const u = e.target.closest('[data-user]');
-      if (u) openProfile(u.dataset.user);
+    return {
+      note: `前 ${r.top.length} 名 · 共 <span class="num">${r.total}</span> 人`,
+      html: `${leader}<div class="board">${r.top.slice(1).map((u, i) => row(u, u.me ? 'is-me' : '', i)).join('')}</div>
+        ${r.me ? row(r.me, 'rank-me') : '<div class="rank-row rank-me none">用现场拍摄记录一条渔获，就能上榜。</div>'}`,
+      mount() {},
     };
+  }
+  // 榜单 / 范围切换：头部不重建，黑色滑块带一点挤压回弹滑过去；内容按方向退出、再从另一侧弹入
+  function swapRankBody(view, dir) {
+    const head = $('.rank-head', view), body = $('.rank-body', view), ind = $('.board-switch .ind', head);
+    $$('[data-board]', head).forEach((x) => x.classList.toggle('on', x.dataset.board === state.board));
+    $$('[data-scope]', head).forEach((x) => x.classList.toggle('on', x.dataset.scope === state.rank));
+    const fill = () => { const nb = rankBody(); $('.board-note', head).innerHTML = nb.note; body.innerHTML = nb.html; nb.mount(view); view.scrollTop = 0; };
+    if (M.reduced()) { gsap.set(ind, { xPercent: state.board === 'giant' ? 100 : 0 }); fill(); return; }
+    if (dir) {
+      gsap.to(ind, { xPercent: state.board === 'giant' ? 100 : 0, duration: 0.5, ease: 'expo.out' });
+      gsap.fromTo(ind, { scaleX: 1, scaleY: 1 }, { keyframes: { scaleX: [1, 1.1, 0.98, 1], scaleY: [1, 0.84, 1.02, 1] }, duration: 0.5, ease: 'power1.out' });
+    }
+    gsap.killTweensOf(body);
+    gsap.to(body, {
+      autoAlpha: 0, x: -28 * dir, y: dir ? 0 : 8, scale: 0.97, transformOrigin: '50% 0', duration: 0.15, ease: 'power2.in',
+      onComplete() {
+        fill();
+        gsap.fromTo(body, { autoAlpha: 0, x: 28 * dir, y: dir ? 0 : 14, scale: 0.97 }, { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.5, ease: 'expo.out', clearProps: 'transform,opacity,visibility' });
+        const items = $$('[data-stagger]', body).slice(0, 12);
+        if (items.length) gsap.from(items, { y: 14, autoAlpha: 0, duration: 0.42, stagger: 0.03, delay: 0.06, clearProps: 'transform,opacity,visibility' });
+      },
+    });
+  }
+
+  // 巨物榜 · 单个鱼种的尺寸排行：顶部鱼种 banner + 排名/头像/昵称/地点/尺寸
+  function sizeRankPage(sp) {
+    let scope = state.rank;
+    const rec = page(`${sp.name} · 巨物榜`, '<div class="size-rank"></div>');
+    const root = $('.size-rank', rec.node);
+    const draw = (swap) => {
+      const r = S.sizeRankOf(sp.no, scope);
+      const king = r.top[0];
+      const row = (u, extra = '') => `<button class="rank-row size-row ${u.rank <= 3 ? 'top r' + u.rank : ''} ${extra}" data-user="${u.id}">
+        <span class="n">${u.rank}</span>${mono(u.nickname, 'sm')}
+        <span class="who"><span class="nm">${esc(u.nickname)}${u.me ? ' · 我' : ''}</span><small>${ICON.pin}${esc(u.place)}</small></span>
+        <span class="len"><b>${u.lengthCm}</b><small>cm</small></span></button>`;
+      const list = `<div class="board">${r.top.length ? r.top.map((u) => row(u, u.me ? 'is-me' : '')).join('') : '<div class="empty">这个范围还没有人上榜</div>'}</div>
+        ${r.me ? row(r.me, 'rank-me') : ''}`;
+      const stats = `<div><small>巨物线</small><b>${sp.giantThresholdCm}<i>cm</i></b></div><div><small>${scope === 'city' ? '同城' : '全国'}纪录</small><b data-n="${king ? king.lengthCm : 0}">${king ? king.lengthCm : '—'}</b><i>cm</i></div><div><small>上榜</small><b data-n="${r.total}">${r.total}</b><i>人</i></div>`;
+      if (swap) {
+        $('.sp-stats', root).innerHTML = stats;
+        $$('[data-scope]', root).forEach((x) => x.classList.toggle('on', x.dataset.scope === scope));
+        const body = $('.size-list', root);
+        gsap.killTweensOf(body);
+        gsap.to(body, { autoAlpha: 0, y: 8, duration: 0.14, ease: 'power2.in', onComplete() {
+          body.innerHTML = list;
+          gsap.fromTo(body, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: 'expo.out', clearProps: 'all' });
+          if (!M.reduced()) gsap.from($$('.board .size-row', body).slice(0, 10), { y: 12, autoAlpha: 0, duration: 0.36, stagger: 0.025, clearProps: 'all' });
+        } });
+        if (!M.reduced()) $$('.sp-stats [data-n]', root).forEach((b) => +b.dataset.n && M.countUp(b, +b.dataset.n));
+        return;
+      }
+      root.innerHTML = `<div class="sp-banner rar-${sp.rarity}">
+          <div class="sp-fish">${F.fishSVG(sp)}</div>
+          <div class="sp-meta">${tagno(sp.no)}<h2>${esc(sp.name)}</h2><span class="latin">${esc(sp.latin)}</span></div>
+          <div class="sp-stats">${stats}</div>
+        </div>
+        <div class="scope"><button class="pill ${scope === 'nation' ? 'on' : ''}" data-scope="nation">全国</button><button class="pill ${scope === 'city' ? 'on' : ''}" data-scope="city">${esc(S.db.me.city)}</button><span class="grow"></span><span class="board-note">按最大现场记录</span></div>
+        <div class="size-head"><span>排名</span><span class="grow">钓手 · 地点</span><span>尺寸</span></div>
+        <div class="size-list">${list}</div>`;
+      if (!M.reduced()) {
+        const tl = gsap.timeline({ delay: 0.12 });
+        tl.from($('.sp-fish svg', root), { x: -60, autoAlpha: 0, rotation: -6, duration: 0.9, ease: 'expo.out' })
+          .from($$('.sp-meta > *, .sp-stats > div', root), { y: 12, autoAlpha: 0, duration: 0.45, stagger: 0.04 }, 0.08)
+          .from($$('.board .size-row', root).slice(0, 10), { y: 12, autoAlpha: 0, duration: 0.36, stagger: 0.025, clearProps: 'all' }, 0.16);
+        gsap.to($('.sp-fish svg', root), { y: -5, rotation: 1.2, duration: 2.4, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1 });
+        rec.cleanups.push(() => gsap.killTweensOf($('.sp-fish svg', root)));
+      }
+    };
+    draw(false);
+    root.onclick = (e) => {
+      const s = e.target.closest('[data-scope]');
+      if (s) { if (s.dataset.scope !== scope) { scope = s.dataset.scope; draw(true); } return; }
+      const u = e.target.closest('[data-user]');
+      if (u && u.dataset.user !== 'me') openProfile(u.dataset.user);
+    };
+    return rec;
   }
 
   function openProfile(userId) {
@@ -643,12 +867,12 @@
     const lk = S.likesOf(c);
     const rec = sheet('渔获记录', `
       <div class="hero-photo"><img src="${esc(photoOf(c))}" alt="渔获照片">
-        ${!sp ? '' : ctx.me ? `<span class="like static" aria-label="${lk.count} 个赞">${ICON.heart}<span class="num">${lk.count}</span></span>` : `<button class="like ${lk.liked ? 'on' : ''}" data-like aria-pressed="${lk.liked}" aria-label="点赞">${ICON.heart}<span class="num">${lk.count}</span></button>`}</div>
+        ${!sp ? '' : ctx.me ? likeChip(c) : `<button class="like ${lk.liked ? 'on' : ''}" data-like aria-pressed="${lk.liked}" aria-label="点赞">${ICON.heart}<span class="num">${lk.count}</span></button>`}</div>
       ${c.desc ? `<p class="detail-desc">${esc(c.desc)}</p>` : ''}
-      <div class="tags">${sp ? `<span class="pill ${c.verified ? 'ok' : 'warn'}">${c.verified ? '现场拍摄' : '相册照片'}</span>` : '<span class="pill ok">保护鱼类 · 遇见</span>'}${c.released ? '<span class="pill">已放流</span>' : ''}</div>
       <div class="facts">
         ${sp ? kv('鱼种', `${esc(sp.name)} ${rb(sp.rarity)} <span class="latin muted">${esc(sp.latin)}</span>`) : kv('鱼种', `${esc(c.protectedName)}（国家${esc(c.protectedLevel)}保护）`)}
         ${kv('尺寸', c.lengthCm ? `<span class="num">${c.lengthCm} cm</span>` : '')}
+        ${kv('放流', c.released ? '已放流' : '未放流')}
         ${kv('钓点', esc(ctx.me ? [loc.place, loc.city, loc.district].filter(Boolean).join(' · ') : loc.city))}
         ${kv('时间', `<span class="num">${ctx.me ? fmtFull(c.createdAt) : C.fmtDate(c.createdAt)}</span>`)}
         ${GEAR.map(([k, label]) => kv(label, esc(g[k]))).join('')}
@@ -669,7 +893,7 @@
       like.setAttribute('aria-pressed', r.liked);
       $('.num', like).textContent = r.count;
       A.haptic('light');
-      if (r.liked) M.bump(like);
+      M.likePop(like, r.liked);
       if (onLike) onLike(c, r);
     };
     const sh = $('[data-share]', node);
@@ -692,30 +916,43 @@
     const back = `<h4>${esc(sp.name)}</h4><div class="lat latin">${esc(sp.latin)}</div>
       <div class="kvs"><span>科</span><span>${esc(sp.family)}</span><span>分布</span><span>${esc(sp.region)}</span><span>旺季</span><span>${esc(sp.season)}</span><span>钓法</span><span>${esc(sp.method)}</span><span>常见</span><span>${sp.commonCm}cm · 巨物线 ${sp.giantThresholdCm}cm</span></div>
       <div class="fact">${esc(sp.fact)}</div>
-      <div class="mine">${ctx.me ? '我' : 'TA'}钓到 <b>${card.catchCount}</b> 次${card.bestLengthCm ? `，最大 <b>${card.bestLengthCm}cm</b>` : ''}<br>${C.fmtDate(card.unlockedAt)} 入册</div>`;
+      <div class="mine">${ctx.me ? '我' : 'TA'}钓到 <b>${card.catchCount}</b> 次${card.bestLengthCm ? `，最大 <b>${card.bestLengthCm}cm</b>` : ''}<br>${C.fmtDate(card.unlockedAt)} 解锁</div>`;
     const rec = page(`No.${sp.no} ${sp.name}`, `
       <div class="card-stage"></div>
       ${hasUR ? '<div class="variant"><button class="pill on" data-v="ur">巨物卡</button><button class="pill" data-v="normal">普通卡</button></div>' : ''}
       ${ctx.me ? '<div class="actions-row"><button class="btn primary" data-share>分享链接</button></div>' : ''}
       <div class="section-h"><h3>${ctx.me ? '我的' : 'TA 的'}${esc(sp.name)}</h3><span class="num">${card.catchCount} 条</span></div>
       <div class="mine-list entry-list"></div>`);
+    // 右上角：该鱼种的尺寸排行（巨物榜）。跳到排行榜页的巨物榜，并打开这条鱼的榜单
+    const head = $('.page-head', rec.node);
+    const rk = el(`<button class="head-act" data-rank aria-label="${esc(sp.name)}尺寸排行">${ICON.rank}<span>排行榜</span></button>`);
+    head.append(rk);
+    rk.onclick = () => { closeAll(); state.board = 'giant'; go('rank'); sizeRankPage(sp); };
     const stage = $('.card-stage', rec.node);
     let off = [];
-    const mountCard = () => {
-      off.forEach((fn) => fn());
-      stage.innerHTML = '';
-      const ce = C.render(sp, { card, interactive: true, back, variant: ur ? 'ur' : 'normal', giantInfo: ur ? giantInfo(card, data.catches) : null });
-      stage.append(ce);
-      off = [C.attach(ce), C.animate(ce)];
-      ce.onclick = () => { C.flip(ce); A.play('ui_flip'); A.haptic('light'); };
-      if (!M.reduced()) gsap.from(ce, { y: 24, autoAlpha: 0, scale: 0.94, duration: 0.55, delay: 0.12 });
+    const mountCard = (swap) => {
+      const old = stage.firstElementChild;
+      const build = () => {
+        off.forEach((fn) => fn());
+        stage.innerHTML = '';
+        const ce = C.render(sp, { card, interactive: true, back, variant: ur ? 'ur' : 'normal', giantInfo: ur ? giantInfo(card, data.catches) : null });
+        stage.append(ce);
+        off = [C.attach(ce), C.animate(ce)];
+        ce.onclick = () => { C.flip(ce); A.play('ui_flip'); A.haptic('light'); };
+        if (M.reduced()) return;
+        if (swap) gsap.fromTo(ce, { rotationY: -70, scale: 0.9, autoAlpha: 0 }, { rotationY: 0, scale: 1, autoAlpha: 1, duration: 0.6, ease: 'expo.out', clearProps: 'transform,opacity,visibility' });
+        else gsap.from(ce, { y: 24, autoAlpha: 0, scale: 0.94, duration: 0.55, delay: 0.12 });
+      };
+      // 巨物卡 ⇄ 普通卡：旧卡侧转收起，新卡从另一侧转出
+      if (swap && old && !M.reduced()) gsap.to(old, { rotationY: 70, scale: 0.9, autoAlpha: 0, duration: 0.2, ease: 'power2.in', onComplete: build });
+      else build();
     };
     mountCard();
     rec.cleanups.push(() => off.forEach((fn) => fn()));
-    $$('[data-v]', rec.node).forEach((b) => (b.onclick = () => { ur = b.dataset.v === 'ur'; $$('[data-v]', rec.node).forEach((x) => x.classList.toggle('on', x === b)); mountCard(); }));
+    $$('[data-v]', rec.node).forEach((b) => (b.onclick = () => { if (b.classList.contains('on')) return; ur = b.dataset.v === 'ur'; $$('[data-v]', rec.node).forEach((x) => x.classList.toggle('on', x === b)); A.haptic('light'); mountCard(true); }));
     const mine = data.catches.filter((c) => c.speciesId === sp.no).slice(0, 20);
     $('.mine-list', rec.node).innerHTML = mine.map((c, i) => catchRow(c, i, c.desc || sp.name)).join('');
-    $('.mine-list', rec.node).onclick = (e) => { const x = e.target.closest('[data-i]'); if (x) catchDetail(mine[+x.dataset.i], ctx, (c) => { const chip = $('.likes', x); if (chip) chip.outerHTML = likeChip(c); }); };
+    $('.mine-list', rec.node).onclick = (e) => { const x = e.target.closest('[data-i]'); if (x) catchDetail(mine[+x.dataset.i], ctx, (c) => { const chip = $('.like', x); if (chip) chip.outerHTML = likeChip(c); }); };
     const sb = $('[data-share]', rec.node);
     if (sb) sb.onclick = () => shareSheet(sp, card, ur, pickCatch(card, data.catches, ur));
   }
@@ -824,6 +1061,11 @@
 
   // ---------- 启动 ----------
   $('#tabbar').onclick = (e) => { const b = e.target.closest('[data-tab]'); if (b && (b.dataset.tab !== state.tab || layers.length)) { closeAll(); go(b.dataset.tab); } };
+  // 切到后台就关相机（省电、释放占用）；回到前台且仍在取景页时重新打开
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopCamera();
+    else if (state.tab === 'catch' && publishStep === 'capture' && !layers.length) startCamera($('#view'));
+  });
   // 深链：#share=…（分享链接）；演示用 #tab=dex|rank、#profile=u3、#unlock=SSR
   const q = new URLSearchParams(location.hash.slice(1));
   if (['catch', 'dex', 'rank'].includes(q.get('tab'))) state.tab = q.get('tab');

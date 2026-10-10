@@ -460,11 +460,30 @@
     return { top: list.slice(0, 100), me: list.find((u) => u.me) || null, total: list.length, generatedAt: Date.now() };
   }
 
+  // 巨物榜：某鱼种全部钓手的最大尺寸排行（每人只取一条最大现场记录，相册记录不上榜）
+  function sizeRankOf(speciesId, scope) {
+    const rows = [];
+    mocks().forEach((u) => {
+      if (!u.owned.includes(speciesId)) return;
+      const p = profileOf(u.id);
+      const best = p.catches.filter((c) => c.speciesId === speciesId && c.lengthCm).sort((a, b) => b.lengthCm - a.lengthCm || a.createdAt - b.createdAt)[0];
+      const g = p.cards[speciesId] && p.cards[speciesId].giant;
+      const len = Math.max(best ? best.lengthCm : 0, g && g.lengthCm ? g.lengthCm : 0);
+      if (len) rows.push({ id: u.id, nickname: u.nickname, city: u.city, place: best ? best.location.city : u.city, lengthCm: len, at: best ? best.createdAt : Date.now() });
+    });
+    const mine = db.catches.filter((c) => c.speciesId === speciesId && c.status === 'confirmed' && c.verified && c.lengthCm).sort((a, b) => b.lengthCm - a.lengthCm || a.createdAt - b.createdAt)[0];
+    if (mine) rows.push({ id: 'me', me: true, nickname: db.me.nickname, city: db.me.city, place: (mine.location && mine.location.city) || db.me.city, lengthCm: mine.lengthCm, at: mine.createdAt });
+    let list = scope === 'city' ? rows.filter((x) => x.city === db.me.city) : rows;
+    list.sort((a, b) => b.lengthCm - a.lengthCm || a.at - b.at);
+    list.forEach((x, i) => (x.rank = i + 1));
+    return { top: list.slice(0, 100), me: list.find((x) => x.me) || null, total: list.length };
+  }
+
   window.YK_STORE = {
     load, save, reset, wipe, get db() { return db; },
     SPECIES, PROTECTED, byId, CITIES, STAR_STEPS, SCORE,
     confusableTip, checkin, encounter, removeCatch, updateCatch, precheck,
     likesOf, toggleLike,
-    dexProgress, rankOf, profileOf, uuid, starsFor,
+    dexProgress, rankOf, sizeRankOf, profileOf, uuid, starsFor,
   };
 })();

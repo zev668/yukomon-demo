@@ -1,16 +1,221 @@
-/* 发布：拍摄 → 确认 → 信息 */
-#tabbar [data-tab=dex]{order:0}#tabbar [data-tab=catch]{order:1}#tabbar [data-tab=rank]{order:2}
-.publish-capture{min-height:100%;height:100%;display:flex;flex-direction:column;background:#060504;color:white;padding:14px 16px 20px;box-sizing:border-box;overflow:hidden}
-.publish-capture header{display:flex;align-items:center;gap:16px;flex:none}.publish-capture .icon-btn{background:#242422;color:white}
-.publish-media{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:20px;margin:12px 0}
-.publish-media img,.publish-media video{width:100%;height:100%;object-fit:contain}
-.capture-empty{text-align:center;color:#c9c3ab}.capture-empty svg{width:54px;height:54px}.capture-empty h2{font-size:28px;color:white}.capture-empty p{font-size:14px}
-.capture-actions{display:flex;align-items:center;justify-content:space-around;gap:16px;padding:16px 0;flex:none}.capture-actions .btn{flex:1}.shutter{width:78px;height:78px;border-radius:50%;background:white;border:6px solid #444;outline:3px solid white;flex:none}
-.capture-modes{display:flex;justify-content:center;gap:24px;padding:12px}.capture-modes .pill{background:transparent;color:white}.capture-modes .on{color:#ffd60a}
-.view-catch:has(.publish-capture){padding:0!important;overflow:hidden!important}
+/* ============================================================
+   发布（应用内相机 → 确认 → 信息）、底部导航、巨物榜、上鱼记录
+   ============================================================ */
+
+/* ---------- 底部导航：浮起的白色胶囊条；三项等宽，始终「图标 + 文字」；选中黄底黑字，未选中白底灰字。
+   选中底色是一枚独立滑块（.tab-ind），由 GSAP 滑动过去，不改变按钮宽度 → 切换不跳变 ---------- */
+#tabbar { display: flex; align-items: center; gap: 0; position: absolute !important; left: 14px; right: 14px; bottom: calc(12px + var(--safe-b)); margin: 0; padding: 6px; height: 68px; border-radius: 999px; background: #fff; box-shadow: 0 14px 32px -10px rgba(17, 17, 16, 0.22), 0 2px 6px rgba(17, 17, 16, 0.05); z-index: 6; flex: none; isolation: isolate; }
+#tabbar [data-tab=dex] { order: 0 } #tabbar [data-tab=catch] { order: 1 } #tabbar [data-tab=rank] { order: 2 }
+#tabbar button { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; height: 56px; padding: 0 8px; border-radius: 999px; gap: 6px; color: #9a9483; font-size: 14px; font-weight: 800; background: transparent; transition: color .25s; }
+#tabbar button span { white-space: nowrap; }
+#tabbar button svg.ti { width: 24px; height: 24px; flex: none; stroke: none; fill: currentColor; }
+#tabbar button.on { color: var(--ink); }
+#tabbar .tab-ind { position: absolute; z-index: 0; top: 6px; left: 0; height: 56px; border-radius: 999px; background: var(--yellow); box-shadow: 0 6px 14px -6px rgba(180, 140, 0, 0.55); pointer-events: none; }
+/* 取景时导航沉到相机画面上 */
+body.cam-on #app { background: #000; }
+body.cam-on #tabbar { background: rgba(28, 27, 25, .72); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: none; }
+body.cam-on #tabbar button:not(.on) { color: #a7a193; }
+
+/* ---------- 发布：取景页 ---------- */
+.view-catch:has(.publish-capture) { padding: 0 !important; overflow: hidden !important; }
+.publish-capture { position: relative; height: 100%; min-height: 100%; display: flex; flex-direction: column; background: #000; color: #fff; overflow: hidden; }
+.publish-capture.cam { border-radius: 0; }
+.cam-stage { position: absolute; inset: 0; background: #0b0b0a; overflow: hidden; }
+.cam-live { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cam-live.mirror { transform: scaleX(-1); }
+.cam-msg { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 0 36px; text-align: center; color: #c9c3ab; font-size: 14px; line-height: 1.5; }
+.cam-msg[hidden] { display: none; }
+.cam-msg b { color: #fff; font-size: 18px; }
+.cam-msg .btn { margin-top: 6px; background: #fff; }
+.cam-rec { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; background: rgba(0,0,0,.55); font-size: 15px; font-weight: 800; z-index: 2; }
+.cam-rec[hidden] { display: none; }
+.cam-rec i { width: 10px; height: 10px; border-radius: 50%; background: #ff3b30; animation: yk-blink 1s steps(2, start) infinite; }
+@keyframes yk-blink { to { visibility: hidden; } }
+.cam-top { position: relative; z-index: 2; display: flex; align-items: center; padding: 14px 16px; }
+.icon-btn.glass { background: rgba(0, 0, 0, .38); color: #fff; width: 44px; height: 44px; }
+.icon-btn.glass svg { stroke: currentColor; }
+.cam-bottom { position: relative; z-index: 2; margin-top: auto; padding: 18px 0 26px; background: linear-gradient(to top, rgba(0,0,0,.55), transparent); }
+/* 模式切换在快门上方，选中项白字 + 下方小圆点 */
+.cam-modes { display: flex; justify-content: center; gap: 6px; margin-bottom: 18px; }
+.cam-modes button { position: relative; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: rgba(255,255,255,.62); font-size: 15px; font-weight: 800; }
+.cam-modes button.on { color: #fff; background: rgba(255,255,255,.16); }
+.cam-modes button:disabled { opacity: .35; }
+.cam-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 28px; }
+.cam-side { display: flex; justify-content: center; }
+/* 快门：白色外环 + 内芯；拍照白芯，拍视频红芯，录制中红芯收成圆角方块 */
+.shutter { position: relative; width: 82px; height: 82px; border-radius: 50%; border: 5px solid #fff; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; flex: none; }
+.shutter i { display: block; width: 64px; height: 64px; border-radius: 50%; background: #fff; transition: background-color .25s, width .25s, height .25s, border-radius .25s; }
+.shutter.video i { background: #ff3b30; }
+.recording .shutter i { width: 30px; height: 30px; border-radius: 8px; }
+.shutter:active i { transform: scale(.92); }
+.album-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; border: 0; background: none; color: #fff; font-size: 12px; font-weight: 700; padding: 0; }
+.album-btn img, .album-btn svg { width: 46px; height: 46px; border-radius: 12px; border: 2px solid #fff; object-fit: cover; background: rgba(255,255,255,.14); }
+.album-btn svg { padding: 10px; stroke: currentColor; fill: none; stroke-width: 2; }
+.recording .album-btn, .recording .cam-modes, .recording [data-flip] { opacity: .3; pointer-events: none; }
+
+/* ---------- 发布：确认页 ---------- */
+.publish-capture.is-preview { padding: 14px 16px 18px; }
+.publish-capture.is-preview header { display: flex; align-items: center; gap: 14px; flex: none; font-size: 17px; }
+.publish-capture.is-preview .icon-btn { background: #242422; color: #fff; }
+.publish-media { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 22px; margin: 12px 0 14px; background: #0b0b0a; }
+.publish-media img, .publish-media video { width: 100%; height: 100%; object-fit: contain; }
+.confirm-bar { display: flex; gap: 12px; flex: none; }
+.confirm-bar .btn { height: 56px; font-size: 16px; }
+.confirm-bar .ghost { flex: 0 0 104px; background: #242422; color: #fff; }
+.confirm-bar .next { flex: 1; }
+
+/* ---------- 发布：信息编辑 ---------- */
 .view-catch .screen>.mount{height:180px;aspect-ratio:auto;background:transparent;border-radius:0;text-align:center}.view-catch .mount>img{width:112px;height:142px;object-fit:cover;border-radius:12px;margin:auto}.view-catch .mount>button{position:absolute;left:0;top:0}
 .view-catch .bento{display:flex;flex-direction:column;gap:0;background:#fff;border-radius:18px;overflow:hidden}.view-catch .bento>.tile{border-radius:0;border-bottom:1px solid #eae5da;min-height:72px}.view-catch .species-pick .nm,.view-catch .species-pick .placeholder{font-size:20px}.view-catch .field .size input{font-size:24px}.view-catch .field .val{font-size:16px;margin-top:8px}.view-catch .desc-tile textarea{height:84px}.view-catch .gear{background:white}.view-catch .gear-row input{font-size:14px}
-.tile.progress{background:radial-gradient(ellipse at 100% 0%,#294d46,transparent 75%),linear-gradient(135deg,#101e1c,#060504)!important}
+
+/* ---------- 渐变底板 ---------- */
+.tile.progress{background:radial-gradient(120% 95% at 108% -12%,#ffd60a 0%,rgba(255,214,10,.62) 26%,rgba(255,214,10,.16) 52%,rgba(255,214,10,0) 68%),linear-gradient(135deg,#2b2408 0%,#14120b 45%,#060504 100%)!important}
 .tile.leader{background:radial-gradient(ellipse at 100% 0%,#51421d,transparent 78%),linear-gradient(135deg,#251e10,#060504)!important}
 #view,.page-body,.sheet-body,.sheet-scroll{overscroll-behavior-y:none;overflow-x:hidden}
 .hero-photo video{display:block;width:100%;max-height:360px;background:#060504}
+
+/* ---------- 排行榜：解锁榜 / 巨物榜 ---------- */
+/* 标题块（榜单切换）+ 全国/城市筛选 合成一个吸顶头：同一块底色，中间没有缝 */
+.rank-head { position: sticky; top: 0; z-index: 4; margin: 0 -16px; padding: 16px 16px 0; background: var(--bg); }
+.rank-head .scope { position: static; padding: 12px 0 12px; background: transparent; }
+.board-switch { position: relative; display: flex; padding: 4px; border-radius: 999px; background: var(--bg-2); isolation: isolate; }
+.board-switch .ind { position: absolute; z-index: 0; top: 4px; left: 4px; width: calc(50% - 4px); height: 44px; border-radius: 999px; background: var(--ink); box-shadow: 0 8px 16px -8px rgba(17, 17, 16, .6); transform-origin: 50% 50%; }
+.board-switch button { position: relative; z-index: 1; flex: 1; height: 44px; border: 0; border-radius: 999px; background: transparent; font-size: 16px; font-weight: 800; color: var(--taupe); transition: color .3s; }
+.board-switch button.on { color: #fff; }
+.rank-body { display: flex; flex-direction: column; flex: 1; }
+.board-hint { margin: 0 0 12px; font-size: 13px; color: var(--taupe); }
+.giant-tray { padding-bottom: 18px; }
+
+/* 「我的名次」：直接复用排行项的样式与宽度（与上下列表左右对齐、四角同样圆角），
+   吸底悬浮，用一圈弥散阴影与下面滚动经过的排行项拉开层次 */
+.rank-row.rank-me, .size-row.rank-me {
+  position: sticky; bottom: 12px; z-index: 3; margin: 8px 0 12px; width: 100%;
+  border-radius: var(--r-sm); padding: 10px 14px 10px 12px; background: var(--card);
+  box-shadow: 0 18px 38px -12px rgba(17, 17, 16, .32), 0 4px 12px -4px rgba(17, 17, 16, .12), 0 0 0 1.5px var(--yellow);
+}
+.rank-row.rank-me .n, .size-row.rank-me .n { width: 32px; height: 32px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.rank-row.rank-me:hover { background: var(--card); }
+.rank-row.rank-me.none { display: block; font-size: 14px; color: var(--taupe); cursor: default; }
+.view-rank .rank-page { padding-bottom: 0; }
+
+/* 鱼种尺寸排行页 */
+.size-rank { display: flex; flex-direction: column; min-height: 100%; }
+.size-list { display: flex; flex-direction: column; flex: 1; }
+.sp-banner { position: relative; overflow: hidden; border-radius: var(--r-lg); padding: 18px 18px 16px; color: #fff; background: radial-gradient(ellipse at 85% 10%, #2b4f63, transparent 70%), linear-gradient(140deg, #13262c, #060504); }
+.sp-banner.rar-R { background: radial-gradient(ellipse at 85% 10%, #1f4fa0, transparent 70%), linear-gradient(140deg, #0f1f3d, #060504); }
+.sp-banner.rar-SR { background: radial-gradient(ellipse at 85% 10%, #5b3aa6, transparent 70%), linear-gradient(140deg, #22163f, #060504); }
+.sp-banner.rar-SSR { background: radial-gradient(ellipse at 85% 10%, #8a6114, transparent 70%), linear-gradient(140deg, #2f220a, #060504); }
+.sp-fish { height: 118px; display: flex; align-items: center; justify-content: center; margin: 4px 0 6px; }
+.sp-fish svg { width: 78%; height: 100%; filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)); }
+.sp-meta .tagno { color: var(--sand); }
+.sp-meta h2 { margin: 2px 0 0; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+.sp-meta .latin { font-size: 13px; color: var(--sand); font-style: italic; }
+.sp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.sp-stats div { padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,.08); backdrop-filter: blur(2px); }
+.sp-stats small { display: block; font-size: 11px; color: var(--sand); font-weight: 700; }
+.sp-stats b { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.sp-stats i { font-style: normal; font-size: 12px; margin-left: 2px; color: var(--sand); font-weight: 700; }
+.size-rank .scope { position: sticky; top: -4px; z-index: 3; }
+.size-head { display: flex; gap: 12px; padding: 0 16px 6px 14px; font-size: 12px; font-weight: 700; color: var(--taupe); }
+.size-head span:first-child { width: 32px; text-align: center; }
+.size-row .n { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.size-row.r1 .n { background: var(--yellow); } .size-row.r2 .n { background: #dcd8cc; } .size-row.r3 .n { background: #ecd2b6; }
+.size-row small { display: flex; align-items: center; gap: 3px; }
+.size-row small svg { width: 12px; height: 12px; flex: none; }
+.size-row .len { text-align: right; flex: none; }
+.size-row .len b { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.size-row .len small { display: inline; margin-left: 2px; font-weight: 700; }
+.size-row.is-me { background: var(--yellow); }
+.size-row.is-me small { color: var(--ink); }
+.size-rank .board { flex: 1; }
+
+/* 鱼卡详情右上角：排行榜入口（图标复用底部导航，黑底白字白图标） */
+.page-head .head-act { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 15px 0 12px; border: 0; border-radius: 999px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 800; flex: none; box-shadow: 0 8px 18px -10px rgba(17,17,16,.7); }
+.page-head .head-act svg { width: 18px; height: 18px; color: #fff; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+
+/* ---------- 上鱼记录横条：尺寸 + 地点·时间（强）在上，描述（弱）在下，点赞靠右 ---------- */
+.entry { gap: 12px; padding: 10px 12px 10px 10px; }
+.entry .ph { width: 68px; height: 68px; }
+.entry .grow { min-width: 0; }
+.entry .t { display: flex; align-items: baseline; gap: 10px; -webkit-line-clamp: unset; overflow: visible; }
+.entry .t .size { font-size: 22px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.entry .t .size small { font-size: 13px; margin-left: 1px; font-weight: 700; }
+.entry .t .size.none { font-size: 15px; color: var(--taupe); }
+.entry .t .where { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry .t .where svg { width: 13px; height: 13px; flex: none; }
+.entry .t .when { color: var(--taupe); font-weight: 600; margin-left: 4px; }
+.entry .m { display: block; margin-top: 6px; font-size: 13px; color: var(--taupe); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 点赞徽标：横条与大图右下角共用 .like（同字体、同图标、同尺寸）；横条里只取消绝对定位 */
+.entry > .like { position: static; flex: none; margin-left: auto; background: var(--bg); }
+.entry > .like.on { background: var(--yellow); }
+.like .num { font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   视觉统一层（参照视觉技能的方法：token 化、单一强调色、白色/墨色透明度层级、短促 expo-out 动效）
+   保留本项目暖米白 + 墨黑 + 亮黄的品牌体系，不套用像素深色皮肤
+   ============================================================ */
+:root {
+  --shadow-1: 0 1px 2px rgba(17, 17, 16, .04), 0 6px 16px -10px rgba(17, 17, 16, .18);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+}
+/* 背景：淡淡的暖色渐变——顶部微亮的奶白，向下过渡到米色，右上角一抹极浅的暖黄光 */
+#app { background: radial-gradient(120% 60% at 100% 0%, rgba(255, 214, 10, .10), rgba(255, 214, 10, 0) 60%), radial-gradient(90% 50% at 0% 100%, rgba(99, 143, 111, .07), rgba(99, 143, 111, 0) 70%), linear-gradient(180deg, #f7f5ef 0%, #f1eee6 45%, #ebe6db 100%); }
+.page, .sheet { background: radial-gradient(110% 45% at 100% 0%, rgba(255, 214, 10, .08), rgba(255, 214, 10, 0) 60%), linear-gradient(180deg, #f7f5ef 0%, #f1eee6 50%, #ece7dc 100%); }
+/* 吸顶头：半透明磨砂，与页面渐变连成一片 */
+.rank-head, .scope:not(.rank-head .scope) { background: rgba(241, 238, 230, .82); -webkit-backdrop-filter: blur(12px) saturate(1.1); backdrop-filter: blur(12px) saturate(1.1); }
+/* 卡片与列表：极轻的投影代替硬描边，分层更细腻 */
+.entry, .rank-row:not(.rank-me), .tile:not(.dark), .bento > .tile { box-shadow: var(--shadow-1); }
+.entry, .rank-row, .pill, .btn, .board-switch button, .head-act, .like { transition: background-color .25s var(--ease-out), color .25s var(--ease-out), box-shadow .25s var(--ease-out); }
+.pill.on { box-shadow: 0 6px 14px -8px rgba(180, 140, 0, .7); }
+::selection { background: var(--yellow); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 10px; }
+.num, .rank-row .n, .size-row .len b, .sp-stats b { font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
+/* 开关：滑钮带一点过冲回弹 */
+.switch::after { transition: transform .42s cubic-bezier(.34, 1.56, .64, 1), background-color .2s, width .2s; }
+.switch:active::after { width: 30px; }
+.switch.on:active::after { transform: translateX(14px); }
+.card-stage { perspective: 1200px; }
+/* 未解锁格子按下：只轻压，不抢鱼卡的视差 */
+.cell .slot { transition: background-color .25s var(--ease-out); }
+
+/* ---------- 品牌：Logo 与新版导航图标（实心 SVG，颜色跟随文字色） ---------- */
+.brand-bar { display: flex; align-items: center; height: 34px; margin: 0 0 14px; color: var(--ink); }
+.brand-bar svg.brand { height: 30px; width: auto; fill: currentColor; }
+#side-info h1.brand-logo { margin: 0 0 10px; line-height: 0; }
+#side-info h1.brand-logo svg { width: 220px; height: auto; color: var(--ink); }
+.page-head .head-act svg.fill { stroke: none; fill: currentColor; width: 18px; height: 18px; }
+
+/* ---------- 悬浮导航占位：内容区底部留出导航高度，导航下方直接透出页面背景 ---------- */
+:root { --tb-space: calc(68px + 12px + var(--safe-b)); }
+#view { padding-bottom: calc(var(--tb-space) + 20px) !important; }
+#view.view-catch, #view.view-rank { padding-bottom: 0 !important; }
+.view-rank .rank-page { padding-bottom: calc(var(--tb-space) + 8px); }
+.view-rank .rank-row.rank-me { bottom: calc(var(--tb-space) + 12px); }
+.publish-capture .cam-bottom { padding-bottom: calc(22px + var(--tb-space)); }
+.publish-capture.is-preview { padding-bottom: calc(16px + var(--tb-space)); }
+#view.view-catch:not(:has(.publish-capture)) { padding-bottom: calc(var(--tb-space) + 16px) !important; }
+
+/* ---------- 排行榜吸顶头：强磨砂玻璃，边缘干净（无羽化），底部一条极细高光线收边 ---------- */
+.rank-head, .scope:not(.rank-head .scope) {
+  background: rgba(246, 243, 236, .58);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+}
+.rank-head { box-shadow: 0 1px 0 rgba(17, 17, 16, .06), inset 0 -1px 0 rgba(255, 255, 255, .6); }
+
+/* ---------- 图鉴进度：黄黑渐变上的文字层级 ---------- */
+.tile.progress .eyebrow { color: rgba(255, 255, 255, .72); }
+.tile.progress .bar { background: rgba(255, 255, 255, .16); }
+.tile.progress .bar i { background: linear-gradient(90deg, #ffe55c, #ffd60a); box-shadow: 0 0 12px rgba(255, 214, 10, .55); }
+
+/* ---------- 鱼卡格子：不加底板；条数 / 未解锁 放进卡片右下角 ---------- */
+/* 每个格子自成层叠上下文：卡片内部的 z-index 只在格子内生效，不会盖过吸顶的榜单头 */
+.cell { border-radius: 0; box-shadow: none !important; background: none; isolation: isolate; z-index: 0; }
+.cell .corner { position: absolute; right: 6px; bottom: 6px; z-index: 4; display: inline-flex; align-items: center; gap: 2px; height: 20px; padding: 0 7px; border-radius: 999px; background: rgba(6, 5, 4, .62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); color: #fff; font-size: 10.5px; font-weight: 700; line-height: 1; pointer-events: none; white-space: nowrap; }
+.cell .corner b { font-size: 12px; font-weight: 800; }
+.cell .card-front .corner { right: 7%; bottom: 5%; transform: translateZ(1px); }
+.cell .corner:empty { display: none; }
+.cell .corner.locked { gap: 3px; background: rgba(255, 255, 255, .78); color: var(--taupe); }
+.cell .corner.locked svg { width: 11px; height: 11px; stroke-width: 2.4; }
+.cell .slot .q { margin-bottom: 14px; }

@@ -2,7 +2,7 @@
  *
  * MOTION THESIS
  *   焦点时刻：鱼卡解锁 —— 每个稀有度一条 gsap.timeline，用 label 编排，可被「跳过」一键 progress(1)。
- *   连续性：  页面推入/抽屉上滑/索引标签墨线滑动、图鉴新格"盖章入册"。
+ *   连续性：  页面推入/抽屉上滑/索引标签墨线滑动、图鉴新格"盖章解锁"。
  *   反馈：    toast、按压、震动指示点。日常转场 ≤ 300ms，退出快于进入。
  *   预算：    只动 transform / opacity / autoAlpha；常驻循环离屏即 kill；
  *             prefers-reduced-motion 下全部降级为淡入淡出（gsap.matchMedia）。
@@ -21,20 +21,34 @@
   const $ = (s, r = document) => r.querySelector(s);
 
   // ---------- 页面 / 抽屉 ----------
+  // 推入：新页从右滑入，下面的主视图轻微左移变暗（iOS 式视差）；页内内容成组错落浮现
+  const under = () => document.querySelector('#view');
   function pageIn(el) {
     if (reduced()) return gsap.from(el, { autoAlpha: 0, duration: 0.15 });
-    return gsap.fromTo(el, { xPercent: 100 }, { xPercent: 0, duration: 0.38, ease: 'expo.out', clearProps: 'transform' });
+    const tl = gsap.timeline();
+    tl.fromTo(el, { xPercent: 100, boxShadow: '-24px 0 48px rgba(17,17,16,0)' }, { xPercent: 0, boxShadow: '-24px 0 48px rgba(17,17,16,.16)', duration: 0.46, ease: 'expo.out', clearProps: 'transform,boxShadow' });
+    if (!document.querySelector('#layers .layer.page ~ .layer.page')) tl.to(under(), { x: -36, autoAlpha: 0.6, duration: 0.46, ease: 'expo.out' }, 0);
+    const kids = el.querySelectorAll('.page-head h2, .page-head .head-act, .page-body > *:not(.profile-root):not(.size-rank), .size-rank > .sp-banner, .size-rank > .scope');
+    if (kids.length) tl.from(kids, { x: 26, autoAlpha: 0, duration: 0.5, stagger: 0.035, ease: 'expo.out', clearProps: 'transform,opacity,visibility' }, 0.06);
+    return tl;
   }
   function pageOut(el) {
     if (reduced()) return gsap.to(el, { autoAlpha: 0, duration: 0.12 });
-    return gsap.to(el, { xPercent: 100, duration: 0.24, ease: 'power2.in' });
+    const tl = gsap.timeline();
+    tl.to(el, { xPercent: 100, duration: 0.28, ease: 'power3.in' }, 0);
+    if (document.querySelectorAll('#layers .layer.page').length <= 1) tl.to(under(), { x: 0, autoAlpha: 1, duration: 0.36, ease: 'expo.out', clearProps: 'transform,opacity,visibility' }, 0.08);
+    return tl;
   }
   function sheetIn(el) {
     const panel = $('.sheet', el), scrim = $('.scrim', el);
     const tl = gsap.timeline();
-    tl.from(scrim, { autoAlpha: 0, duration: 0.2, ease: 'none' }, 0);
-    if (reduced()) tl.from(panel, { autoAlpha: 0, duration: 0.15 }, 0);
-    else tl.from(panel, { yPercent: 100, duration: 0.42, ease: 'expo.out' }, 0);
+    tl.from(scrim, { autoAlpha: 0, duration: 0.24, ease: 'none' }, 0);
+    if (reduced()) return tl.from(panel, { autoAlpha: 0, duration: 0.15 }, 0);
+    tl.from(panel, { yPercent: 100, duration: 0.5, ease: 'expo.out' }, 0);
+    const kids = panel.querySelectorAll('.sheet-head, .sheet-body > *');
+    if (kids.length) tl.from([...kids].slice(0, 8), { y: 18, autoAlpha: 0, duration: 0.45, stagger: 0.04, ease: 'expo.out', clearProps: 'transform,opacity,visibility' }, 0.1);
+    const facts = panel.querySelectorAll('.facts .kv');
+    if (facts.length) tl.from(facts, { y: 8, autoAlpha: 0, duration: 0.35, stagger: 0.025, clearProps: 'transform,opacity,visibility' }, 0.2);
     return tl;
   }
   function sheetOut(el) {
@@ -44,13 +58,15 @@
       .to(scrim, { autoAlpha: 0, duration: 0.2, ease: 'none' }, 0);
   }
 
-  // ---------- 主视图切换：只淡入 + 轻微上移，列表成组出现 ----------
-  function viewIn(root) {
+  // ---------- 主视图切换：按底部导航方向轻推入场（左边的标签从左来、右边的从右来），列表成组错落出现 ----------
+  function viewIn(root, dir = 0) {
     if (reduced()) return gsap.from(root, { autoAlpha: 0, duration: 0.15 });
+    gsap.killTweensOf(root);
     const tl = gsap.timeline();
-    tl.from(root, { autoAlpha: 0, duration: 0.2, ease: 'none' });
+    const d = Math.sign(dir || 0);
+    tl.fromTo(root, { autoAlpha: 0, x: 22 * d, y: d ? 0 : 6 }, { autoAlpha: 1, x: 0, y: 0, duration: 0.42, ease: 'expo.out', clearProps: 'transform,opacity,visibility' });
     const items = root.querySelectorAll('[data-stagger]');
-    if (items.length) tl.from(items, { y: 10, autoAlpha: 0, duration: 0.36, stagger: { each: 0.025, amount: 0.25 } }, 0.04);
+    if (items.length) tl.from(items, { y: 14, autoAlpha: 0, duration: 0.45, stagger: { each: 0.028, amount: 0.28 }, ease: 'expo.out', clearProps: 'transform,opacity,visibility' }, 0.05);
     return tl;
   }
 
@@ -75,13 +91,30 @@
     if (reduced()) return;
     gsap.fromTo(el, { scale: 1 }, { keyframes: { scale: [1, 1.18, 1] }, duration: 0.4, ease: 'power2.out' });
   }
+  // 点赞：心形先压后弹，点亮时迸出一圈小点；数字从下往上翻
+  function likePop(btn, on) {
+    if (reduced()) return;
+    const heart = btn.querySelector('svg'), num = btn.querySelector('.num');
+    gsap.killTweensOf([heart, num]);
+    gsap.fromTo(heart, { scale: on ? 0.5 : 1.15 }, { scale: 1, duration: on ? 0.6 : 0.35, ease: on ? 'elastic.out(1.1,0.45)' : 'power2.out', clearProps: 'transform' });
+    gsap.fromTo(num, { y: on ? 10 : -10, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.35, ease: 'expo.out', clearProps: 'all' });
+    if (!on) return;
+    const r = heart.getBoundingClientRect(), host = document.body;
+    for (let i = 0; i < 8; i++) {
+      const p = document.createElement('i');
+      p.style.cssText = `position:fixed;z-index:99;left:${r.left + r.width / 2 - 3}px;top:${r.top + r.height / 2 - 3}px;width:6px;height:6px;border-radius:50%;pointer-events:none;background:${i % 2 ? '#ffd60a' : '#111110'}`;
+      host.append(p);
+      const a = (i / 8) * Math.PI * 2;
+      gsap.to(p, { x: Math.cos(a) * 26, y: Math.sin(a) * 26, scale: 0.2, autoAlpha: 0, duration: 0.55, ease: 'expo.out', onComplete: () => p.remove() });
+    }
+  }
   function countUp(el, to, opts = {}) {
     const o = { v: opts.from || 0 };
     if (reduced()) { el.textContent = to; return; }
     return gsap.to(o, { v: to, duration: opts.duration || 0.8, ease: 'power3.out', snap: { v: 1 }, onUpdate: () => (el.textContent = o.v) });
   }
 
-  // 图鉴：刚入册的格子像标签被盖上
+  // 图鉴：刚解锁的格子像标签被盖上
   function stampIn(cell) {
     if (!cell) return;
     if (reduced()) return gsap.from(cell, { autoAlpha: 0, duration: 0.2 });
@@ -223,7 +256,7 @@
   }
 
   window.YK_MOTION = {
-    gsap, reduced, pageIn, pageOut, sheetIn, sheetOut, viewIn,
+    gsap, reduced, pageIn, pageOut, sheetIn, sheetOut, viewIn, likePop,
     toast, hapticPulse, nudge, bump, countUp, stampIn, growStrata, unlockTimeline, idleGlow,
   };
 })();
