@@ -1,0 +1,107 @@
+/* =================== 鱼卡（奖励物件：保留闪卡质感） =================== */
+.yk-card { --w: 300px; --tx: 0; --ty: 0; --mo: 10; --rot: 6; --rc: #9aa4ae; --muted: #9fb0ba; --line: rgba(255, 255, 255, 0.14); width: var(--w); aspect-ratio: 5 / 7; position: relative; container-type: inline-size; perspective: 900px; user-select: none; -webkit-user-select: none; flex: none; color: #f2f6f8; }
+.yk-card.interactive { --w: min(300px, 78vw); cursor: grab; touch-action: none; }
+.card-tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(calc(var(--tx) * var(--rot) * 1deg)) rotateX(calc(var(--ty) * var(--rot) * -1deg)); }
+.card-flip { position: absolute; inset: 0; transform-style: preserve-3d; }
+.card-face { position: absolute; inset: 0; border-radius: 4.6cqw; backface-visibility: hidden; -webkit-backface-visibility: hidden; font-size: 5.4cqw; }
+.card-back { transform: rotateY(180deg); background: linear-gradient(160deg, #13303f, #08161f); overflow: hidden; padding: 7cqw 7cqw; font-size: 4.2cqw; line-height: 1.55; border: 1.6cqw solid var(--rc); }
+.card-back h4 { font-family: var(--serif); font-size: 6.4cqw; margin: 0; }
+.card-back .lat { font-style: italic; color: var(--muted); font-size: 3.8cqw; margin-bottom: 2.5cqw; }
+.card-back .kvs { display: grid; grid-template-columns: auto 1fr; gap: 0.8cqw 3cqw; font-size: 3.7cqw; }
+.card-back .kvs span:nth-child(odd) { color: var(--muted); }
+.card-back .fact { margin: 3cqw 0; padding: 2.5cqw 3cqw; border-radius: 2cqw; background: rgba(255, 255, 255, 0.06); font-size: 3.8cqw; }
+.card-back .mine { border-top: 1px dashed var(--line); padding-top: 2.5cqw; font-size: 3.7cqw; }
+.card-back .mine b { color: var(--rc); }
+.card-clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; background: #0a1d28; }
+.ly { position: absolute; inset: calc(var(--mo) * -2px); transform: translate3d(calc(var(--tx) * var(--d) * var(--mo) * 1px), calc(var(--ty) * var(--d) * var(--mo) * 1px), 0); will-change: transform; }
+.ly > svg { width: 100%; height: 100%; display: block; }
+.ly.fish { inset: 0; display: flex; align-items: center; justify-content: center; padding-bottom: 6%; }
+.ly.fish .fish-svg { width: 84%; height: auto; filter: drop-shadow(0 2.5cqw 2.5cqw rgba(0, 0, 0, 0.45)); overflow: visible; }
+.ly.fish-break { z-index: 2; pointer-events: none; }
+.ly.fish-break .fish-svg { width: 112%; margin-left: -4%; filter: drop-shadow(0 3cqw 3cqw rgba(0, 0, 0, 0.6)) drop-shadow(0 0 3cqw rgba(255, 255, 255, 0.15)); }
+/* N/R 背景 */
+.bg-grad { background: linear-gradient(170deg, #5d8f98, #1d3f4a 70%, #142a32); }
+.hab-lake.bg-grad { background: linear-gradient(170deg, #5e9aa3, #1c4752 65%, #10262e); }
+.hab-river.bg-grad { background: linear-gradient(170deg, #8c9776, #3e4a33 65%, #222a1b); }
+.hab-stream.bg-grad { background: linear-gradient(170deg, #8ccbc2, #2a6460 65%, #133533); }
+.hab-reservoir.bg-grad { background: linear-gradient(170deg, #5f93bb, #1a3e5c 65%, #0b2034); }
+.hab-pond.bg-grad { background: linear-gradient(170deg, #879c63, #34442a 65%, #1b2416); }
+.hab-cold.bg-grad { background: linear-gradient(170deg, #b2d9e8, #3c6c86 65%, #173247); }
+.hab-estuary.bg-grad { background: linear-gradient(170deg, #9fb9bf, #3f5c66 65%, #1f323a); }
+.bg-tex::after { content: ''; position: absolute; inset: 0; background: repeating-radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.07) 0 2px, transparent 2px 14px), repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 9px); mix-blend-mode: overlay; }
+.r-N .card-clip { filter: saturate(0.85); }
+/* 光泽 */
+.glare { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at calc(50% + var(--tx) * 45%) calc(35% + var(--ty) * 45%), rgba(255, 255, 255, 0.28), transparent 50%); mix-blend-mode: overlay; }
+.sheen { position: absolute; inset: -50%; pointer-events: none; background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.35) 50%, transparent 58%); transform: translateX(calc(var(--tx) * 30%)) translateY(calc(var(--ty) * 10%)); mix-blend-mode: soft-light; }
+.holo { position: absolute; inset: 0; pointer-events: none; background-size: 300% 300%; background-position: calc(50% + var(--tx) * 50%) calc(50% + var(--ty) * 50%); }
+.holo-rainbow { background-image: linear-gradient(115deg, transparent 20%, rgba(255, 0, 132, 0.5) 32%, rgba(252, 164, 0, 0.5) 40%, rgba(255, 255, 0, 0.45) 46%, rgba(0, 255, 138, 0.45) 52%, rgba(0, 207, 255, 0.5) 58%, rgba(204, 76, 250, 0.5) 66%, transparent 78%); mix-blend-mode: color-dodge; opacity: 0.45; }
+.holo-gold { background-image: linear-gradient(120deg, transparent 25%, rgba(255, 214, 120, 0.6) 40%, rgba(255, 245, 200, 0.7) 50%, rgba(255, 190, 80, 0.6) 60%, transparent 75%), radial-gradient(circle at 20% 30%, rgba(255, 220, 140, 0.4) 0 1px, transparent 2px); mix-blend-mode: color-dodge; opacity: 0.45; }
+.holo-glitter { background-image: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 0.6px, transparent 1.2px), radial-gradient(circle, rgba(255, 200, 255, 0.8) 0 0.5px, transparent 1px); background-size: 9px 9px, 13px 13px; background-position: calc(var(--tx) * 20px) calc(var(--ty) * 20px), calc(var(--tx) * -14px) calc(var(--ty) * -14px); mix-blend-mode: screen; opacity: calc(0.35 + (var(--tx) * var(--tx) + var(--ty) * var(--ty)) * 0.5); }
+.r-UR .holo-rainbow { opacity: 0.55; }
+.vignette { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 18cqw rgba(0, 0, 0, 0.7); }
+.caustics { position: absolute; inset: 0; background: radial-gradient(ellipse 30% 12% at 30% 30%, rgba(255, 255, 255, 0.18), transparent 70%), radial-gradient(ellipse 25% 10% at 70% 45%, rgba(200, 255, 255, 0.16), transparent 70%), radial-gradient(ellipse 35% 10% at 50% 15%, rgba(255, 255, 255, 0.14), transparent 70%); mix-blend-mode: screen; }
+.particles { pointer-events: none; }
+.pt { position: absolute; width: calc(1.4cqw * var(--s)); height: calc(1.4cqw * var(--s)); border-radius: 50%; opacity: 0.6; }
+.pt-gold { background: #ffe39a; box-shadow: 0 0 2cqw #ffcc55; }
+.pt-rainbow { background: #fff; box-shadow: 0 0 2cqw #ff6ad5; animation: hue 3s linear infinite; }
+.pt-splash { background: rgba(255, 255, 255, 0.85); width: calc(0.9cqw * var(--s)); height: calc(1.6cqw * var(--s)); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+@keyframes hue { to { filter: hue-rotate(360deg) } }
+/* 卡框（遮罩挖空成边框） */
+.frame { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; padding: 2.4cqw; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.frame-N { background: repeating-linear-gradient(90deg, #c9d0d6 0 1px, #9aa4ae 1px 3px, #b6bec5 3px 4px), linear-gradient(#ccc, #777); background-blend-mode: multiply; padding: 2cqw; }
+.frame-R { background: linear-gradient(135deg, #9cc3ff, #2d5fb8 30%, #183a78 50%, #4c86e8 70%, #a8ccff); padding: 2.2cqw; }
+.frame-SR { background: linear-gradient(135deg, #e3d4ff, #7c4fe0 25%, #3a1d8a 45%, #b28cff 60%, #5a2fc0 80%, #e8dcff); padding: 2.6cqw; }
+.frame-SSR { background: linear-gradient(135deg, #fff2c2, #d39a2a 22%, #8a5a0f 40%, #ffe08a 55%, #b77a17 75%, #fff0b8); padding: 3cqw; }
+.frame-UR { background: conic-gradient(from calc(var(--tx) * 90deg + 20deg), #ff6ad5, #c774e8, #ad8cff, #8795e8, #94d0ff, #7bf3c5, #f9f871, #ff6ad5); padding: 3cqw; }
+.r-SR .frame::after, .r-SSR .frame::after { content: ''; position: absolute; inset: 1.2cqw; border-radius: 3.6cqw; border: 0.5cqw solid rgba(255, 255, 255, 0.35); }
+.r-SSR .card-face.card-front { box-shadow: 0 0 0 0.4cqw rgba(255, 220, 140, 0.4), 0 4cqw 10cqw -3cqw rgba(26, 33, 41, 0.55); }
+.r-UR .card-face.card-front { box-shadow: 0 0 6cqw rgba(255, 106, 213, 0.3), 0 4cqw 10cqw -3cqw rgba(26, 33, 41, 0.6); }
+.card-face.card-front { box-shadow: 0 3cqw 8cqw -3cqw rgba(26, 33, 41, 0.5); }
+.yk-card.thumb .card-face.card-front { box-shadow: 0 1px 2px rgba(26, 33, 41, 0.25), 0 6px 14px -8px rgba(26, 33, 41, 0.5); }
+/* 文字 */
+.cd-top { position: absolute; left: 6cqw; right: 6cqw; top: 5.5cqw; display: flex; justify-content: space-between; align-items: center; z-index: 3; }
+.cd-no { font-size: 3.6cqw; color: rgba(255, 255, 255, 0.85); text-shadow: 0 1px 2px #000; letter-spacing: 0.3cqw; }
+.cd-badge { font-weight: 900; font-size: 3.8cqw; padding: 0.4cqw 2cqw; border-radius: 1.2cqw; color: #0b1a22; background: var(--rc); box-shadow: 0 0.5cqw 1.5cqw rgba(0, 0, 0, 0.4); }
+.b-R, .b-SR { color: #fff; }
+.b-UR { background: linear-gradient(90deg, #ff6ad5, #ad8cff, #94d0ff, #7bf3c5, #f9f871); }
+.cd-name { position: absolute; left: 6cqw; top: 11.5cqw; z-index: 3; font-family: var(--serif); font-weight: 900; font-size: 8.6cqw; letter-spacing: 0.4cqw; text-shadow: 0 0.4cqw 1.6cqw rgba(0, 0, 0, 0.8); }
+.cd-name em { font-style: normal; font-size: 4cqw; margin-left: 2cqw; padding: 0.3cqw 1.6cqw; border-radius: 1cqw; background: linear-gradient(90deg, #ff6ad5, #94d0ff); color: #111; vertical-align: middle; }
+.cd-bottom { position: absolute; left: 3cqw; right: 3cqw; bottom: 3cqw; z-index: 3; padding: 3cqw 3.5cqw 3cqw; background: linear-gradient(transparent, rgba(0, 0, 0, 0.55) 30%); border-radius: 0 0 3cqw 3cqw; }
+.cd-latin { font-style: italic; font-size: 3.6cqw; opacity: 0.85; }
+.cd-meta { display: flex; justify-content: space-between; align-items: center; font-size: 3.4cqw; margin-top: 1cqw; opacity: 0.95; }
+.cd-stars { color: #ffd76a; letter-spacing: 0.3cqw; font-size: 4cqw; }
+.cd-stars i { font-style: normal; color: rgba(255, 255, 255, 0.25); }
+.r-SR .cd-stars, .r-SSR .cd-stars { text-shadow: 0 0 2cqw rgba(255, 215, 106, 0.8); }
+.cd-tag { position: absolute; right: 6cqw; top: 12.5cqw; z-index: 3; font-size: 3cqw; background: rgba(239, 107, 107, 0.9); padding: 0.3cqw 1.6cqw; border-radius: 1cqw; }
+.ur-plate { text-align: center; padding: 1.5cqw; border-radius: 2cqw; background: linear-gradient(90deg, rgba(255, 106, 213, 0.35), rgba(148, 208, 255, 0.35), rgba(249, 248, 113, 0.3)); border: 0.4cqw solid rgba(255, 255, 255, 0.5); }
+.ur-plate b { display: block; font-family: var(--serif); font-size: 5.2cqw; letter-spacing: 0.5cqw; }
+.ur-plate span { font-size: 3.2cqw; opacity: 0.9; }
+/* 缩略模式 */
+.yk-card.thumb .cd-latin, .yk-card.thumb .cd-meta span:last-child, .yk-card.thumb .cd-tag { display: none; }
+.yk-card.thumb .card-face { font-size: 6cqw; }
+.yk-card.thumb .cd-name { font-size: 11cqw; }
+.yk-card.thumb .cd-stars { font-size: 7cqw; }
+.yk-card.thumb .cd-badge { font-size: 6cqw; }
+.yk-card.thumb .cd-no { font-size: 6cqw; }
+.yk-card.thumb .ur-plate span { display: none; }
+.yk-card.thumb .ur-plate b { font-size: 7cqw; }
+/* 卡背设计 */
+.cardback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 45%, #1d5068, #0a1c27 70%); }
+.cardback::before { content: ''; position: absolute; inset: 5cqw; border-radius: 3cqw; border: 0.6cqw solid rgba(255, 255, 255, 0.25); }
+.cardback .cb-ring { width: 34cqw; height: 34cqw; border-radius: 50%; border: 1.2cqw solid var(--rc); box-shadow: 0 0 6cqw var(--rc), inset 0 0 4cqw var(--rc); display: flex; align-items: center; justify-content: center; }
+.cardback .cb-ring svg { width: 22cqw; height: 22cqw; fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.cardback .cb-logo { font-size: 7cqw; font-weight: 800; letter-spacing: 1.2cqw; margin-top: 5cqw; }
+.cardback .cb-sub { font-size: 3.4cqw; color: var(--muted); letter-spacing: 0.6cqw; }
+.card-back.has-design { padding: 0; }
+/* 分享卡背面：渔获照片 + 描述 + 城市/日期 */
+.shareback { position: absolute; inset: 0; display: flex; flex-direction: column; background: #f1eee6; color: #111110; }
+.shareback img { width: calc(100% - 6cqw); height: 56%; margin: 3cqw 3cqw 0; border-radius: 3.5cqw; object-fit: cover; display: block; flex: none; }
+.shareback .sb-body { flex: 1; display: flex; flex-direction: column; padding: 4.5cqw 6cqw 5cqw; min-height: 0; }
+.shareback .sb-desc { margin: 0; font-family: var(--sans); font-size: 6cqw; line-height: 1.25; font-weight: 800; letter-spacing: -0.02em; flex: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.shareback .sb-meta { display: flex; justify-content: space-between; font-size: 3.8cqw; color: #6a6453; font-variant-numeric: tabular-nums; border-top: 0.4cqw solid #c9c3ab; padding-top: 2.5cqw; }
+.shareback .sb-by { font-size: 3.6cqw; font-weight: 700; color: #111110; margin-top: 1cqw; }
+.card-back .latin { font-family: var(--latin); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pt-rainbow { animation: none; }
+}
