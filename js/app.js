@@ -27,7 +27,7 @@
     close: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
     plus: svg('<path d="M12 5v14M5 12h14"/>'),
     search: svg('<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>'),
-    gear: svg('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>'),
+    gear: '<svg class="i fill" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.47.47 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>',
     camera: svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'),
     fish: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-4.5 7-6 11-6 3 0 5.5 2.5 7 6-1.5 3.5-4 6-7 6-4 0-8-1.5-11-6z"/><path d="M3 12l-1-4M3 12l-1 4"/><circle cx="16" cy="11" r="0.8"/></svg>',
     heart: svg('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'),
@@ -89,8 +89,10 @@
     else if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('div[role="button"]')) { e.preventDefault(); e.target.click(); }
   });
 
+  // 全局二级流程顶部：返回按钮 + 当前页标题，吸顶 + 毛玻璃底板（页面层、发布确认、编辑信息共用）
+  const subHead = (title, attr = 'data-close', cls = '') => `<header class="page-head sub-head ${cls}"><button class="icon-btn" ${attr} aria-label="返回">${ICON.back}</button><h2>${esc(title)}</h2></header>`;
   function page(title, body) {
-    const node = el(`<div class="layer page"><header class="page-head"><button class="icon-btn" data-close aria-label="返回">${ICON.back}</button><h2>${esc(title)}</h2></header><div class="page-body">${body}</div></div>`);
+    const node = el(`<div class="layer page">${subHead(title)}<div class="page-body">${body}</div></div>`);
     const rec = openLayer(node, 'page');
     $('[data-close]', node).onclick = () => closeLayer(rec);
     return rec;
@@ -118,6 +120,8 @@
     $$('#tabbar button').forEach((b) => b.classList.toggle('on', b.dataset.tab === state.tab));
     if (state.tab !== 'catch') { stopCamera(); lastPubStep = null; }
     document.body.classList.toggle('cam-on', state.tab === 'catch' && publishStep === 'capture');
+    // 发布的确认渔获 / 编辑信息属于二级流程：收起底部导航
+    document.body.classList.toggle('pub-sub', state.tab === 'catch' && publishStep !== 'capture');
     if (state.tab === 'catch') renderPublish(view);
     else if (state.tab === 'dex') mountDex(view, myCtx, animate);
     else renderRank(view);
@@ -148,7 +152,7 @@
   }
   const saveDraft = () => { S.db.draft = draft(); S.save(); };
   const resetDraft = () => { state.draft = null; S.db.draft = null; S.save(); };
-  const missing = (d) => [!d.photo && '照片', !d.speciesId && '鱼种', !d.desc.trim() && '描述'].filter(Boolean);
+  const missing = (d) => [!d.photo && '照片', !d.speciesId && '鱼种', !(Number(d.lengthCm) > 0) && '全长', !d.desc.trim() && '描述'].filter(Boolean);
 
   function compress(file) {
     return new Promise((resolve, reject) => {
@@ -246,15 +250,15 @@
     lastPubStep = publishStep;
     if (publishStep === 'edit' && d.photo) {
       renderCatchForm(view);
-      const mount = $('.mount', view);
-      mount.innerHTML = `<button class="btn sm" data-pub-back>‹ 返回预览</button><img src="${esc(d.photo)}" alt="渔获封面">`;
-      $('[data-pub-back]', mount).onclick = () => { publishStep = 'preview'; render(); };
+      view.insertAdjacentHTML('afterbegin', subHead('编辑信息', 'data-pub-back'));
+      $('.mount', view).innerHTML = `<img src="${esc(d.photo)}" alt="渔获封面"><span class="shot-meta pill ${d.source === 'camera' ? 'ok' : 'warn'}">${d.source === 'camera' ? '现场拍摄' : '相册'}</span>`;
+      $('[data-pub-back]', view).onclick = () => { publishStep = 'preview'; render(); };
       return;
     }
     const preview = publishStep === 'preview' && d.photo;
     if (preview) {
       view.innerHTML = `<div class="publish-capture is-preview">
-        <header><button class="icon-btn" data-pub-exit aria-label="返回">${ICON.back}</button><b>确认渔获</b></header>
+        ${subHead('确认渔获', 'data-pub-exit', 'on-dark')}
         <div class="publish-media"><img src="${esc(d.photo)}" alt="待发布渔获"></div>
         <div class="confirm-bar"><button class="btn ghost" data-retake>重拍</button><button class="btn accent next" data-next>下一步</button></div></div>`;
       $('[data-pub-exit]', view).onclick = $('[data-retake]', view).onclick = () => { publishStep = 'capture'; render(); };
@@ -353,7 +357,7 @@
         </div>
         <div id="hints" class="span2">${hintsHTML(d)}</div>
         <div class="tile field" data-act="location" role="button" tabindex="0" data-stagger><span class="eyebrow">钓点</span><div class="val">${esc(p.place)}<small>${esc(p.city)} · ${esc(p.district)}</small></div></div>
-        <label class="tile field" data-stagger><span class="eyebrow">全长 · 选填</span><span class="size"><input id="f-len" data-field="lengthCm" type="number" inputmode="decimal" min="1" max="300" placeholder="0" aria-label="全长，单位厘米" value="${esc(d.lengthCm)}"><span>cm</span></span></label>
+        <label class="tile field size-tile" data-stagger><span class="eyebrow">全长<span class="req-mark">*</span></span><span class="size"><input id="f-len" data-field="lengthCm" type="number" inputmode="decimal" min="1" max="300" placeholder="0" aria-label="全长，单位厘米" value="${esc(d.lengthCm)}"><span>cm</span></span></label>
         <div class="tile desc-tile span2" data-stagger><label class="eyebrow" for="f-desc">描述<span class="req-mark">*</span></label>
           <textarea id="f-desc" data-field="desc" maxlength="${DESC_MAX}" placeholder="一句话说说这条鱼，会显示在分享卡片背面">${esc(d.desc)}</textarea><span class="count" id="desc-count">${d.desc.length}/${DESC_MAX}</span></div>
         ${sp && sp.releasePolicy === 'forbid' ? '' : `<div class="tile inline-tile span2"><div class="grow"><b>已放流</b><div class="muted" style="font-size:13px">拍完照已放回水里</div></div><button class="switch ${d.released ? 'on' : ''}" data-act="released" role="switch" aria-checked="${!!d.released}" aria-label="已放流"></button></div>`}
@@ -384,7 +388,7 @@
       const act = a.dataset.act;
       if (act === 'camera' || act === 'album') $('#in-' + act, view).click();
       else if (act === 'sample') { d.photo = plate(S.byId[d.speciesId] || S.SPECIES[Math.floor(Math.random() * 30)], String(Date.now())); d.source = 'camera'; A.play('ui_shutter'); saveDraft(); render(); }
-      else if (act === 'retake') { d.photo = ''; d.source = ''; saveDraft(); render(); }
+      else if (act === 'retake') { publishStep = 'capture'; render(); }
       else if (act === 'species') speciesSheet();
       else if (act === 'location') locationSheet();
       else if (act === 'released') { d.released = !d.released; a.classList.toggle('on', d.released); a.setAttribute('aria-checked', d.released); A.haptic('light'); saveDraft(); }
@@ -495,13 +499,14 @@
   }
 
   // 必填项没填：滚到第一个没填的位置，并闪一下提示
-  const MISS_TARGET = { 照片: '.mount', 鱼种: '.species-pick', 描述: '.desc-tile' };
+  const MISS_TARGET = { 照片: '.mount', 鱼种: '.species-pick', 全长: '.size-tile', 描述: '.desc-tile' };
   function showMissing(miss) {
     const view = $('#view');
     const target = $(MISS_TARGET[miss[0]], view);
     toast('还差：' + miss.join('、'));
     if (!target) return;
-    const top = target.getBoundingClientRect().top - view.getBoundingClientRect().top + view.scrollTop - 16;
+    const headH = ($('.sub-head', view) || { offsetHeight: 0 }).offsetHeight;
+    const top = target.getBoundingClientRect().top - view.getBoundingClientRect().top + view.scrollTop - 16 - headH;
     gsap.to(view, { scrollTop: Math.max(0, top), duration: M.reduced() ? 0 : 0.45, ease: 'power2.out', overwrite: 'auto' });
     target.classList.remove('need');
     void target.offsetWidth;
@@ -509,6 +514,7 @@
     gsap.delayedCall(1.6, () => target.classList.remove('need'));
     M.nudge(target);
     if (miss[0] === '描述') gsap.delayedCall(0.45, () => $('#f-desc', view).focus({ preventScroll: true }));
+    if (miss[0] === '全长') gsap.delayedCall(0.45, () => $('#f-len', view).focus({ preventScroll: true }));
   }
 
   function submit(btn) {
@@ -518,7 +524,7 @@
     if (/赌博|色情/.test(`${d.desc}${Object.values(d.gear).join('')}`)) { M.nudge(btn); return toast('描述里有不合适的内容，请修改'); }
     const err = S.precheck(d);
     if (err) { M.nudge(btn); return toast(err); }
-    const res = S.checkin({ ...d, desc: d.desc.trim(), lengthCm: Number(d.lengthCm) || null }, d.speciesId);
+    const res = S.checkin({ ...d, desc: d.desc.trim(), lengthCm: Number(d.lengthCm) }, d.speciesId);
     resetDraft();
     publishStep = 'capture';
     go('dex');
@@ -616,22 +622,23 @@
 
     const unit = (n, u) => `<b><span data-n="${n}">${n}</span><small>${u}</small></b>`;
     root.innerHTML = `<div class="screen dex-page">
-      ${ctx.me ? `<div class="brand-bar" aria-label="Yukomon 鱼可梦">${ICON.logo}</div>` : ''}
       <div class="collector">${mono(data.name)}
         <div class="who"><h1>${esc(data.name)}</h1>${bio ? `<p class="bio">${esc(bio)}</p>` : ''}</div>
         ${ctx.me ? `<button class="icon-btn" data-act="settings" aria-label="设置">${ICON.gear}</button>` : ''}
       </div>
-      <div class="tile dark progress" data-stagger>
-        <span class="eyebrow">图鉴进度</span>
-        <div class="big"><b data-n="${owned.length}">${owned.length}</b><span>/ ${total} 种</span></div>
+      <section class="dex-summary" data-stagger>
+        <div class="ds-top">
+          <div><span class="eyebrow">图鉴进度</span><div class="big"><b data-n="${owned.length}">${owned.length}</b><span>/ ${total} 种</span></div></div>
+          <span class="ds-pct num">${Math.round((owned.length / total) * 100)}%</span>
+        </div>
         <div class="bar" aria-hidden="true"><i style="width:${Math.max(owned.length ? 3 : 0, (owned.length / total) * 100)}%"></i></div>
         <div class="breakdown">${RARITIES.map((r) => `<div>${rb(r)}<b>${by[r]}<small>/${totalBy[r]}</small></b></div>`).join('')}</div>
-      </div>
-      <div class="bento three">
-        <div class="tile stat" data-stagger><span class="eyebrow">渔获</span>${unit(real.length, '条')}</div>
-        <div class="tile stat" data-stagger><span class="eyebrow">城市</span>${unit(cities.size, '座')}</div>
-        <div class="tile stat" data-stagger><span class="eyebrow">巨物</span>${unit(giants, '张')}</div>
-      </div>
+        <div class="ds-stats">
+          <div class="stat"><span class="eyebrow">渔获</span>${unit(real.length, '条')}</div>
+          <div class="stat"><span class="eyebrow">城市</span>${unit(cities.size, '座')}</div>
+          <div class="stat"><span class="eyebrow">巨物</span>${unit(giants, '张')}</div>
+        </div>
+      </section>
       <div class="section-h"><h3>鱼卡</h3><span class="num">共 ${total} 种</span></div>
       <div class="dex-filter">${filters.map(([k, t]) => `<button class="pill ${ctx.filter === k ? 'on' : ''}" data-f="${k}">${t}</button>`).join('')}</div>
       <div class="tray"></div>

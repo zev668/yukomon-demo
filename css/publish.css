@@ -219,3 +219,77 @@ body.cam-on #tabbar button:not(.on) { color: #a7a193; }
 .cell .corner.locked { gap: 3px; background: rgba(255, 255, 255, .78); color: var(--taupe); }
 .cell .corner.locked svg { width: 11px; height: 11px; stroke-width: 2.4; }
 .cell .slot .q { margin-bottom: 14px; }
+
+/* ============================================================
+   出血边规范（全局安全边距）：内容左右统一 16px、顶部 18px，任何内容区与横向滚动列表都收在出血边内。
+   吸顶头 / 毛玻璃底板属于"底板"，可以通栏，但其中的内容同样落在出血边内。
+   ============================================================ */
+:root { --gutter: 16px; --gutter-top: 18px; --head-h: 68px; }
+.screen { padding: var(--gutter-top) var(--gutter) 0; }
+.page-body, .sheet-body, .sheet-fixed { padding-left: var(--gutter); padding-right: var(--gutter); }
+/* 图鉴分类筛选：横向滚动区收在出血边内（不再向两侧溢出后被截断） */
+.dex-filter { margin: 0; padding: 0 0 14px; scroll-padding-inline: 0; }
+.cell .yk-card, .cell .slot { max-width: 100%; }
+
+/* 面性图标 */
+svg.i.fill { stroke: none; fill: currentColor; }
+.collector .icon-btn svg { width: 24px; height: 24px; }
+
+/* ============================================================
+   全局二级流程顶部：返回按钮 + 标题；吸顶；毛玻璃底板（与排行榜吸顶头同一种玻璃）
+   ============================================================ */
+.sub-head { height: var(--head-h); padding: 10px var(--gutter); gap: 12px; z-index: 8;
+  background: rgba(246, 243, 236, .58); -webkit-backdrop-filter: blur(24px) saturate(1.8); backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: 0 1px 0 rgba(17, 17, 16, .06), inset 0 -1px 0 rgba(255, 255, 255, .6); }
+.sub-head .icon-btn { width: 44px; height: 44px; background: rgba(255, 255, 255, .78); }
+.sub-head h2 { font-size: 20px; }
+/* 页面层：头部悬浮在滚动内容之上，内容从头部下方开始，滚动时从玻璃下穿过 */
+.layer.page { position: absolute; }
+.layer.page > .sub-head { position: absolute; left: 0; right: 0; top: 0; }
+.layer.page > .page-body { padding-top: calc(var(--head-h) + 6px); }
+.size-rank .scope { top: var(--head-h); }
+/* 发布 · 编辑信息：#view 是滚动容器，头部吸顶 */
+#view > .sub-head { position: sticky; top: 0; }
+#view > .sub-head + .screen { padding-top: 8px; }
+/* 发布 · 确认渔获（深色页）：同一结构的深色玻璃版 */
+.sub-head.on-dark { margin: -14px calc(-1 * var(--gutter)) 0; background: rgba(20, 20, 18, .55); box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .06); color: #fff; }
+.sub-head.on-dark .icon-btn { background: rgba(255, 255, 255, .12); color: #fff; }
+/* 编辑信息页封面：已改为顶部返回，不再有封面上的返回按钮 */
+.view-catch .screen > .mount { height: 168px; }
+.view-catch .mount > .shot-meta { position: absolute; left: 50%; bottom: 6px; top: auto; transform: translateX(-50%) translateY(50%); }
+
+/* ============================================================
+   发布二级流程（确认渔获 / 编辑信息）：收起底部导航，并去掉为导航预留的底部空间
+   ============================================================ */
+#tabbar { transition: transform .45s cubic-bezier(.16, 1, .3, 1), opacity .3s; }
+body.pub-sub #tabbar { transform: translateY(calc(100% + 24px)); opacity: 0; pointer-events: none; }
+body.pub-sub #view.view-catch:not(:has(.publish-capture)) { padding-bottom: calc(16px + var(--safe-b)) !important; }
+body.pub-sub .publish-capture.is-preview { padding-bottom: calc(18px + var(--safe-b)); }
+body.pub-sub .submit-bar { padding-bottom: 8px; }
+
+/* ============================================================
+   巨物榜 · 鱼种排行：我的名次贴底（页面没有导航栏）
+   ============================================================ */
+.page-body:has(> .size-rank) { padding-bottom: calc(12px + var(--safe-b)); }
+.size-row.rank-me { bottom: 0; margin-bottom: 0; }
+
+/* ============================================================
+   图鉴概览：图鉴进度 + 渔获/城市/巨物 合成一张浅色卡
+   ============================================================ */
+.dex-summary { position: relative; overflow: hidden; padding: 18px 18px 0; border-radius: var(--r-lg); color: var(--ink);
+  background: radial-gradient(120% 90% at 100% 0%, rgba(255, 214, 10, .30), rgba(255, 214, 10, 0) 58%), linear-gradient(180deg, #fffdf6, #fffaf0);
+  box-shadow: 0 1px 2px rgba(17, 17, 16, .04), 0 14px 30px -18px rgba(120, 96, 10, .35), inset 0 0 0 1px rgba(17, 17, 16, .04); }
+.dex-summary .ds-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.dex-summary .big { margin-top: 6px; display: flex; align-items: baseline; gap: 6px; }
+.dex-summary .big b { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+.dex-summary .big span { font-size: 16px; font-weight: 700; color: var(--taupe); }
+.dex-summary .ds-pct { height: 30px; padding: 0 12px; display: inline-flex; align-items: center; border-radius: 999px; background: var(--ink); color: var(--yellow); font-size: 14px; font-weight: 800; }
+.dex-summary .bar { height: 10px; margin: 14px 0 14px; background: rgba(17, 17, 16, .07); }
+.dex-summary .bar i { background: linear-gradient(90deg, #ffcf00, #ffe766); box-shadow: none; }
+.dex-summary .breakdown .rb { background: rgba(17, 17, 16, .05); color: var(--ink); }
+.dex-summary .breakdown b small { color: var(--taupe); }
+.dex-summary .ds-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 16px -18px 0; border-top: 1px solid rgba(17, 17, 16, .06); background: rgba(255, 255, 255, .55); }
+.dex-summary .ds-stats .stat { padding: 14px 18px 16px; }
+.dex-summary .ds-stats .stat + .stat { border-left: 1px solid rgba(17, 17, 16, .06); }
+.dex-summary .ds-stats .stat b { font-size: 26px; margin-top: 6px; }
+.dex-summary + .section-h { margin-top: 24px; }
