@@ -14,12 +14,15 @@
   const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
   const pad2 = (n) => String(n).padStart(2, '0');
   const fmtFull = (t) => { const d = new Date(t); return `${C.fmtDate(t)} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
-  const rb = (r) => `<span class="rb ${r}">${r}</span>`;
+  // Shared rarity token used by summary stats, filters and card badges.
+  const rb = (r) => `<span class="rb rarity-badge ${r}" data-rarity="${esc(r)}">${esc(r)}</span>`;
   const tagno = (no) => `<span class="tagno">No.${no}</span>`;
-  const RARITIES = ['N', 'R', 'SR', 'SSR'];
+  const RARITIES = ['N', 'R', 'SR', 'SSR', 'UR', 'SP'];
   const GEAR = [['rod', '鱼竿', '如：溪流竿1.8m UL'], ['reel', '鱼轮', '如：喜玛诺26款Majestic'], ['line', '鱼线', '如：PE 0.8号'], ['bait', '鱼饵', '如：米诺9cm']];
   const DESC_MAX = 40;
   const svg = (d) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+  const svgBox = (viewBox, d) => `<svg class="i fill" viewBox="${viewBox}" aria-hidden="true" fill="currentColor">${d}</svg>`;
+  const assetIcon = (src, label) => `<img class="i asset-icon" src="${src}" alt=""${label ? ` aria-label="${label}"` : ''}>`;
   const ICON = {
     back: svg('<path d="M19 12H5M11 6l-6 6 6 6"/>'),
     arrow: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
@@ -34,12 +37,30 @@
     logo: `<svg class="brand" viewBox="6 179 674 326" aria-hidden="true"><path d="M141.205 479.932L74.1064 498.459V490.447L140.704 475.926L141.205 479.932ZM214.312 250.096L121.176 323.202L140.704 469.917L74.1064 480.934L78.1123 343.732L12.0156 257.105L65.0938 207.533L104.15 279.639L170.748 207.533L165.74 185L214.312 250.096ZM321.469 289.152C320.968 291.823 321.168 298.967 325.975 306.178C330.781 313.388 336.657 320.531 338.994 323.202L269.393 352.245L334.988 388.298L314.959 420.345L267.39 370.271C265.387 382.289 265.287 408.026 280.909 414.836C274.499 417.24 253.535 436.535 243.854 445.882C239.676 437.144 238.653 414.586 237.55 390.082C234.209 419.307 224.905 442.116 204.297 443.378C179.761 444.88 137.77 417.212 134.695 380.786C131.959 348.356 162.135 305.878 179.761 310.684C197.369 315.486 225.534 328.605 235.366 352.596C233.082 326.266 228.603 305.152 217.316 306.178L269.393 289.152L267.39 323.202L321.469 289.152ZM347.507 396.31L324.473 429.858L318.965 424.851L336.49 391.803L347.507 396.31ZM493.977 279.639C495.646 290.655 502.489 317.894 516.51 338.725C534.035 364.762 541.046 370.771 546.554 372.774C538.942 377.582 518.679 392.136 509.499 398.812L484.463 345.735C479.289 353.58 468.94 370.872 468.939 377.281C468.939 383.69 470.609 387.296 471.443 388.298C458.591 380.286 432.287 362.961 429.883 357.753C429.883 366.966 424.375 374.778 429.883 413.835L391.827 416.339C390.659 405.156 388.522 379.284 389.323 365.264C390.325 347.738 391.827 295.662 380.811 289.152C380.811 289.152 402.343 284.145 419.868 279.639C421.868 290.638 461.807 330.59 461.93 330.713L467.938 294.16L493.977 279.639ZM196.786 344.734C187.273 340.228 187.772 353.748 183.767 357.253C180.562 360.056 177.09 358.421 175.755 357.253C172.751 369.771 183.767 394.306 196.786 392.805C209.805 391.302 206.3 349.241 196.786 344.734ZM327.733 341.729C329.736 323.703 364.787 323.202 382.813 329.211C390.324 341.229 382.814 384.292 367.291 391.803C337.247 391.802 328.401 358.421 327.733 341.729ZM671.981 289.152L649.949 381.287L614.397 342.23C614.064 350.075 615.199 366.966 622.409 371.773C611.994 373.776 598.374 376.614 592.866 377.782C589.695 355.082 582.651 306.277 579.847 292.657C580.514 293.659 582.751 295.862 586.356 296.663C589.962 297.464 604.55 295.662 611.394 294.66C612.896 306.01 619.005 330.713 631.423 338.725C632.625 329.911 637.932 292.991 640.436 275.633L671.981 289.152ZM530.53 322.201C539.21 311.185 559.372 292.257 570.589 304.675C584.609 320.197 585.11 361.258 578.601 367.768C572.09 374.277 522.519 356.751 522.519 318.195L530.53 322.201ZM358.891 342.831C349.579 342.541 348.583 365.441 360.928 362.036C372.741 358.777 368.202 343.122 358.891 342.831ZM568.83 331.715C565.224 322.502 552.64 326.541 546.798 329.712C544.294 341.729 559.817 348.74 565.826 349.741C571.835 350.743 573.337 343.232 568.83 331.715ZM673.484 283.144L641.938 270.625V264.616L673.484 283.144ZM614.309 257.621C613.808 240.095 618.715 205.746 642.35 208.55C665.984 211.354 659.647 235.978 653.365 240.096C641.763 247.7 620.818 244.602 614.309 257.621ZM569.242 214.058C567.822 192.597 601.192 196.275 598.03 217.141C596.027 230.36 597.116 240.597 598.785 250.11C585.265 244.602 570.632 235.055 569.242 214.058Z" fill="currentColor"/></svg>`,
     lock: svg('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
     rank: `<svg class="i fill" viewBox="0 0 200 200" aria-hidden="true"><path d="M168.796 96.3788H139.722V169H169.033C175.083 169 180 163.992 180 157.837V107.726C180.004 101.475 174.993 96.4008 168.796 96.3788ZM130.134 41.1958C130.134 35.0194 125.212 30 119.167 30H81.8309C75.7816 30 70.862 35.026 70.862 41.1958L70.8663 169H130.138V96.9771H130.129V41.1958M21 79.1957V157.837C21 163.989 25.9219 169 31.9668 169H61.2865V67.9295H32.198C26.0222 67.9273 21.0131 72.9665 21 79.1957Z" fill="currentColor"/></svg>`,
+    rankLine: svg('<path d="M4 19V9h4v10M10 19V4h4v15M16 19v-7h4v7"/><path d="M3 20h18"/>'),
     trophy: svg('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M10 17h4"/>'),
+    ruler: svg('<path d="M4 17.5 17.5 4 20 6.5 6.5 20z"/><path d="m13 8 3 3M10.5 10.5l3 3M8 13l3 3"/>'),
     pin: svg('<path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>'),
     locate: svg('<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>'),
+    eye: svg('<path d="M2.5 12s3.2-5 9.5-5 9.5 5 9.5 5-3.2 5-9.5 5-9.5-5-9.5-5z"/><circle cx="12" cy="12" r="2.5"/>'),
+    copy: svg('<rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
+    trash: svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7l1-3h4l1 3"/>'),
   };
 
+  // Keep utility icons as stroke-based line art so they match the compact controls.
+  // Product-supplied filled icon set. Keep the same viewBox proportions as the source SVGs.
+  ICON.gear = svgBox('0 0 1024 1024', '<path d="M469.333 60.693a85.333 85.333 0 0 1 85.334 0l326.826 188.715a85.333 85.333 0 0 1 42.667 73.899v377.386a85.333 85.333 0 0 1-42.667 73.899L554.667 963.307a85.333 85.333 0 0 1-85.334 0L142.507 774.592a85.333 85.333 0 0 1-42.667-73.899V323.307a85.333 85.333 0 0 1 42.667-73.899zM512 134.592 185.173 323.307v377.386L512 889.408l326.827-188.715V323.307zM512 341.333a170.667 170.667 0 1 1 0 341.334 170.667 170.667 0 0 1 0-341.334zm0 85.334a85.333 85.333 0 1 0 0 170.666 85.333 85.333 0 0 0 0-170.666z"/>');
+  ICON.rank = svgBox('0 0 1127 1024', '<path d="M921.6 358.4h-153.6V153.6C768 68.762 699.238 0 614.4 0H460.8C375.962 0 307.2 68.762 307.2 153.6v204.8H153.6C68.762 358.4 0 427.162 0 512v409.6C0 978.176 45.824 1024 102.4 1024h870.4c56.525 0 102.4-45.824 102.4-102.4V512c0-84.838-68.762-153.6-153.6-153.6zM307.2 921.6H138.24c-19.814 0-35.84-16.026-35.84-35.84V537.6c0-42.394 34.406-76.8 76.8-76.8h128v460.8zm358.4 0H409.6V179.2c0-42.445 34.406-76.8 76.8-76.8h102.4c42.394 0 76.8 34.355 76.8 76.8v742.4zm307.2-30.72c0 16.947-13.773 30.72-30.72 30.72H768V460.8h128c42.394 0 76.8 34.406 76.8 76.8v353.28z"/>');
+  ICON.camera = svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>');
+  ICON.album = svgBox('0 0 1024 1024', '<path d="M938.667 553.92V768c0 64.8-52.534 117.333-117.334 117.333H202.667C137.867 885.333 85.333 832.8 85.333 768V256c0-64.8 52.534-117.333 117.334-117.333h618.666c64.8 0 117.334 52.533 117.334 117.333v297.92zM874.667 479.296V256a53.333 53.333 0 0 0-53.334-53.333H202.667A53.333 53.333 0 0 0 149.333 256v344.48A290.09 290.09 0 0 1 192 597.333a286.88 286.88 0 0 1 183.296 65.845C427.029 528.384 556.907 437.333 704 437.333c65.707 0 126.997 16.779 170.667 41.963zm0 82.24c-5.334-8.32-21.131-21.653-43.648-32.917-34.251-17.131-77.974-27.285-127.019-27.285-121.771 0-229.131 76.266-270.432 188.693-2.731 7.445-7.403 20.32-13.995 38.581-7.68 21.301-34.453 28.107-51.37 13.056-16.437-14.635-28.555-25.067-36.139-31.147A222.89 222.89 0 0 0 192 661.333c-14.464 0-28.725 1.366-42.667 4.054V768a53.333 53.333 0 0 0 53.334 53.333h618.666A53.333 53.333 0 0 0 874.667 768V561.536zM320 480a96 96 0 1 1 0-192 96 96 0 0 1 0 192zm0-64a32 32 0 1 0 0-64 32 32 0 0 0 0 64z"/>');
+  ICON.flipCamera = svgBox('0 0 1024 1024', '<path d="M233.92 230.251l61.76 61.76A255.872 255.872 0 0 0 170.667 512c0 139.2 111.125 252.459 249.493 255.915L426.667 768h96.469L457.6 702.464l60.331-60.331 25.365 25.366-.064.085 166.741 166.72c-31.893 11.157-65.92 17.707-101.333 18.837l-.192.171-.171-.149-5.461.128L597.333 853.333H426.667C238.144 853.333 85.333 700.523 85.333 512c0-116.992 58.88-220.245 148.587-281.749zM597.333 170.667C785.856 170.667 938.667 323.477 938.667 512c0 116.992-58.88 220.245-148.587 281.749l-61.76-61.76A255.872 255.872 0 0 0 853.333 512c0-141.376-114.624-256-256-256h-96.469l65.515 65.515-60.331 60.33-118.016-118.037.064-.043-74.069-74.069a340.288 340.288 0 0 1 101.333-18.837l.213.171 5.44-.128 5.504-.235h170.666z"/>');
+  ICON.trophy = svgBox('0 0 1024 1024', '<path d="M777.2 419.6H356.3V299.8h-.1c1.3-84.7 70.5-153.2 155.5-153.2S666 215.2 667.2 299.9c-.1 1.2-.2 2.5-.2 3.7 0 22.1 17.9 40 40 40 22 0 39.8-17.7 40-39.7h.2V302c0-62.9-24.5-122-69-166.5S574.6 66.5 511.7 66.5c-62.9 0-122 24.5-166.5 69-43.9 43.9-68.3 102.2-68.9 164.2v119.8h-30c-46.5 0-84.2 37.8-84.2 84.2v372c0 46.5 37.8 84.2 84.2 84.2h531c46.5 0 84.2-37.8 84.2-84.2v-372c0-46.3-37.8-84.1-84.3-84.1zM781.5 875.8c0 2.3-2 4.2-4.2 4.2h-531c-2.3 0-4.2-2-4.2-4.2v-372c0-2.3 2-4.2 4.2-4.2h531c2.3 0 4.2 2 4.2 4.2v372z"/>');
+  ICON.ruler = svgBox('0 0 1024 1024', '<path d="M365.382 311.855c102.4 0 211.782 62.836 274.618 155.927 11.636 18.618 32.582 32.582 55.855 34.909h11.636c18.618 0 37.236-6.982 51.2-18.618l107.055-90.764c11.636-9.309 20.945-11.636 30.254-11.636 13.964 0 25.6 6.982 34.909 16.291 16.291 18.618 13.964 48.873-4.655 65.164l-102.4 86.109c-18.618 16.291-30.255 39.564-27.927 62.836 0 23.273 11.636 46.545 30.255 62.836l102.4 83.782c18.618 16.291 23.273 44.218 6.982 65.164-9.309 11.636-20.945 16.291-34.909 16.291-6.982 0-18.618-2.327-27.927-9.309L742.72 639.909c-13.964-11.636-32.582-18.618-51.2-18.618h-9.309c-20.945 2.327-41.891 13.964-53.527 30.255-65.164 81.455-165.236 134.982-258.327 134.982C209.455 872.727 86.109 721.455 86.109 591.127s118.691-279.272 279.273-279.272z"/>');
   const mono = (name, cls = '') => `<span class="mono ${cls}" aria-hidden="true">${esc([...String(name || '钓')][0])}</span>`;
+  const rankMedal = (rank) => {
+    const file = ({ 1: 'rank-first.svg', 2: 'rank-second.svg', 3: 'rank-third.svg' })[Number(rank)];
+    return file ? `<span class="n rank-medal"><img src="img/${file}" alt="第${rank}名"></span>` : `<span class="n">${esc(rank)}</span>`;
+  };
 
   const toast = (msg, ms) => M.toast($('#toast'), msg, ms);
   document.addEventListener('yk-haptic', () => M.hapticPulse($('#haptic-dot')));
@@ -278,12 +299,12 @@
       <div class="cam-stage"><video class="cam-live" playsinline muted autoplay></video>
         <div class="cam-msg"><b>正在打开相机…</b></div>
         <div class="cam-rec" hidden><i></i><span class="num">00:00</span></div></div>
-      <header class="cam-top"><button class="icon-btn glass" data-pub-exit aria-label="关闭">${ICON.close}</button><span class="grow"></span><button class="icon-btn glass" data-flip aria-label="翻转镜头">${svg('<path d="M4 9a8 8 0 0 1 14-3l2 2M20 15a8 8 0 0 1-14 3l-2-2"/><path d="M20 4v4h-4M4 20v-4h4"/>')}</button></header>
+        <header class="cam-top"><button class="icon-btn glass" data-pub-exit aria-label="关闭">${ICON.close}</button><span class="grow"></span><button class="icon-btn glass" data-flip aria-label="翻转镜头">${ICON.flipCamera}</button></header>
       <div class="cam-bottom">
         <div class="cam-modes" role="tablist"><button role="tab" class="${cam.mode === 'image' ? 'on' : ''}" data-cmode="image">拍照</button><button role="tab" class="${cam.mode === 'video' ? 'on' : ''}" data-cmode="video" ${canRec ? '' : 'disabled title="当前浏览器不支持录像，请用相册选择视频"'}>拍视频</button></div>
         <div class="cam-row"><span class="cam-side"></span>
           <button class="shutter ${cam.mode === 'video' ? 'video' : ''}" data-shoot aria-label="${cam.mode === 'video' ? '开始录像' : '拍照'}"><i></i></button>
-          <span class="cam-side"><button class="album-btn" data-album aria-label="相册">${d.photo ? `<img src="${esc(d.photo)}" alt="">` : ICON.camera}<span>相册</span></button></span></div>
+          <span class="cam-side"><button class="album-btn" data-album aria-label="相册">${d.photo ? `<img src="${esc(d.photo)}" alt="">` : ICON.album}<span>相册</span></button></span></div>
       </div>
       <input type="file" data-library accept="image/*,video/*" hidden></div>`;
     const root = $('.publish-capture', view), live = $('.cam-live', view), shoot = $('[data-shoot]', view);
@@ -628,16 +649,16 @@
       </div>
       <section class="dex-summary" data-stagger>
         <div class="ds-top">
-          <div><span class="eyebrow">图鉴进度</span><div class="big"><b data-n="${owned.length}">${owned.length}</b><span>/ ${total} 种</span></div></div>
-          <span class="ds-pct num">${Math.round((owned.length / total) * 100)}%</span>
+          <div><div class="big"><b data-n="${owned.length}">${owned.length}</b><span>/ ${total} 种</span></div></div>
         </div>
-        <div class="bar" aria-hidden="true"><i style="width:${Math.max(owned.length ? 3 : 0, (owned.length / total) * 100)}%"></i></div>
+        <div class="ds-progress"><span class="ds-pct num">${Math.round((owned.length / total) * 100)}%</span><div class="bar" aria-label="图鉴进度 ${Math.round((owned.length / total) * 100)}%"><i style="width:${Math.max(owned.length ? 3 : 0, (owned.length / total) * 100)}%"></i></div></div>
         <div class="breakdown">${RARITIES.map((r) => `<div>${rb(r)}<b>${by[r]}<small>/${totalBy[r]}</small></b></div>`).join('')}</div>
         <div class="ds-stats">
           <div class="stat"><span class="eyebrow">渔获</span>${unit(real.length, '条')}</div>
           <div class="stat"><span class="eyebrow">城市</span>${unit(cities.size, '座')}</div>
           <div class="stat"><span class="eyebrow">巨物</span>${unit(giants, '张')}</div>
         </div>
+        <div class="summary-fish-pixel" aria-hidden="true"><span>·</span><b>&gt;°)))&gt;</b><span>·</span></div>
       </section>
       <div class="section-h"><h3>鱼卡</h3><span class="num">共 ${total} 种</span></div>
       <div class="dex-filter">${filters.map(([k, t]) => `<button class="pill ${ctx.filter === k ? 'on' : ''}" data-f="${k}">${t}</button>`).join('')}</div>
@@ -655,7 +676,7 @@
       list.forEach((sp, i) => {
         const card = cards[sp.no], g = card && card.giant.status === 'approved';
         const cell = el(`<div class="cell" data-sp="${sp.no}" role="button" tabindex="0" ${i < 12 ? 'data-stagger' : ''}>
-          ${card ? '' : `<div class="slot">${tagno(sp.no)}<span class="grade ${sp.rarity}">${sp.rarity}</span>${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`}</div>`);
+          ${card ? '' : `<div class="slot">${tagno(sp.no)}<span class="grade rarity-badge ${sp.rarity}" data-rarity="${esc(sp.rarity)}">${esc(sp.rarity)}</span>${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`}</div>`);
         if (card) cell.prepend(withCorner(C.render(sp, { card, thumb: true, variant: g ? 'ur' : 'normal', giantInfo: g ? giantInfo(card, data.catches) : null }), `<b class="num">${card.catchCount}</b>条`));
         tray.append(cell);
       });
@@ -695,7 +716,7 @@
     }
   }
   function lockedSheet(sp) {
-    sheet(`No.${sp.no} 未解锁`, `<div style="width:170px;margin:4px auto 10px;opacity:.3">${F.fishSVG(sp, { silhouette: true })}</div>
+    sheet(`No.${sp.no} 未解锁`, `<div class="locked-sheet-fish" aria-hidden="true">${F.fishSVG(sp, { silhouette: true })}</div>
       <p style="margin:0 0 12px;text-align:center">${esc(sp.hint)}</p>
       <div class="facts"><div class="kv"><span>稀有度</span><span>${rb(sp.rarity)} ${C.RV[sp.rarity].name}</span></div><div class="kv"><span>栖息地</span><span>${C.HAB[sp.habitat].name}</span></div><div class="kv"><span>分布</span><span>${esc(sp.region)}</span></div><div class="kv"><span>旺季</span><span>${esc(sp.season)}</span></div><div class="kv"><span>钓法</span><span>${esc(sp.method)}</span></div></div>`);
   }
@@ -722,11 +743,11 @@
   // 排行榜
   // ============================================================
   function renderRank(view) {
-    const boardTabs = `<div class="board-switch" role="tablist"><i class="ind" aria-hidden="true"></i><button role="tab" class="${state.board === 'unlock' ? 'on' : ''}" data-board="unlock">解锁榜</button><button role="tab" class="${state.board === 'giant' ? 'on' : ''}" data-board="giant">巨物榜</button></div>`;
+    const boardTabs = `<div class="board-switch" role="tablist"><i class="ind" aria-hidden="true"></i><button role="tab" aria-selected="${state.board === 'unlock'}" class="${state.board === 'unlock' ? 'on' : ''}" data-board="unlock">${ICON.trophy}解锁榜</button><button role="tab" aria-selected="${state.board === 'giant'}" class="${state.board === 'giant' ? 'on' : ''}" data-board="giant">${ICON.ruler}巨物榜</button></div>`;
     const scopeRow = (note) => `<div class="scope"><button class="pill ${state.rank === 'nation' ? 'on' : ''}" data-scope="nation">全国</button><button class="pill ${state.rank === 'city' ? 'on' : ''}" data-scope="city">${esc(S.db.me.city)}</button><span class="grow"></span><span class="board-note">${note}</span></div>`;
     const b = rankBody();
     // 标题块（榜单切换 + 全国/城市）合成一个吸顶头，中间不留缝
-    view.innerHTML = `<div class="screen rank-page"><div class="rank-head">${boardTabs}${scopeRow(b.note)}</div><div class="rank-body">${b.html}</div></div>`;
+    view.innerHTML = `<div class="screen rank-page"><div class="rank-head">${boardTabs}</div><div class="rank-scope">${scopeRow(b.note)}</div><div class="rank-body">${b.html}</div></div>`;
     b.mount(view);
     gsap.set($('.board-switch .ind', view), { xPercent: state.board === 'giant' ? 100 : 0 });
     view.onclick = (e) => {
@@ -745,13 +766,14 @@
       const cards = S.db.cards;
       return {
         note: `已解锁 <span class="num">${Object.keys(cards).length}</span> / ${S.SPECIES.length} 种`,
-        html: `<p class="board-hint">选择一种鱼，查看${state.rank === 'city' ? esc(S.db.me.city) : '全国'}钓到的最大尺寸排行</p><div class="tray giant-tray"></div>`,
+        html: `<div class="tray giant-tray"></div>`,
         mount(view) {
           const tray = $('.giant-tray', view);
           S.SPECIES.forEach((sp, i) => {
             const card = cards[sp.no], g = card && card.giant.status === 'approved';
+            const lockedCell = card ? '' : `<div class="slot">${tagno(sp.no)}<span class="grade rarity-badge ${sp.rarity}" data-rarity="${esc(sp.rarity)}">${esc(sp.rarity)}</span>${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`;
             const cell = el(`<div class="cell" data-sp="${sp.no}" role="button" tabindex="0" ${i < 12 ? 'data-stagger' : ''}>
-              ${card ? '' : `<div class="slot">${tagno(sp.no)}<span class="grade ${sp.rarity}">${sp.rarity}</span>${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`}</div>`);
+              ${lockedCell}</div>`);
             if (card) cell.prepend(withCorner(C.render(sp, { card, thumb: true, variant: g ? 'ur' : 'normal', giantInfo: g ? giantInfo(card, S.db.catches) : null }), card.bestLengthCm ? `<b class="num">${card.bestLengthCm}</b>cm` : ''));
             tray.append(cell);
           });
@@ -760,15 +782,12 @@
     }
     const r = S.rankOf(state.rank);
     const row = (u, extra = '', i = 99) => `<button class="rank-row ${u.rank <= 3 ? 'top' : ''} ${extra}" data-user="${u.id}" ${i < 12 ? 'data-stagger' : ''}>
-      <span class="n">${u.rank}</span>${mono(u.nickname, 'sm')}
+      ${rankMedal(u.rank)}${mono(u.nickname, 'sm')}
       <span class="who"><span class="nm">${esc(u.nickname)}${u.me ? ' · 我' : ''}</span><small>${esc(u.city)}${u.urs ? ` · 巨物 ${u.urs}` : ''}</small></span>
       <span class="best" title="${esc(S.byId[u.best].name)}">${F.fishSVG(S.byId[u.best])}</span>
       <span class="cnt"><b>${u.count}</b><small>鱼种</small></span></button>`;
     const first = r.top[0];
-    const leader = first ? `<button class="tile dark leader" data-user="${first.id}" data-stagger>
-      <span class="head"><span class="medal">1</span><span class="grow"><span class="nm">${esc(first.nickname)}${first.me ? ' · 我' : ''}</span><small>${esc(first.city)}${first.urs ? ` · 巨物 ${first.urs} 张` : ''}</small></span></span>
-      <span class="big"><b>${first.count}</b><span>种鱼</span></span>
-      <span class="best" title="${esc(S.byId[first.best].name)}">${F.fishSVG(S.byId[first.best])}</span></button>` : '';
+    const leader = first ? row(first, 'leader', 0) : '';
     return {
       note: `前 ${r.top.length} 名 · 共 <span class="num">${r.total}</span> 人`,
       html: `${leader}<div class="board">${r.top.slice(1).map((u, i) => row(u, u.me ? 'is-me' : '', i)).join('')}</div>
@@ -778,21 +797,20 @@
   }
   // 榜单 / 范围切换：头部不重建，黑色滑块带一点挤压回弹滑过去；内容按方向退出、再从另一侧弹入
   function swapRankBody(view, dir) {
-    const head = $('.rank-head', view), body = $('.rank-body', view), ind = $('.board-switch .ind', head);
-    $$('[data-board]', head).forEach((x) => x.classList.toggle('on', x.dataset.board === state.board));
-    $$('[data-scope]', head).forEach((x) => x.classList.toggle('on', x.dataset.scope === state.rank));
-    const fill = () => { const nb = rankBody(); $('.board-note', head).innerHTML = nb.note; body.innerHTML = nb.html; nb.mount(view); view.scrollTop = 0; };
+    const head = $('.rank-head', view), scopeHead = $('.rank-scope', view), body = $('.rank-body', view), ind = $('.board-switch .ind', head);
+    $$('[data-board]', head).forEach((x) => { const selected = x.dataset.board === state.board; x.classList.toggle('on', selected); x.setAttribute('aria-selected', selected); });
+    $$('[data-scope]', scopeHead).forEach((x) => x.classList.toggle('on', x.dataset.scope === state.rank));
+    const fill = () => { const nb = rankBody(); $('.board-note', scopeHead).innerHTML = nb.note; body.innerHTML = nb.html; nb.mount(view); view.scrollTop = 0; };
     if (M.reduced()) { gsap.set(ind, { xPercent: state.board === 'giant' ? 100 : 0 }); fill(); return; }
     if (dir) {
       gsap.to(ind, { xPercent: state.board === 'giant' ? 100 : 0, duration: 0.5, ease: 'expo.out' });
-      gsap.fromTo(ind, { scaleX: 1, scaleY: 1 }, { keyframes: { scaleX: [1, 1.1, 0.98, 1], scaleY: [1, 0.84, 1.02, 1] }, duration: 0.5, ease: 'power1.out' });
     }
     gsap.killTweensOf(body);
     gsap.to(body, {
-      autoAlpha: 0, x: -28 * dir, y: dir ? 0 : 8, scale: 0.97, transformOrigin: '50% 0', duration: 0.15, ease: 'power2.in',
+      autoAlpha: 0, x: -28 * dir, y: dir ? 0 : 8, transformOrigin: '50% 0', duration: 0.15, ease: 'power2.in',
       onComplete() {
         fill();
-        gsap.fromTo(body, { autoAlpha: 0, x: 28 * dir, y: dir ? 0 : 14, scale: 0.97 }, { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.5, ease: 'expo.out', clearProps: 'transform,opacity,visibility' });
+        gsap.fromTo(body, { autoAlpha: 0, x: 28 * dir, y: dir ? 0 : 14 }, { autoAlpha: 1, x: 0, y: 0, duration: 0.5, ease: 'expo.out', clearProps: 'transform,opacity,visibility' });
         const items = $$('[data-stagger]', body).slice(0, 12);
         if (items.length) gsap.from(items, { y: 14, autoAlpha: 0, duration: 0.42, stagger: 0.03, delay: 0.06, clearProps: 'transform,opacity,visibility' });
       },
@@ -808,7 +826,7 @@
       const r = S.sizeRankOf(sp.no, scope);
       const king = r.top[0];
       const row = (u, extra = '') => `<button class="rank-row size-row ${u.rank <= 3 ? 'top r' + u.rank : ''} ${extra}" data-user="${u.id}">
-        <span class="n">${u.rank}</span>${mono(u.nickname, 'sm')}
+        ${rankMedal(u.rank)}${mono(u.nickname, 'sm')}
         <span class="who"><span class="nm">${esc(u.nickname)}${u.me ? ' · 我' : ''}</span><small>${ICON.pin}${esc(u.place)}</small></span>
         <span class="len"><b>${u.lengthCm}</b><small>cm</small></span></button>`;
       const list = `<div class="board">${r.top.length ? r.top.map((u) => row(u, u.me ? 'is-me' : '')).join('') : '<div class="empty">这个范围还没有人上榜</div>'}</div>
@@ -884,7 +902,7 @@
         ${kv('时间', `<span class="num">${ctx.me ? fmtFull(c.createdAt) : C.fmtDate(c.createdAt)}</span>`)}
         ${GEAR.map(([k, label]) => kv(label, esc(g[k]))).join('')}
       </div>
-      ${ctx.me ? `<div class="actions-row" style="margin-bottom:8px">${sp ? '<button class="btn" data-share>分享链接</button>' : ''}<button class="btn danger" data-del>删除</button></div>` : '<div style="height:8px"></div>'}`, 'tall');
+      ${ctx.me ? `<div class="actions-row" style="margin-bottom:8px">${sp ? `<button class="btn" data-share>${ICON.copy}分享链接</button>` : ''}<button class="btn danger" data-del>${ICON.trash}删除</button></div>` : '<div style="height:8px"></div>'}`, 'tall');
     const node = rec.node;
     if (c.videoId) window.YK_MEDIA.get(c.videoId).then(blob => {
       if (!blob || rec.closing) return;
@@ -920,10 +938,11 @@
     const card = data.cards[sp.no];
     const hasUR = card.giant.status === 'approved';
     let ur = hasUR;
-    const back = `<h4>${esc(sp.name)}</h4><div class="lat latin">${esc(sp.latin)}</div>
-      <div class="kvs"><span>科</span><span>${esc(sp.family)}</span><span>分布</span><span>${esc(sp.region)}</span><span>旺季</span><span>${esc(sp.season)}</span><span>钓法</span><span>${esc(sp.method)}</span><span>常见</span><span>${sp.commonCm}cm · 巨物线 ${sp.giantThresholdCm}cm</span></div>
-      <div class="fact">${esc(sp.fact)}</div>
-      <div class="mine">${ctx.me ? '我' : 'TA'}钓到 <b>${card.catchCount}</b> 次${card.bestLengthCm ? `，最大 <b>${card.bestLengthCm}cm</b>` : ''}<br>${C.fmtDate(card.unlockedAt)} 解锁</div>`;
+    const back = `<section class="b-info"><div class="b-title"><h2>${esc(sp.name)}</h2><span class="no">No.${sp.no}</span></div>
+      <div class="latin">${esc(sp.latin)}</div><p>${esc(sp.fact)}</p><dl>
+        <div><dt>科属</dt><dd>${esc(sp.family)}</dd></div><div><dt>分布</dt><dd>${esc(sp.region)}</dd></div>
+        <div><dt>体长</dt><dd>${sp.commonCm}cm · 巨物线 ${sp.giantThresholdCm}cm</dd></div><div><dt>习性</dt><dd>${esc(sp.method)}</dd></div>
+      </dl><div class="mine">${ctx.me ? '我' : 'TA'}钓到 <b>${card.catchCount}</b> 次${card.bestLengthCm ? `，最大 <b>${card.bestLengthCm}cm</b>` : ''}<br>${C.fmtDate(card.unlockedAt)} 解锁</div></section>`;
     const rec = page(`No.${sp.no} ${sp.name}`, `
       <div class="card-stage"></div>
       ${hasUR ? '<div class="variant"><button class="pill on" data-v="ur">巨物卡</button><button class="pill" data-v="normal">普通卡</button></div>' : ''}
@@ -932,7 +951,7 @@
       <div class="mine-list entry-list"></div>`);
     // 右上角：该鱼种的尺寸排行（巨物榜）。跳到排行榜页的巨物榜，并打开这条鱼的榜单
     const head = $('.page-head', rec.node);
-    const rk = el(`<button class="head-act" data-rank aria-label="${esc(sp.name)}尺寸排行">${ICON.rank}<span>排行榜</span></button>`);
+    const rk = el(`<button class="head-act icon-btn detail-rank-btn" data-rank aria-label="${esc(sp.name)}尺寸排行" title="${esc(sp.name)}尺寸排行">${ICON.rankLine}</button>`);
     head.append(rk);
     rk.onclick = () => { closeAll(); state.board = 'giant'; go('rank'); sizeRankPage(sp); };
     const stage = $('.card-stage', rec.node);
@@ -942,7 +961,7 @@
       const build = () => {
         off.forEach((fn) => fn());
         stage.innerHTML = '';
-        const ce = C.render(sp, { card, interactive: true, back, variant: ur ? 'ur' : 'normal', giantInfo: ur ? giantInfo(card, data.catches) : null });
+        const ce = C.render(sp, { card, interactive: true, presentation: 'gallery', back, variant: ur ? 'ur' : 'normal', giantInfo: ur ? giantInfo(card, data.catches) : null });
         stage.append(ce);
         off = [C.attach(ce), C.animate(ce)];
         ce.onclick = () => { C.flip(ce); A.play('ui_flip'); A.haptic('light'); };
@@ -986,7 +1005,7 @@
     const rec = sheet('分享这张鱼卡', `
       <p class="muted" style="margin:0 0 12px;font-size:14px">对方打开链接会看到这张会动的鱼卡，翻到背面是你的渔获照片、地点、时间和描述。地点只显示到城市。</p>
       <input class="link-box" readonly value="${esc(url)}" aria-label="分享链接">
-      <div class="row" style="margin-top:10px"><button class="btn grow" data-preview>预览</button><button class="btn primary grow" data-copy>复制链接</button></div>`);
+      <div class="row actions-row" style="margin-top:10px"><button class="btn grow" data-preview>${ICON.eye}预览</button><button class="btn primary grow" data-copy>${ICON.copy}复制链接</button></div>`);
     const box = $('.link-box', rec.node);
     box.onfocus = () => box.select();
     $('[data-copy]', rec.node).onclick = async () => {
@@ -1013,7 +1032,7 @@
       <div class="share-stage"><div class="card-host"></div><p class="card-tip">点卡片翻到背面</p></div>
       <div class="share-foot"><button class="cta" data-cta><span>我也来记录渔获</span><i class="dot">${ICON.arrow}</i></button></div></div>`);
     const card = { stars: p.st, bestLengthCm: p.len, giant: { status: ur ? 'approved' : 'none' } };
-    const ce = C.render(sp, { card, interactive: true, back, backClass: 'has-design', variant: ur ? 'ur' : 'normal', giantInfo: ur ? { lengthCm: p.len, at: p.t, city: p.city } : null });
+    const ce = C.render(sp, { card, interactive: true, presentation: 'gallery', back, backClass: 'has-design', variant: ur ? 'ur' : 'normal', giantInfo: ur ? { lengthCm: p.len, at: p.t, city: p.city } : null });
     $('.card-host', node).append(ce);
     const rec = openLayer(node, 'page');
     rec.cleanups.push(C.attach(ce), C.animate(ce));
@@ -1031,9 +1050,13 @@
     const db = S.db;
     const rec = page('设置', `
       <div class="settings-group"><span class="eyebrow">资料</span><div class="box">
-        <div class="set-row"><span>昵称</span><input id="set-name" maxlength="12" value="${esc(db.me.nickname)}" aria-label="昵称"></div>
+        <div class="set-row"><span>昵称</span><input id="set-name" name="nickname" autocomplete="nickname" maxlength="12" value="${esc(db.me.nickname)}" aria-label="昵称"></div>
         <div class="set-row col"><label for="set-bio">个性签名</label><textarea id="set-bio" maxlength="30" placeholder="写一句介绍自己，显示在图鉴页昵称下面">${esc(db.me.bio)}</textarea></div>
-        <div class="set-row"><span>常驻城市</span><select id="set-city" aria-label="常驻城市">${Object.keys(S.CITIES).map((c) => `<option ${c === db.me.city ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+        <div class="set-row"><span>常驻城市</span><div class="city-picker" data-city-picker>
+          <select id="set-city" name="city" class="city-native" tabindex="-1" aria-hidden="true">${Object.keys(S.CITIES).map((c) => `<option ${c === db.me.city ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+          <button type="button" class="set-control city-trigger" aria-label="常驻城市" aria-haspopup="listbox" aria-expanded="false"><span data-city-value>${esc(db.me.city)}</span>${ICON.chev}</button>
+          <div class="city-menu" role="listbox" aria-label="选择常驻城市" hidden>${Object.keys(S.CITIES).map((c) => `<button type="button" class="city-option${c === db.me.city ? ' on' : ''}" role="option" aria-selected="${c === db.me.city}" data-city-option="${esc(c)}">${esc(c)}</button>`).join('')}</div>
+        </div></div>
       </div></div>
       <div class="settings-group"><span class="eyebrow">反馈</span><div class="box">
         <div class="set-row"><span>解锁音效</span><button class="switch ${A.settings.sfx ? 'on' : ''}" data-set="sfx" role="switch" aria-checked="${A.settings.sfx}" aria-label="解锁音效"></button></div>
@@ -1047,7 +1070,40 @@
     const node = rec.node;
     $('#set-name', node).onchange = (e) => { db.me.nickname = e.target.value.trim() || '大鱼'; S.save(); render(); };
     $('#set-bio', node).onchange = (e) => { db.me.bio = e.target.value.trim(); S.save(); render(); };
-    $('#set-city', node).onchange = (e) => { db.me.city = e.target.value; S.save(); };
+    const cityNative = $('#set-city', node);
+    const cityPicker = $('[data-city-picker]', node);
+    const cityTrigger = $('.city-trigger', cityPicker);
+    const cityMenu = $('.city-menu', cityPicker);
+    const cityValue = $('[data-city-value]', cityPicker);
+    const closeCityMenu = () => { cityMenu.hidden = true; cityPicker.classList.remove('open'); cityTrigger.setAttribute('aria-expanded', 'false'); };
+    const selectCity = (city) => {
+      cityNative.value = city;
+      cityValue.textContent = city;
+      $$('.city-option', cityMenu).forEach((option) => {
+        const selected = option.dataset.cityOption === city;
+        option.classList.toggle('on', selected);
+        option.setAttribute('aria-selected', selected);
+      });
+      db.me.city = city;
+      S.save();
+      closeCityMenu();
+    };
+    cityNative.onchange = (e) => selectCity(e.target.value);
+    cityTrigger.onclick = () => {
+      const open = cityMenu.hidden;
+      if (open) {
+        cityMenu.hidden = false;
+        cityPicker.classList.add('open');
+        cityTrigger.setAttribute('aria-expanded', 'true');
+      } else closeCityMenu();
+    };
+    cityMenu.onclick = (e) => {
+      const option = e.target.closest('[data-city-option]');
+      if (option) selectCity(option.dataset.cityOption);
+    };
+    const onOutsideCity = (e) => { if (!cityPicker.contains(e.target)) closeCityMenu(); };
+    document.addEventListener('pointerdown', onOutsideCity);
+    rec.cleanups.push(() => document.removeEventListener('pointerdown', onOutsideCity));
     node.addEventListener('click', (e) => {
       const t = e.target.closest('button');
       if (!t) return;
@@ -1065,6 +1121,28 @@
     const card = { speciesId: sp.no, catchCount: 1, stars: 1, bestLengthCm: sp.commonCm, unlockedAt: Date.now(), giant: { status: ur ? 'approved' : 'none', lengthCm: sp.giantThresholdCm + 6, approvedAt: Date.now() } };
     showUnlock({ species: sp, card, events: ['new'] }, { ur });
   }
+
+  // Keep source and keyboard order aligned with the product navigation:
+  // collection on the left, capture in the middle, ranking on the right.
+  const nav = $('#tabbar');
+  if (nav) {
+    const navAssets = { dex: 'img/nav-dex.svg', catch: 'img/nav-catch.svg', rank: 'img/nav-rank.svg' };
+    Object.entries(navAssets).forEach(([key, src]) => {
+      const button = nav.querySelector(`[data-tab="${key}"]`);
+      const old = button && button.querySelector('svg.ti');
+      if (button && old) {
+        const image = document.createElement('img');
+        image.className = 'ti asset-icon';
+        image.src = src;
+        image.alt = '';
+        old.replaceWith(image);
+      }
+    });
+  }
+  ['dex', 'catch', 'rank'].forEach((key) => {
+    const button = nav && nav.querySelector(`[data-tab="${key}"]`);
+    if (button) nav.appendChild(button);
+  });
 
   // ---------- 启动 ----------
   $('#tabbar').onclick = (e) => { const b = e.target.closest('[data-tab]'); if (b && (b.dataset.tab !== state.tab || layers.length)) { closeAll(); go(b.dataset.tab); } };

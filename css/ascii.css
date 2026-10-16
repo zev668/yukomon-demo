@@ -1,0 +1,985 @@
+/* ============================================================
+   ASCII STYLE 换皮层（最后加载，只覆盖视觉，不改结构与交互）
+   依据：卡面参考/ASCII_STYLE_风格提示词.md
+   - 黑 / 白 / 灰 单色 + 唯一信号红 #FF0A0B（只给数据、实时、关键动作）
+   - 浅色页 #F3F3F3 底 + #FFF 卡片；沉浸 / 主模块用纯黑 #000
+   - 无阴影、无渐变、无玻璃；层次只靠底色差
+   - 标题 Medium/Semibold，不用 800 粗；双色标题（灰 → 黑）；数字细而大
+   - 主插画为等宽字符 ASCII 渲染（js/ascii.js），数据为点阵
+   - 鱼卡（.yk-card）是奖励物件，保持原华丽闪卡，不在本层改动
+   ============================================================ */
+@font-face {
+  /* Fusion Pixel 12px（OFL）子集：仅数字与 % + - . / : ×，1.3KB；所有数字走像素字形 */
+  font-family: 'YK Pixel Num';
+  src: url('../fonts/yk-pixel-num.woff') format('woff');
+  unicode-range: U+0020, U+0025, U+002B-002F, U+0030-003A, U+00D7;
+  font-display: block;
+}
+:root {
+  --ink: #000000;
+  --paper: #ffffff;
+  --canvas: #e9e9e9;          /* 画布：不用纯白，带一点灰（卡片 #FFF 在其上靠底色差分层） */
+  --g100: #ededed;
+  --g200: #e3e3e3;
+  --g300: #d2d2d2;
+  --g500: #6b6b6b;
+  --g600: #8a8a8a;
+  --g700: #9a9a9a;
+  --g800: #2c2c2c;
+  --red: #ff0a0b;
+
+  /* 旧 token 映射到新体系，未单独覆盖的规则也会跟着变 */
+  --bg: var(--canvas);
+  --bg-2: var(--g200);
+  --card: var(--paper);
+  --panel: #000000;
+  --yellow: var(--ink);           /* 原黄色强调：浅色背景上改成墨黑 */
+  --coral: var(--red);
+  --sage: var(--ink);
+  --sand: var(--g700);
+  --taupe: var(--g500);
+  --coral-wash: #ffffff;
+  --sage-wash: #ffffff;
+  --sage-ink: var(--ink);
+  --r-lg: 24px;
+  --r-md: 20px;
+  --r-sm: 16px;
+  /* 稀有度在 UI 里只用灰阶 + 红，不再五彩 */
+  --N: var(--g300);
+  --R: var(--g600);
+  --SR: #444444;
+  --SSR: #000000;
+  --UR: var(--red);
+  --SP: #00a6a6;
+
+  --sans: 'YK Pixel Num', 'Inter', 'SF Pro Display', 'SF Pro Text', 'Segoe UI Variable Display', 'Segoe UI', 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', 'Microsoft YaHei UI', 'Microsoft YaHei', system-ui, sans-serif;
+  --mono: 'YK Pixel Num', 'JetBrains Mono', 'SF Mono', 'Cascadia Mono', 'Consolas', 'Menlo', ui-monospace, monospace;
+  --shadow-1: none;
+  --ease-out: cubic-bezier(.2, 0, 0, 1);
+}
+
+/* ---------- 全局底色与文字 ---------- */
+html, body { background: linear-gradient(180deg, #dadada 0%, #818181 100%) fixed; color: var(--ink); font-family: var(--sans); }
+#app, .page, .sheet, .share-view { background: var(--canvas) !important; }
+#phone { background: #000; }
+::selection { background: var(--red); color: #fff; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.muted { color: var(--g500); }
+.eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--g500); }
+.dark .eyebrow { color: var(--g700); }
+.latin { color: inherit; }
+.tagno { font-family: var(--mono); font-weight: 500; letter-spacing: 0; color: var(--g500); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* 字重统一：标题 600、控件 500、展示数字 400（不再 800 粗） */
+.collector h1, .section-h h3, .sheet-head h3, .page-head h2, .sub-head h2, .protect h2, .sp-meta h2,
+.leader .nm, .species-pick .nm, .species-pick .placeholder, .field .val, .detail-desc,
+.unlock .headline, .sp-row .nm, .met-row, .inline-tile b, .protect-link b { font-weight: 600; letter-spacing: -0.02em; }
+.btn, .cta, .pill, .rb, #tabbar button, .board-switch button, .cam-modes button, .cam-rec, .head-act,
+.like, .rank-row .who .nm, .entry .t .where, .gear-row label, .facts .kv > span:first-child, .set-row { font-weight: 500; }
+.big, .big b, .stat b, .breakdown b, .rank-row .cnt b, .size-row .len b, .sp-stats b, .entry .t .size,
+.field .size input, .dex-summary .big b, .met-row .num, .leader .big b { font-weight: 400; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+
+/* ---------- 基础控件 ---------- */
+.tile { background: var(--paper); border-radius: var(--r-lg); box-shadow: none !important; }
+.tile.dark { background: #000; color: #fff; }
+.entry, .rank-row:not(.rank-me), .tile:not(.dark), .bento > .tile { box-shadow: none !important; }
+
+.btn { height: 48px; background: var(--paper); color: var(--ink); box-shadow: none; }
+.btn:hover { background: #fafafa; }
+.btn.primary, .btn.accent { background: var(--ink); color: #fff; }
+.btn.primary:hover, .btn.accent:hover { background: #1a1a1a; }
+.btn.danger { color: var(--red); }
+.btn.quiet { color: var(--g500); }
+.cta { height: 64px; background: var(--ink); color: #fff; font-size: 17px; letter-spacing: 0; }
+.cta .dot { width: 48px; height: 48px; background: var(--red); color: #fff; }
+.icon-btn { width: 44px; height: 44px; background: var(--paper); color: var(--ink); }
+.icon-btn.yellow { background: #fff; color: #000; }
+.icon-btn svg.i { stroke-width: 1.75; }
+svg.i { stroke-width: 1.75; }
+
+.pill { height: 36px; background: var(--paper); color: var(--ink); font-size: 13px; box-shadow: none !important; }
+.pill.on { background: var(--ink); color: #fff; }
+.pill.ok { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink) !important; }
+.pill.warn, .pill.bad { background: var(--paper); color: var(--red); box-shadow: inset 0 0 0 1px var(--red) !important; }
+.hist .pill, .sfx-row .btn { background: var(--canvas); }
+
+/* 稀有度徽标：灰阶方点，UR 用红 */
+.rb { background: var(--canvas); color: var(--ink); font-family: var(--mono); font-weight: 500; letter-spacing: 0; border-radius: 6px; padding: 4px 6px; }
+.rb::before { width: 6px; height: 6px; border-radius: 1px; }
+.rb.N::before { box-shadow: inset 0 0 0 1px var(--g600); background: transparent; }
+
+.callout { background: var(--paper); color: var(--ink); border-radius: var(--r-sm); }
+.callout::before { background: var(--ink); width: 6px; height: 6px; margin-top: 8px; }
+.callout.warn, .callout.bad { background: var(--paper); color: var(--ink); }
+.callout.warn::before, .callout.bad::before { background: var(--red); animation: yk-pulse 1.5s var(--ease-out) infinite; }
+.callout.info { background: var(--paper); color: var(--ink); }
+.callout.info::before { background: var(--ink); }
+
+.switch { background: var(--g200); }
+.switch::after { background: #fff; box-shadow: 0 0 0 1px var(--g300); }
+.switch.on { background: var(--ink); }
+.switch.on::after { background: #fff; box-shadow: none; }
+
+.mono { background: var(--ink); color: #fff; font-weight: 500; }
+.mono.sm { background: var(--g200); color: var(--ink); }
+.req-mark { color: var(--red); }
+.empty { color: var(--g500); }
+.chev { color: var(--g600); }
+
+/* 必填提示：红色描边一闪 */
+.need, .mount.need { box-shadow: 0 0 0 2px var(--red) !important; }
+
+/* 点赞：红色实心心形 */
+.like { background: var(--paper); color: var(--ink); height: 40px; }
+.like.on { background: var(--paper); color: var(--ink); }
+.like.on svg { fill: var(--red); stroke: var(--red); }
+.entry > .like { background: var(--canvas); }
+.entry > .like.on { background: var(--canvas); }
+.entry .likes.on svg { fill: var(--red); stroke: var(--red); }
+
+/* Toast / 震动指示 */
+#toast { background: var(--ink); color: #fff; font-weight: 500; border-radius: 999px; }
+#haptic-dot { background: var(--red); }
+
+/* ---------- 底部导航：三枚独立圆形按钮（参考 卡面参考/ScreenShot_2026-10-15_204756_608.png）
+   未选中：白底黑线图标；选中：黑底白图标。只放图标，文字仅给读屏。
+   GSAP 滑块 .tab-ind 仍在（elastic.js 依赖），改为与选中圆同尺寸的黑色圆，滑动过去 ---------- */
+#tabbar {
+  left: 14px !important; right: 14px !important; bottom: calc(6px + var(--safe-b));
+  width: auto; height: 78px; padding: 0 20px; gap: 0; justify-content: space-between; align-items: flex-start;
+  transform: none !important; background: transparent !important; box-shadow: none !important; border-radius: 0;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+#tabbar [data-tab=catch] { order: 0; }
+#tabbar [data-tab=rank] { order: 1; }
+#tabbar [data-tab=dex] { order: 2; }
+#tabbar button {
+  position: relative; flex: 0 0 64px; width: 64px; height: 72px; padding: 0; gap: 0; border-radius: 0;
+  background: transparent !important; color: #777 !important; transform: none !important;
+  transition: color .3s var(--ease-out);
+}
+#tabbar button::before {
+  content: ''; position: absolute; z-index: 0; top: 0; left: 4px; width: 56px; height: 56px;
+  border-radius: 50%; background: #fff; box-shadow: 0 10px 24px rgba(0,0,0,.14);
+}
+#tabbar button span {
+  position: absolute; z-index: 2; top: 60px; left: 0; right: 0; width: 64px; height: auto;
+  overflow: visible; clip: auto; white-space: nowrap; display: none; margin: 0;
+  color: #111; font-size: 11px; line-height: 1; text-align: center;
+}
+#tabbar button svg.ti { position: absolute; z-index: 1; top: 16px; left: 20px; width: 24px; height: 24px; }
+#tabbar button.on { color: #fff !important; background: transparent !important; }
+#tabbar button.on::before { background: #000; }
+#tabbar button.on span { display: block; }
+#tabbar button.on svg.ti { color: #fff; }
+#tabbar .tab-ind { top: 0; height: 56px; border-radius: 50%; background: #000; box-shadow: none; display: none; }
+body.cam-on #tabbar { background: transparent !important; }
+body.cam-on #tabbar button { background: rgba(255, 255, 255, .92); color: #000; }
+body.cam-on #tabbar button.on { background: transparent; color: #000; }
+body.cam-on #tabbar .tab-ind { background: #fff; }
+:root { --tb-space: calc(64px + 12px + var(--safe-b)); }
+
+/* ---------- 吸顶头 / 二级页头：去掉毛玻璃，纯色底 ---------- */
+.rank-head, .scope, .scope:not(.rank-head .scope), .sub-head {
+  background: var(--canvas) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important;
+}
+.rank-head .scope { background: transparent !important; }
+.sub-head h2 { font-size: 15px; letter-spacing: 0; text-align: center; }
+.sub-head .icon-btn { background: var(--paper); }
+.sub-head.on-dark { background: #000 !important; color: #fff; }
+.sub-head.on-dark .icon-btn { background: var(--g800); color: #fff; }
+.page-head h2 { font-size: 17px; }
+.page-head .head-act { background: var(--ink); box-shadow: none; font-weight: 500; }
+
+/* ---------- 抽屉 ---------- */
+.sheet-wrap .scrim { background: rgba(0, 0, 0, .5); }
+.sheet { border-radius: 28px 28px 0 0; }
+.sheet .grab { background: var(--g300); width: 36px; height: 4px; }
+.sheet-head h3 { font-size: 20px; }
+
+/* ---------- 图鉴页 ---------- */
+.collector { gap: 12px; margin-bottom: 18px; }
+.collector .mono { width: 48px; height: 48px; font-size: 18px; }
+.collector h1 { font-size: 15px; letter-spacing: 0; }
+.collector .bio { margin-top: 2px; font-size: 12px; color: var(--g500); }
+.collector .icon-btn { background: var(--paper); }
+
+/* 图鉴概览 → 纯黑主模块：双色标题 + ASCII 鱼 + 点阵进度 */
+.dex-summary { background: #000 !important; color: #fff !important; box-shadow: none !important; border-radius: var(--r-lg); padding: 20px 20px 0; }
+.dex-summary .ds-top { align-items: flex-start; }
+.dex-summary .ds-top .eyebrow { font-size: 28px; line-height: 1.25; font-weight: 500; letter-spacing: -0.02em; color: var(--g600); }
+.dex-summary .big { margin-top: 0; gap: 8px; }
+.dex-summary .big b { font-size: 56px; line-height: 1.05; color: #fff; }
+.dex-summary .big span { font-size: 15px; font-weight: 400; color: var(--g700); }
+.dex-summary .ds-progress { display: flex; align-items: center; gap: 12px; margin: 16px 0 18px; }
+.dex-summary .ds-progress .bar { flex: 1; margin: 0; }
+.dex-summary .ds-pct { flex: none; height: auto; padding: 0; gap: 0; background: transparent; color: #fff; box-shadow: none; border-radius: 0; font-family: var(--mono); font-size: 16px; font-weight: 400; line-height: 1; min-width: 3ch; text-align: right; justify-content: flex-end; }
+.dex-summary .breakdown .rb { background: var(--g800); color: #fff; }
+.dex-summary .breakdown b { color: #fff; font-size: 17px; }
+.dex-summary .breakdown b small { color: var(--g600); font-weight: 400; }
+.dex-summary .ds-stats { margin: 22px -20px 0; border-top: 0; background: transparent; }
+.dex-summary .ds-stats .stat { padding: 0 20px 20px; }
+.dex-summary .ds-stats .stat + .stat { border-left: 0; }
+.dex-summary .ds-stats .eyebrow { color: var(--g600); }
+.dex-summary .ds-stats .stat b { color: #fff; font-size: 26px; }
+.dex-summary .ds-stats .stat b small { color: var(--g600); font-weight: 400; }
+
+/* 常规进度条：4px 实心，红色填充，深灰 / 浅灰轨道，全圆角 */
+.bar, .dex-summary .bar, .tile.progress .bar { height: 4px; border-radius: 2px; overflow: hidden; margin: 14px 0 16px; background: var(--g800) !important; }
+.bar i, .dex-summary .bar i, .tile.progress .bar i { height: 100%; border-radius: 2px; box-shadow: none !important; background: var(--red) !important; }
+.tile:not(.dark):not(.dex-summary) .bar { background: var(--g200) !important; }
+
+.section-h { margin: 28px 2px 12px; align-items: baseline; }
+.section-h h3 { font-size: 20px; }
+.section-h .num { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--g500); }
+.dex-filter .pill { height: 34px; }
+
+/* 未解锁格子：浅灰底，等宽编号 */
+.cell .slot { background: var(--g200); border-radius: 12px; }
+.cell .slot .fish-svg { opacity: .14; }
+.cell .slot .q { color: var(--g500); }
+.cell .slot .grade { background: var(--paper); color: var(--g500); font-family: var(--mono); font-weight: 500; }
+.cell .corner { background: #000 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; font-family: var(--mono); font-weight: 400; font-size: 10px; }
+.cell .corner b { font-weight: 500; font-size: 11px; }
+.cell .corner.locked { background: rgba(255, 255, 255, .92) !important; color: var(--g500); }
+.met-row { background: var(--paper); border-radius: var(--r-md); }
+
+/* ---------- 列表：渔获 / 排行 ---------- */
+.entry, .rank-row { background: var(--paper); border-radius: var(--r-sm); }
+.entry:hover, .rank-row:hover { background: #fafafa; }
+.entry .ph { border-radius: 12px; background: var(--g200); }
+.entry .t .size small, .entry .m, .entry .d, .entry .t .when { color: var(--g500); }
+.entry .d { font-family: var(--mono); font-size: 11px; }
+
+.rank-row .n { font-family: var(--mono); font-weight: 500; font-size: 14px; }
+.rank-row.top .n, .size-row .n { background: var(--g200); color: var(--ink); }
+.rank-row.top:nth-child(1) .n, .size-row.r1 .n { background: var(--ink) !important; color: #fff; }
+.size-row.r2 .n, .size-row.r3 .n { background: var(--g200) !important; }
+.rank-row .who small, .rank-row .cnt small, .size-row small { color: var(--g500); font-weight: 400; }
+.rank-row .best svg, .species-pick .fish svg, .sp-row .fish svg { filter: grayscale(1) contrast(1.15); }
+.rank-row.is-me, .size-row.is-me { background: var(--ink) !important; color: #fff; }
+.rank-row.is-me small, .rank-row.is-me .cnt small, .size-row.is-me small { color: var(--g700) !important; }
+.rank-row.is-me .n { background: var(--red) !important; color: #fff; }
+.rank-row.is-me .mono.sm { background: var(--g800); color: #fff; }
+.rank-row.is-me .best svg { filter: grayscale(1) invert(1) brightness(1.4); }
+
+/* 我的名次：贴底悬浮，用 1.5px 墨线代替弥散阴影 */
+.rank-row.rank-me, .size-row.rank-me { background: var(--paper) !important; box-shadow: 0 0 0 1.5px var(--ink) !important; }
+.rank-row.rank-me .n, .size-row.rank-me .n { background: var(--red) !important; color: #fff; }
+.rank-row.rank-me.none { color: var(--g500); }
+
+.board-switch { background: var(--g200); }
+.board-switch .ind { background: var(--ink); box-shadow: none; }
+.board-switch button { color: var(--g500); font-size: 15px; }
+.board-switch button.on { color: #fff; }
+.board-note, .board-hint { color: var(--g500); }
+.board-note { font-family: var(--mono); font-size: 11px; font-weight: 400; }
+
+/* 榜首：纯黑模块，红色名次圆点，ASCII 鱼放右下 */
+.tile.leader { background: #000 !important; border-radius: var(--r-lg); padding: 20px 20px 18px; min-height: 168px; }
+.leader .medal { width: 44px; height: 44px; background: var(--red); color: #fff; font-family: var(--mono); font-size: 18px; font-weight: 500; }
+.leader .nm { font-size: 17px; }
+.leader small, .leader .big span { color: var(--g700); font-weight: 400; }
+.leader .big { margin-top: 22px; }
+.leader .big b { font-size: 56px; line-height: 1; color: #fff; }
+.leader .best { right: 14px; bottom: 16px; width: 168px; height: 80px; display: flex; align-items: center; justify-content: flex-end; }
+
+/* 用户版式修订：白色底板、平滑 iOS 圆角、清晰数字与无装饰 ASCII 鱼图。 */
+:root { --r-lg: 24px; --r-md: 18px; --r-sm: 14px; }
+html, body { background: #f4f4f2 fixed; }
+body, button, input, textarea, select { font-family: 'YK Pixel Num', 'Segoe UI', 'Microsoft YaHei UI', sans-serif !important; }
+.screen, .tile, .rank-row, .entry, .dex-summary, .sp-banner, .cell .slot, .met-row { border-radius: 24px; }
+.dex-summary, .tile.leader, .rank-body > .tile.dark, .rank-body > .tile.leader { background: #fff !important; color: var(--ink) !important; }
+.dex-summary .ds-top .eyebrow, .dex-summary .big b, .dex-summary .big span,
+.dex-summary .ds-pct, .dex-summary .breakdown b, .dex-summary .ds-stats .stat b { color: var(--ink) !important; }
+.dex-summary .ds-progress { margin: 14px 0 18px; }
+.dex-summary .ds-progress { display: flex; flex-direction: column; align-items: stretch; gap: 5px; }
+.dex-summary .ds-progress .bar { position: relative; height: 12px; border-radius: 999px; background: #e3e3e0 !important; }
+.dex-summary .ds-progress .bar { flex: none !important; width: 100%; height: 12px !important; }
+.dex-summary .ds-progress .bar i { border-radius: 999px; background: #111 !important; }
+.dex-summary .ds-progress > .ds-pct { align-self: flex-end; min-width: 0; font-size: 12px; color: var(--ink) !important; }
+.dex-summary .ds-stats { border-top: 1px solid #dededb; }
+.dex-summary .ds-stats .stat + .stat { border-left: 0 !important; }
+.dex-summary .ds-stats .stat { border-right: 0 !important; }
+.breakdown { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.breakdown > div { border: 0 !important; }
+.breakdown .rb { justify-content: center; }
+.num, .big b, .stat b, .breakdown b, .rank-row .n, .rank-row .cnt b, .size-row .len b, .leader .big b { font-family: 'YK Pixel Num', 'Cascadia Mono', Consolas, monospace !important; font-variant-numeric: tabular-nums; }
+.has-ascii, .ascii-art, .leader .best, .sp-fish .ascii-art { display: none !important; }
+.tile.leader { color: var(--ink) !important; }
+.tile.leader .leader .big b, .leader .big b, .leader .nm, .leader h2 { color: var(--ink) !important; }
+.tile.leader .leader small, .leader small, .leader .big span { color: var(--g500) !important; }
+.tile.leader .medal { background: var(--red); color: #fff; }
+.tile.leader .best { display: none !important; }
+#tabbar button { background: transparent !important; color: var(--ink) !important; }
+#tabbar button { background: #fff !important; color: #8b8b87 !important; border-radius: 18px; }
+#tabbar button.on { background: #000 !important; color: #fff !important; border-radius: 18px; }
+#tabbar .tab-ind { display: none; }
+.rb::before { display: none !important; }
+.cell .slot, .cell .yk-sq, .yk-card, .yk-card .card-face, .yk-card .card-clip { border-radius: 14px !important; }
+.cell .slot { overflow: hidden; }
+.rank-row, .rank-row.top, .rank-row.rank-me, .tile.leader { border-radius: 14px !important; }
+.rank-row .best, .rank-row .best svg, .tile.leader .best { display: none !important; }
+.rank-row.leader .n { background: var(--red) !important; color: #fff !important; }
+.tile.leader { min-height: 0 !important; padding: 12px 14px !important; }
+.tile.leader .big { margin-top: 12px; }
+.board-switch { border-radius: 14px !important; }
+.board-switch button { border-radius: 12px !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.board-switch button.on { border-radius: 12px !important; }
+.board-switch button .i { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+.scope .pill { border-radius: 12px !important; }
+.dex-summary .ds-stats { border-top: 0 !important; }
+.dex-summary .ds-stats .stat { border: 0 !important; }
+.dex-filter .pill { border-radius: 12px !important; }
+.cd-stars { display: none !important; }
+.yk-card .cd-name { font-family: 'YK Pixel Num', 'Segoe UI', 'Microsoft YaHei UI', sans-serif !important; }
+.yk-card .ur-plate, .yk-card .cd-tag { display: none !important; }
+.yk-card .card-clip::after { content: '·  ···  · ··  ···'; position: absolute; left: 8%; right: 8%; bottom: 7%; color: rgba(255,255,255,.13); font-family: 'Cascadia Mono', Consolas, monospace; font-size: 10px; letter-spacing: 2px; animation: yk-fish-drift 4s ease-in-out infinite; pointer-events: none; }
+@keyframes yk-fish-drift { 0%,100% { transform: translateX(-4px); opacity: .18; } 50% { transform: translateX(8px); opacity: .38; } }
+.cam-stage { background: #777 !important; }
+.rank-row.rank-me { box-shadow: 0 10px 24px rgba(0,0,0,.16) !important; border: 0 !important; }
+.rank-row.rank-me.yk-sq { box-shadow: 0 10px 24px rgba(0,0,0,.16) !important; }
+.rank-head { position: sticky; top: 0; z-index: 5; background: #f4f4f2; padding-top: 2px; }
+.rank-head { background: #fff !important; box-shadow: 0 10px 24px rgba(0,0,0,.12); margin: 0 -16px; padding: 8px 16px 10px; }
+.yk-card .card-front .card-clip { filter: grayscale(1) contrast(1.08); }
+.yk-card.thumb .card-face, .yk-card.thumb .card-clip, .yk-card.thumb .frame, .yk-card.thumb .frame::after { border-radius: 14px !important; box-shadow: none !important; background-image: none !important; }
+.yk-card.thumb .frame { border: 2px solid #8b8b8b !important; padding: 0 !important; }
+.yk-card.thumb .holo, .yk-card.thumb .holo-rainbow, .yk-card.thumb .holo-gold, .yk-card.thumb .particles, .yk-card.thumb .shine { display: none !important; }
+.yk-card.thumb .cd-bottom { background: transparent !important; border-top: 0 !important; }
+.cell .slot .fish-svg { filter: grayscale(1) contrast(1.8) !important; image-rendering: pixelated; }
+.cell .slot { background: #dededc !important; }
+.board-switch button.on { border-radius: 12px !important; }
+#tabbar button span { position: static; width: auto; height: auto; clip: auto; overflow: visible; white-space: nowrap; display: none; font-size: 11px; }
+#tabbar button.on { width: auto; min-width: 56px; padding: 0 12px; gap: 5px; }
+#tabbar button.on span { display: inline; }
+#tabbar button.on svg.ti { width: 22px; height: 22px; }
+#tabbar button.on { transform: translateY(-7px); }
+.yk-card .card-front .cd-badge { filter: none; }
+#tabbar button { width: 56px; height: 56px; flex: 0 0 56px; border-radius: 50% !important; box-shadow: 0 10px 24px rgba(0,0,0,.14); }
+
+/* Final interaction pass: keep the control geometry rectangular while the selected
+   bottom navigation remains a circular icon plate with its label underneath. */
+#tabbar { align-items: flex-end; }
+#tabbar button { position: relative; flex-direction: column; gap: 0; justify-content: center; align-items: center; }
+#tabbar button.on { width: 64px; min-width: 64px; height: 74px; padding: 0; transform: translateY(-8px); background: transparent !important; color: #111 !important; gap: 0; }
+#tabbar button.on::before { content: ''; position: absolute; top: 0; left: 50%; width: 56px; height: 56px; transform: translateX(-50%); border-radius: 50%; background: #000; box-shadow: 0 10px 24px rgba(0,0,0,.16); z-index: 0; }
+#tabbar button.on svg.ti { position: relative; z-index: 1; color: #fff; width: 24px; height: 24px; margin-top: -18px; }
+#tabbar button.on span { position: relative; z-index: 1; display: block; width: auto; height: auto; overflow: visible; clip: auto; margin-top: 34px; color: #111; font-size: 11px; line-height: 1; }
+#tabbar button:not(.on) span { display: none; }
+
+/* The sliding board indicator is rectangular; the old pill radius came from publish.css. */
+.board-switch { border-radius: 14px !important; }
+.board-switch .ind { border-radius: 12px !important; }
+.board-switch button, .board-switch button.on { border-radius: 12px !important; }
+
+/* Compact sticky rank header: controls remain in place without a separate panel. */
+.view-rank .rank-page { padding-top: 0 !important; }
+.rank-head {
+  position: sticky; top: 0; z-index: 8; isolation: isolate;
+  background: var(--canvas) !important; box-shadow: 0 10px 24px rgba(0,0,0,.12) !important;
+  margin: 0 -16px; padding: 4px 16px 0 !important;
+}
+.rank-head .scope { position: static !important; padding: 6px 0 4px !important; background: transparent !important; }
+.rank-head::after {
+  content: ''; position: absolute; z-index: -1; left: 0; right: 0; bottom: -12px; height: 12px;
+  background: var(--canvas); pointer-events: none;
+}
+
+#tabbar button, .board-switch button, .scope .pill, .rank-row, .cell { touch-action: manipulation; }
+
+/* Rarity chips and locked-state chips share one adaptive capsule treatment. */
+.cell .slot .grade { display: inline-flex; align-items: center; justify-content: center; min-width: 2.4em; padding: 4px 8px !important; border-radius: 999px !important; white-space: nowrap; }
+
+/* Static collection thumbnails are deliberately independent from interactive cards. */
+.yk-card.thumb .card-face.card-front { box-shadow: none !important; background: #4b4b4b !important; }
+.yk-card.thumb .card-clip { background: #4b4b4b !important; filter: grayscale(1) contrast(1.08) !important; }
+.yk-card.thumb .card-clip > .ly:not(.fish) { display: none !important; }
+.yk-card.thumb .card-clip > .ly.fish { display: flex !important; filter: grayscale(1) contrast(1.15); }
+.yk-card.thumb > .card-tilt > .card-flip > .card-face > .fish-break { display: flex !important; filter: grayscale(1) contrast(1.15); }
+.yk-card.thumb .card-face.card-front > .frame { background: #8b8b8b !important; background-image: none !important; border: 2px solid #8b8b8b !important; padding: 0 !important; }
+.yk-card.thumb .frame::after { content: none !important; border: 0 !important; }
+.yk-card.thumb .holo, .yk-card.thumb .particles, .yk-card.thumb .glare, .yk-card.thumb .sheen, .yk-card.thumb .caustics, .yk-card.thumb .vignette { display: none !important; }
+.yk-card.thumb .cd-name { top: 13cqw !important; }
+.yk-card.thumb .cd-name em { display: none !important; }
+.yk-card.thumb .cd-bottom { background: transparent !important; }
+
+/* List rows and detail actions use the same corner geometry and soft elevation. */
+.rank-row.rank-me, .size-row.rank-me { border: 0 !important; box-shadow: 0 10px 24px rgba(0,0,0,.16) !important; }
+.size-row.rank-me { outline: 0 !important; }
+.page-head .head-act, .actions-row .btn, .sheet .actions-row .btn { border-radius: 12px !important; }
+.page-head .head-act svg, .actions-row .btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; }
+.entry { border-radius: 14px !important; }
+.entry .ph { border-radius: 14px !important; }
+.entry > .like { background: transparent !important; border-radius: 0 !important; padding: 0 !important; height: auto !important; box-shadow: none !important; }
+.entry > .like svg { width: 18px; height: 18px; }
+
+/* 鱼种巨物榜 banner：纯黑 + ASCII 鱼 */
+.sp-banner, .sp-banner.rar-R, .sp-banner.rar-SR, .sp-banner.rar-SSR { background: #000 !important; border-radius: var(--r-lg); }
+.sp-fish { height: 132px; }
+.sp-fish svg { filter: none; }
+.sp-meta .tagno, .sp-meta .latin { color: var(--g600); }
+.sp-meta h2 { font-size: 28px; }
+.sp-stats div { background: var(--g800) !important; -webkit-backdrop-filter: none; backdrop-filter: none; border-radius: 14px; }
+.sp-stats small, .sp-stats i { color: var(--g700); font-weight: 400; }
+.sp-stats b { color: #fff; }
+.size-head { color: var(--g500); font-weight: 500; }
+
+/* ---------- 发布：取景 / 确认 / 编辑 ---------- */
+.publish-capture, .cam-stage, .publish-media { background: #000; }
+.cam-msg { color: var(--g700); }
+.cam-rec { background: #000; font-family: var(--mono); font-weight: 500; }
+.cam-rec i { background: var(--red); animation: yk-pulse 1.2s var(--ease-out) infinite; }
+.icon-btn.glass { background: rgba(0, 0, 0, .55); }
+.cam-bottom { background: linear-gradient(to top, rgba(0, 0, 0, .7), transparent); }
+.cam-modes button { font-weight: 500; color: var(--g700); }
+.cam-modes button.on { background: transparent; color: #fff; }
+.cam-modes button.on::after { content: ''; position: absolute; left: 50%; bottom: 0; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--red); }
+.shutter.video i { background: var(--red); }
+.album-btn { font-weight: 500; }
+.publish-capture.is-preview .icon-btn, .confirm-bar .ghost { background: var(--g800); color: #fff; }
+.publish-capture .btn.accent, .confirm-bar .next { background: #fff; color: #000; }
+.publish-media { border-radius: 24px; }
+
+.view-catch .bento { background: var(--paper); border-radius: var(--r-lg); }
+.view-catch .bento > .tile { border-bottom: 1px solid var(--g100); }
+.view-catch .gear { background: var(--paper); }
+.field .size input::placeholder, .desc-tile textarea::placeholder, .gear-row input::placeholder { color: var(--g600); }
+.field .val small, .field .size span, .species-pick .sub, .desc-tile .count, .note { color: var(--g500); font-weight: 400; }
+.desc-tile .count { font-family: var(--mono); font-size: 11px; }
+.species-pick .plus { background: var(--g200); }
+.gear-row { border-top-color: var(--g100); }
+.mount { background: #000; }
+.mount .empty-shot p, .mount .shot-actions .quiet { color: var(--g700); }
+
+/* 鱼种选择 */
+.search-bar { background: var(--ink); }
+.search-bar input::placeholder { color: var(--g600); }
+.sp-row { background: var(--paper); }
+.sp-row:hover { background: #fafafa; }
+.sp-row .al { color: var(--g500); }
+.sp-row.picked { background: var(--ink); color: #fff; }
+.sp-row.picked .al, .sp-row.picked .tagno { color: var(--g700); }
+.sp-row.picked .fish svg { filter: grayscale(1) invert(1) brightness(1.4); }
+.protect-link { background: #000; }
+.protect-link .muted, .protect-link .chev { color: var(--g700); }
+.protect .badge { background: var(--paper); color: var(--red); box-shadow: inset 0 0 0 1px var(--red); font-weight: 500; }
+.protect ol { background: var(--paper); }
+.locate-btn .dot { background: var(--red); color: #fff; }
+
+/* 详情 / 设置 / 分享 */
+.hero-photo { background: var(--g200); border-radius: var(--r-lg); }
+.facts, .settings-group .box { background: var(--paper); border-radius: var(--r-md); }
+.facts .kv, .set-row { border-top-color: var(--g100); }
+.facts .kv > span:first-child { color: var(--g500); }
+.set-row input, .set-row select, .set-row textarea { background: var(--canvas); }
+.link-box { background: var(--paper); color: var(--g500); font-family: var(--mono); font-size: 12px; }
+.card-tip, .share-head .grow { color: var(--g500); }
+.detail-desc { font-size: 22px; }
+
+/* 解锁演出：保留奖励感，只把底色与按钮拉回体系 */
+.unlock { background: #000; }
+.unlock .sub { color: var(--g700); }
+.unlock .actions .btn { background: var(--g800); color: #fff; }
+.unlock .actions .btn.accent { background: #fff; color: #000; }
+.unlock .skip { background: var(--g800); font-weight: 500; }
+
+/* 桌面展示侧栏 */
+#side-info { color: #1f1f1f; }
+#side-info dt { font-weight: 600; }
+#side-info dd { border-bottom-color: rgba(0, 0, 0, .18); }
+
+/* ============================================================
+   ASCII 字符画（js/ascii.js 生成）
+   ============================================================ */
+.ascii-art { margin: 0; font-family: 'JetBrains Mono', 'Cascadia Mono', Consolas, ui-monospace, monospace; white-space: pre; letter-spacing: 0; user-select: none; -webkit-user-select: none; pointer-events: none; font-variant-ligatures: none; color: var(--g700); }
+.ascii-art .t0 { color: #3a3a3a; }
+.ascii-art .t1 { color: #6b6b6b; }
+.ascii-art .t2 { color: #b5b5b5; }
+.ascii-art .t3 { color: #ffffff; }
+.ascii-art .r { color: var(--red); animation: yk-glyph-beat 1.6s var(--ease-out) infinite; }
+.sp-fish { height: auto; min-height: 120px; }
+.sp-fish .ascii-art, .leader .best .ascii-art { display: block; }
+.has-ascii > svg { display: none !important; }
+
+@keyframes yk-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
+@keyframes yk-glyph-beat { 0%, 100% { opacity: 1; } 12% { opacity: .45; } 24% { opacity: 1; } 36% { opacity: .6; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ascii-art .r, .callout.warn::before, .callout.bad::before, .cam-rec i { animation: none; }
+}
+
+/* Product supplied icon assets and podium badges. */
+.asset-icon { display: block; object-fit: contain; }
+#tabbar button img.ti { width: 22px; height: 22px; flex: none; filter: grayscale(1) opacity(.48); }
+#tabbar button.on img.ti { filter: brightness(0) invert(1); }
+.board-switch button svg.i.fill,
+.icon-btn svg.i.fill,
+.album-btn svg.i.fill { fill: currentColor !important; stroke: none !important; }
+.icon-btn img.asset-icon,
+.btn img.asset-icon,
+.board-switch img.asset-icon,
+.album-btn img.asset-icon { width: 20px; height: 20px; }
+.rank-row .n.rank-medal { background: transparent !important; border-radius: 0 !important; }
+.rank-row .n.rank-medal img { display: block; width: 32px; height: 32px; object-fit: contain; }
+
+/* ============================================================
+   数字：ASCII 像素字形（YK Pixel Num 子集，只覆盖数字字符，中文照常走无衬线）
+   像素字要整数倍缩放才清晰：字号尽量取 12 的倍数
+   ============================================================ */
+.big b, .stat b, .breakdown b, .num, .tagno, .rank-row .n, .rank-row .cnt b, .size-row .n, .size-row .len b,
+.sp-stats b, .leader .medal, .leader .big b, .entry .t .size, .cell .corner, .cell .slot .grade, .ds-pct,
+.rb, [data-n], .count, .field .size input, .like span, .met-row .num, .entry .d, .board-note {
+  font-family: 'YK Pixel Num', var(--sans);
+  font-weight: 400 !important; letter-spacing: 0 !important; font-synthesis: none;
+  -webkit-font-smoothing: none; font-smooth: never;
+}
+.dex-summary .big b, .leader .big b { font-size: 60px; line-height: 1; }
+.dex-summary .ds-stats .stat b, .breakdown b { font-size: 24px; }
+
+/* 平滑圆角（js/ascii.js 写入 clip-path: path()）：clip 后描边 / 外圈 ring 会被裁掉，改用内描边 */
+.yk-sq { will-change: auto; }
+.rank-row.rank-me.yk-sq, .size-row.rank-me.yk-sq { box-shadow: inset 0 0 0 1.5px var(--ink) !important; }
+.need.yk-sq, .mount.need.yk-sq { box-shadow: inset 0 0 0 2px var(--red) !important; }
+
+/* Final geometry pass: keep the three navigation slots fixed while the selected
+   label sits below its circular icon plate. The slot itself never changes size. */
+#tabbar {
+  left: 14px !important; right: 14px !important; bottom: calc(6px + var(--safe-b));
+  width: auto !important; height: 78px !important; padding: 0 20px !important; gap: 0 !important;
+  justify-content: space-between !important; align-items: flex-start !important;
+  transform: none !important; background: transparent !important; box-shadow: none !important;
+}
+#tabbar [data-tab=catch] { order: 0; }
+#tabbar [data-tab=rank] { order: 1; }
+#tabbar [data-tab=dex] { order: 2; }
+#tabbar button,
+#tabbar button.on {
+  position: relative; flex: 0 0 64px !important; width: 64px !important; min-width: 64px !important;
+  height: 72px !important; padding: 0 !important; top: 0; transform: none;
+  border-radius: 0 !important; background: transparent !important; color: #777 !important;
+  gap: 0 !important; box-shadow: none !important;
+}
+#tabbar button.on { top: -8px; }
+#tabbar button::before,
+#tabbar button.on::before {
+  content: ''; position: absolute; z-index: 0; top: 0; left: 4px; width: 56px; height: 56px;
+  margin: 0; transform: none; border-radius: 50%; background: #fff;
+  box-shadow: 0 10px 24px rgba(0,0,0,.14);
+}
+#tabbar button.on::before { background: #000; }
+#tabbar button svg.ti,
+#tabbar button.on svg.ti {
+  position: absolute; z-index: 1; top: 16px; left: 20px; width: 24px; height: 24px;
+  margin: 0 !important; color: #777;
+}
+#tabbar button.on svg.ti { color: #fff; }
+#tabbar button span,
+#tabbar button.on span {
+  position: absolute; z-index: 2; top: 60px; left: 0; right: 0; width: 64px; height: auto;
+  display: none; margin: 0 !important; overflow: visible; clip: auto; white-space: nowrap;
+  color: #111; font-size: 11px; line-height: 1; text-align: center;
+}
+#tabbar button.on span { display: block; }
+#tabbar .tab-ind { display: none !important; }
+body.pub-sub #tabbar { transform: translateY(calc(100% + 24px)) !important; }
+body.cam-on #tabbar button.on span { color: #fff; }
+
+/* Sticky rank controls are one opaque page-colored layer. Its lower mask keeps
+   the first row from bleeding through the scope controls while scrolling. */
+.view-rank .rank-page { padding-top: 0 !important; }
+.view-rank { scroll-padding-top: 104px; }
+.rank-head {
+  position: sticky !important; top: 0 !important; z-index: 8 !important; isolation: isolate;
+  margin: 0 -16px !important; padding: 4px 16px 0 !important;
+  background: var(--canvas) !important; box-shadow: 0 10px 24px rgba(0,0,0,.12) !important;
+}
+.rank-head .scope { position: static !important; padding: 6px 0 4px !important; background: transparent !important; }
+.rank-head::after {
+  content: ''; position: absolute; z-index: -1; left: 0; right: 0; bottom: -10px; height: 10px;
+  background: linear-gradient(to bottom, var(--canvas), rgba(233,233,233,0)); pointer-events: none;
+}
+
+/* Static waterfall thumbnails do not inherit interactive fish-motion overlays. */
+.yk-card.thumb .card-clip::after,
+.yk-card.thumb > .card-tilt > .card-flip > .card-face > .fish-break { display: none !important; content: none !important; }
+.yk-card.thumb .cd-badge {
+  min-width: 2.4em; padding: 4px 8px !important; border-radius: 999px !important; text-align: center;
+}
+.yk-card.thumb .cd-no { letter-spacing: .04em !important; }
+.yk-card.thumb .cd-name { letter-spacing: .03em !important; }
+
+/* Keep the user's sticky rank row visually borderless after the smooth-corner
+   helper adds its default inset ring. */
+.rank-row.rank-me.yk-sq,
+.size-row.rank-me.yk-sq {
+  border: 0 !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.16) !important;
+}
+
+/* Settings controls: aligned rectangular fields with a styled city picker. */
+.settings-group .set-row > span,
+.settings-group .set-row > label { flex: 1; min-width: 0; }
+.settings-group .set-row input,
+.settings-group .set-row .city-picker,
+.settings-group .set-row .set-control {
+  width: 180px !important;
+  max-width: 52% !important;
+  min-width: 0;
+  flex: none;
+}
+.settings-group .set-row input,
+.settings-group .set-row .set-control {
+  height: 40px;
+  border: 1px solid var(--g300) !important;
+  border-radius: 14px !important;
+  background: #f7f7f7 !important;
+  color: var(--ink);
+  box-shadow: none !important;
+}
+.settings-group .set-row input { padding: 0 14px; outline: none; }
+.settings-group .set-row input:focus-visible,
+.settings-group .set-row .set-control:focus-visible { border-color: var(--ink) !important; }
+.city-picker { position: relative; }
+.city-trigger { justify-content: flex-start; text-align: left; padding: 0 36px 0 14px !important; cursor: pointer; }
+.city-trigger > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.city-trigger > svg { position: absolute !important; right: 9px; width: 18px; height: 18px; color: var(--g500); transition: transform .2s var(--ease-out); }
+.city-picker.open .city-trigger > svg { transform: rotate(90deg); }
+.city-menu {
+  position: absolute; z-index: 40; top: calc(100% + 8px); right: 0;
+  width: 100%; max-height: 240px; overflow-y: auto; padding: 6px;
+  border: 1px solid var(--g300); border-radius: 14px;
+  background: #fff; box-shadow: 0 14px 30px rgba(0,0,0,.16);
+}
+.city-option {
+  width: 100%; min-height: 36px; padding: 0 10px; border: 0; border-radius: 9px;
+  background: transparent; color: var(--ink); text-align: left; font: inherit; cursor: pointer;
+}
+.city-option:hover, .city-option:focus-visible, .city-option.on { background: var(--g200); }
+
+/* Shared rarity badges: one reusable capsule with a clear low-to-high color scale. */
+.rarity-badge {
+  --rarity-bg: #f1f1f1;
+  --rarity-fg: #404040;
+  --rarity-line: #c9c9c9;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5em;
+  padding: 4px 9px !important;
+  border: 1px solid var(--rarity-line) !important;
+  border-radius: 999px !important;
+  background: var(--rarity-bg) !important;
+  color: var(--rarity-fg) !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: none !important;
+}
+.rarity-badge::before { display: none !important; }
+.rarity-badge.N { --rarity-bg: #f1f1f1; --rarity-fg: #505050; --rarity-line: #c5c5c5; }
+.rarity-badge.R { --rarity-bg: #e8f0ff; --rarity-fg: #2459a8; --rarity-line: #8db1ea; }
+.rarity-badge.SR { --rarity-bg: #eee8ff; --rarity-fg: #6541aa; --rarity-line: #ad96e8; }
+.rarity-badge.SSR { --rarity-bg: #fff3d8; --rarity-fg: #8a5700; --rarity-line: #e2b44f; }
+.rarity-badge.UR { --rarity-bg: linear-gradient(100deg, #ff5e9c, #a975ff 48%, #4cccf2); --rarity-fg: #fff; --rarity-line: #ff78bc; }
+.rarity-badge.SP { --rarity-bg: linear-gradient(100deg, #a5f3df, #68d4d9 45%, #b9b3ff); --rarity-fg: #123f42; --rarity-line: #52bfc0; }
+.cd-badge.rarity-badge { font-size: 3.8cqw; padding: 0.55cqw 2cqw !important; border-width: 0.3cqw !important; }
+.yk-card.thumb .cd-badge.rarity-badge { font-size: 6cqw; padding: .7cqw 2.2cqw !important; }
+
+/* Card/detail pass: static unlocked thumbnails use the same clipped squircle
+   silhouette as locked slots. Keeping the clip on every face layer removes
+   antialiased frame corners without changing the interactive card treatment. */
+.yk-card.thumb,
+.yk-card.thumb > .card-tilt,
+.yk-card.thumb > .card-tilt > .card-flip,
+.yk-card.thumb .card-face,
+.yk-card.thumb .card-clip,
+.yk-card.thumb .frame {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  clip-path: inset(0 round 14px) !important;
+}
+.yk-card.thumb .card-face.card-front { isolation: isolate; }
+
+/* Unlocked cards keep a quiet solid edge, matching the locked slot. */
+.yk-card.thumb .card-face.card-front > .frame {
+  border: 2px solid #8b8b8b !important;
+  background: #8b8b8b !important;
+  background-image: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+
+/* The locked fish in the detail sheet is a solid black silhouette from the
+   first frame, so opening the sheet never fades it in from gray. */
+.locked-sheet-fish {
+  width: 170px;
+  margin: 4px auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.locked-sheet-fish .fish-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 1 !important;
+  filter: brightness(0) contrast(1.12) !important;
+}
+
+/* Detail-page ranking action mirrors the circular return control and remains
+   icon-only while keeping an accessible name and tooltip. */
+.page-head .detail-rank-btn {
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 44px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+}
+.page-head .detail-rank-btn span { display: none !important; }
+.page-head .detail-rank-btn svg {
+  width: 19px !important;
+  height: 19px !important;
+  color: currentColor !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  stroke-width: 2 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+.page-head .detail-rank-btn:active { transform: scale(.95); }
+.page-head .detail-rank-btn:focus-visible { border-radius: 50% !important; }
+
+/* Final navigation geometry: the product order stays dex / publish / rank.
+   Labels live inside the selected disc so switching never changes slot width. */
+#tabbar {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: calc(6px + var(--safe-b)) !important;
+  height: 70px !important;
+  padding: 0 42px !important;
+  gap: 12px !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+#tabbar [data-tab=dex] { order: 0 !important; }
+#tabbar [data-tab=catch] { order: 1 !important; }
+#tabbar [data-tab=rank] { order: 2 !important; }
+#tabbar button,
+#tabbar button.on {
+  flex: 0 0 60px !important;
+  width: 60px !important;
+  min-width: 60px !important;
+  height: 60px !important;
+  top: 0 !important;
+  transform: none !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  color: #737373 !important;
+}
+#tabbar button::before,
+#tabbar button.on::before {
+  top: 2px !important;
+  left: 2px !important;
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  box-shadow: 0 9px 22px rgba(0,0,0,.12) !important;
+}
+#tabbar button.on::before { top: 0 !important; left: 0 !important; width: 60px !important; height: 60px !important; background: #000 !important; }
+#tabbar button svg.ti {
+  position: absolute !important;
+  z-index: 1 !important;
+  top: 18px !important;
+  left: 18px !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  color: currentColor !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+#tabbar button.on svg.ti { top: 8px !important; left: 18px !important; width: 24px !important; height: 24px !important; color: #fff !important; }
+#tabbar button span,
+#tabbar button.on span {
+  position: absolute !important;
+  z-index: 2 !important;
+  top: 36px !important;
+  left: 0 !important;
+  width: 60px !important;
+  display: none !important;
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+#tabbar button.on span { display: block !important; }
+#tabbar button.on svg.ti path,
+#tabbar button.on svg.ti circle { stroke-dasharray: 180; animation: yk-nav-stroke .58s var(--ease-out) both; }
+@keyframes yk-nav-stroke { from { stroke-dashoffset: 180; opacity: .35; } to { stroke-dashoffset: 0; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  #tabbar button.on svg.ti path, #tabbar button.on svg.ti circle { animation: none; }
+}
+
+/* Independent sticky layers let the scope row travel with the list, then pin
+   beneath the board switch. Both layers use a hard opaque edge. */
+.view-rank { scroll-padding-top: 104px !important; }
+.view-rank .rank-page { padding-top: 0 !important; }
+.rank-head {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 12 !important;
+  margin: 0 -16px !important;
+  padding: 4px 16px 4px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  isolation: isolate;
+}
+.rank-head::after { display: none !important; content: none !important; }
+.rank-scope {
+  position: sticky !important;
+  top: 56px !important;
+  z-index: 11 !important;
+  margin: 0 -16px !important;
+  padding: 0 16px !important;
+  background: #fff !important;
+  box-shadow: 0 1px 0 #e0e0e0 !important;
+}
+.rank-scope .scope { position: static !important; padding: 6px 0 8px !important; background: #fff !important; }
+.rank-scope::after { display: none !important; content: none !important; }
+.rank-body { position: relative; z-index: 1; }
+.rank-row.rank-me, .size-row.rank-me { box-shadow: 0 14px 28px rgba(0,0,0,.2) !important; }
+.rank-row.rank-me.yk-sq, .size-row.rank-me.yk-sq { box-shadow: 0 14px 28px rgba(0,0,0,.2) !important; }
+.board-switch, .board-switch .ind, .board-switch button, .board-switch button.on { border-radius: 12px !important; }
+.board-switch { background: #f0f0f0 !important; }
+.board-switch .ind { background: #000 !important; box-shadow: none !important; }
+
+/* Low-contrast pixel fish drift under the dex summary data without competing
+   with the numbers or labels. */
+.dex-summary { overflow: hidden !important; }
+.summary-fish-pixel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(0,0,0,.18);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  pointer-events: none;
+  animation: yk-summary-fish 12s ease-in-out infinite;
+}
+.summary-fish-pixel b { font-weight: 400; }
+.dex-summary > * { position: relative; z-index: 1; }
+.dex-summary .summary-fish-pixel { z-index: 0; }
+@keyframes yk-summary-fish { 0%,100% { transform: translateX(-16px); opacity: .32; } 50% { transform: translateX(16px); opacity: .72; } }
+@media (prefers-reduced-motion: reduce) { .summary-fish-pixel { animation: none; } }
+
+/* Compact linear controls. */
+.collector .icon-btn svg.i { width: 19px !important; height: 19px !important; stroke-width: 1.8 !important; }
+.page-head .detail-rank-btn svg.i { stroke-width: 1.8 !important; }
+
+/* The custom city trigger fills the same field width as the nickname input. */
+.settings-group .city-picker,
+.settings-group .set-row .city-trigger { width: 100% !important; }
+.settings-group .set-row .city-trigger { max-width: 100% !important; }
+.settings-group .set-row:has(.city-picker.open) { position: relative; z-index: 50; }
+.settings-group .city-picker.open { z-index: 51; }
+.settings-group .box:has(.city-picker.open) { clip-path: none !important; }
+
+/* Keep the 82-cell collection inexpensive while preserving each cell's fixed
+   aspect ratio for stable scrolling. */
+.tray .cell { content-visibility: auto; contain-intrinsic-size: 148px; }
+.settings-group .city-trigger { justify-content: flex-start !important; }
+.settings-group .set-row .city-trigger { max-width: none !important; }
+.settings-group .city-native {
+  display: none !important;
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 1px !important;
+  max-width: 1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Final rank sticky pass: keep both controls pinned in one opaque, hard-edged
+   stack while leaving the scope row itself free of a panel or divider. */
+.view-rank .rank-head,
+.view-rank .rank-scope {
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.view-rank .rank-head { top: 0 !important; }
+.view-rank .rank-scope {
+  top: 60px !important;
+  border: 0 !important;
+  isolation: isolate;
+}
+.view-rank .rank-scope .scope {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+.view-rank .rank-scope::before,
+.view-rank .rank-scope::after,
+.view-rank .rank-head::before,
+.view-rank .rank-head::after {
+  display: none !important;
+  content: none !important;
+}
+.view-rank .rank-body { position: relative; z-index: 1; }
+.view-rank .rank-row.rank-me,
+.view-rank .size-row.rank-me {
+  filter: drop-shadow(0 14px 20px rgba(17,17,16,.22));
+  box-shadow: none !important;
+}
+
+/* External SVG assets cannot inherit currentColor through an image element. Keep
+   selected controls readable on their black plates. */
+#tabbar button.on img.ti,
+.board-switch button.on img.i {
+  filter: brightness(0) invert(1);
+}
+
+/* Asset-backed nav icons use the same centered geometry as the former inline
+   SVGs; the selected icon lifts above its label inside the circular plate. */
+#tabbar button img.ti {
+  position: absolute !important;
+  z-index: 1 !important;
+  top: 18px !important;
+  left: 19px !important;
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+}
+#tabbar button.on img.ti {
+  top: 8px !important;
+}

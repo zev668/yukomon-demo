@@ -46,7 +46,9 @@
   let placed=false;
   function moveInd(animate){const on=bar.querySelector('button.on');if(!on)return;const x=on.offsetLeft,w=on.offsetWidth;
     if(!animate||!placed||reduced()){gsap.set(ind,{x,width:w});placed=true;return;}
-    gsap.to(ind,{x,width:w,duration:.55,ease:'expo.out',overwrite:'auto'});
+    // Button widths are stable; animate only the compositor-friendly x transform.
+    gsap.set(ind,{width:w});
+    gsap.to(ind,{x,duration:.55,ease:'expo.out',overwrite:'auto'});
     gsap.fromTo(ind,{scaleY:1},{keyframes:{scaleY:[1,.86,1.04,1]},duration:.5,ease:'power1.out'});}
   new MutationObserver(()=>moveInd(true)).observe(bar,{subtree:true,attributes:true,attributeFilter:['class']});
   addEventListener('resize',()=>moveInd(false));
@@ -73,7 +75,7 @@
 
   // ---------- 选中态切换：pill / 分段按钮 被选中时轻弹一下 ----------
   new MutationObserver(list=>{if(reduced())return;for(const m of list){const t=m.target;
-    if(m.oldValue&&!/\bon\b/.test(m.oldValue)&&t.classList.contains('on')&&t.matches('.pill,.cam-modes button,.board-switch button,.variant .pill')){
+    if(m.oldValue&&!/\bon\b/.test(m.oldValue)&&t.classList.contains('on')&&t.matches('.pill,.cam-modes button,.variant .pill')){
       gsap.fromTo(t,{scale:.9},{scale:1,duration:.45,ease:'back.out(3)',clearProps:'transform'});}}})
     .observe(app,{subtree:true,attributes:true,attributeFilter:['class'],attributeOldValue:true});
 })();

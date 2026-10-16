@@ -44,9 +44,9 @@ body.cam-on #tabbar button:not(.on) { color: #a7a193; }
 .cam-side { display: flex; justify-content: center; }
 /* 快门：白色外环 + 内芯；拍照白芯，拍视频红芯，录制中红芯收成圆角方块 */
 .shutter { position: relative; width: 82px; height: 82px; border-radius: 50%; border: 5px solid #fff; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; flex: none; }
-.shutter i { display: block; width: 64px; height: 64px; border-radius: 50%; background: #fff; transition: background-color .25s, width .25s, height .25s, border-radius .25s; }
+.shutter i { display: block; width: 64px; height: 64px; border-radius: 50%; background: #fff; transition: background-color .25s, transform .25s var(--ease-out), border-radius .25s; }
 .shutter.video i { background: #ff3b30; }
-.recording .shutter i { width: 30px; height: 30px; border-radius: 8px; }
+.recording .shutter i { transform: scale(.47); border-radius: 17px; }
 .shutter:active i { transform: scale(.92); }
 .album-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; border: 0; background: none; color: #fff; font-size: 12px; font-weight: 700; padding: 0; }
 .album-btn img, .album-btn svg { width: 46px; height: 46px; border-radius: 12px; border: 2px solid #fff; object-fit: cover; background: rgba(255,255,255,.14); }
@@ -172,8 +172,9 @@ body.cam-on #tabbar button:not(.on) { color: #a7a193; }
 .num, .rank-row .n, .size-row .len b, .sp-stats b { font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
 /* 开关：滑钮带一点过冲回弹 */
-.switch::after { transition: transform .42s cubic-bezier(.34, 1.56, .64, 1), background-color .2s, width .2s; }
-.switch:active::after { width: 30px; }
+.switch::after { transition: transform .3s var(--ease-out), background-color .2s; }
+.switch:active::after { transform: scaleX(1.22); }
+.switch.on:active::after { transform: translateX(20px) scaleX(1.22); }
 .switch.on:active::after { transform: translateX(14px); }
 .card-stage { perspective: 1200px; }
 /* 未解锁格子按下：只轻压，不抢鱼卡的视差 */

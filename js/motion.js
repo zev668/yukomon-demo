@@ -26,7 +26,7 @@
   function pageIn(el) {
     if (reduced()) return gsap.from(el, { autoAlpha: 0, duration: 0.15 });
     const tl = gsap.timeline();
-    tl.fromTo(el, { xPercent: 100, boxShadow: '-24px 0 48px rgba(17,17,16,0)' }, { xPercent: 0, boxShadow: '-24px 0 48px rgba(17,17,16,.16)', duration: 0.46, ease: 'expo.out', clearProps: 'transform,boxShadow' });
+    tl.fromTo(el, { xPercent: 100 }, { xPercent: 0, duration: 0.46, ease: 'expo.out', clearProps: 'transform' });
     if (!document.querySelector('#layers .layer.page ~ .layer.page')) tl.to(under(), { x: -36, autoAlpha: 0.6, duration: 0.46, ease: 'expo.out' }, 0);
     const kids = el.querySelectorAll('.page-head h2, .page-head .head-act, .page-body > *:not(.profile-root):not(.size-rank), .size-rank > .sp-banner, .size-rank > .scope');
     if (kids.length) tl.from(kids, { x: 26, autoAlpha: 0, duration: 0.5, stagger: 0.035, ease: 'expo.out', clearProps: 'transform,opacity,visibility' }, 0.06);
@@ -102,7 +102,7 @@
     const r = heart.getBoundingClientRect(), host = document.body;
     for (let i = 0; i < 8; i++) {
       const p = document.createElement('i');
-      p.style.cssText = `position:fixed;z-index:99;left:${r.left + r.width / 2 - 3}px;top:${r.top + r.height / 2 - 3}px;width:6px;height:6px;border-radius:50%;pointer-events:none;background:${i % 2 ? '#ffd60a' : '#111110'}`;
+      p.style.cssText = `position:fixed;z-index:99;left:${r.left + r.width / 2 - 3}px;top:${r.top + r.height / 2 - 3}px;width:6px;height:6px;border-radius:50%;pointer-events:none;background:${i % 2 ? '#ff0a0b' : '#000000'}`;
       host.append(p);
       const a = (i / 8) * Math.PI * 2;
       gsap.to(p, { x: Math.cos(a) * 26, y: Math.sin(a) * 26, scale: 0.2, autoAlpha: 0, duration: 0.55, ease: 'expo.out', onComplete: () => p.remove() });
@@ -118,9 +118,7 @@
   function stampIn(cell) {
     if (!cell) return;
     if (reduced()) return gsap.from(cell, { autoAlpha: 0, duration: 0.2 });
-    return gsap.timeline()
-      .from(cell, { scale: 1.35, rotation: -6, autoAlpha: 0, duration: 0.5, ease: 'back.out(2.2)' })
-      .fromTo(cell, { boxShadow: '0 0 0 0 rgba(255,214,10,0.9)' }, { boxShadow: '0 0 0 12px rgba(255,214,10,0)', duration: 0.7, ease: 'power2.out', clearProps: 'boxShadow' }, 0.25);
+    return gsap.from(cell, { scale: 1.35, rotation: -6, autoAlpha: 0, duration: 0.5, ease: 'back.out(2.2)' });
   }
   // 分层统计条从左生长
   function growStrata(bars) {

@@ -84,11 +84,86 @@
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   }
 
+  const GALLERY_THEMES = ['gold', 'ruby', 'teal', 'jade'];
+  function galleryTheme(sp) {
+    return GALLERY_THEMES[hash(sp.slug) % GALLERY_THEMES.length];
+  }
+
+  function ensureGalleryDefs() {
+    if (document.getElementById('yk-gallery-caustic')) return;
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    defs.id = 'yk-gallery-caustic';
+    defs.setAttribute('width', '0');
+    defs.setAttribute('height', '0');
+    defs.setAttribute('aria-hidden', 'true');
+    defs.style.cssText = 'position:absolute; width:0; height:0; overflow:hidden;';
+    defs.innerHTML = `<defs><filter id="yk-caustic" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence id="yk-caustic-noise" type="turbulence" baseFrequency="0.018 0.026" numOctaves="2" seed="3" result="n" />
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -14 0 0 0 2.6" />
+      <feGaussianBlur stdDeviation="0.5" />
+    </filter></defs>`;
+    document.body.append(defs);
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && window.gsap) {
+      const noise = document.getElementById('yk-caustic-noise');
+      const wave = { t: 0 };
+      gsap.to(wave, { t: 1, duration: 14, ease: 'none', repeat: -1, onUpdate: () => {
+        const a = wave.t * Math.PI * 2;
+        noise.setAttribute('baseFrequency', `${(0.018 + Math.sin(a) * 0.0028).toFixed(5)} ${(0.026 + Math.cos(a) * 0.0036).toFixed(5)}`);
+      } });
+    }
+  }
+
+  function renderGallery(sp, o = {}) {
+    ensureGalleryDefs();
+    const ur = o.variant === 'ur';
+    const rk = ur ? 'UR' : sp.rarity;
+    const c = o.card || {};
+    const theme = galleryTheme(sp);
+    const fish = fishSVG(sp).replace('class="fish-svg"', 'class="fish"');
+    const r = rng(hash(sp.slug));
+    const bubbles = Array.from({ length: 16 }, () => `<span style="left:${(6 + r() * 88).toFixed(1)}%;width:${(1.4 + r() * 3.8).toFixed(2)}cqw;height:${(1.4 + r() * 3.8).toFixed(2)}cqw"></span>`).join('');
+    const sparkles = Array.from({ length: 10 }, () => `<b style="left:${(10 + r() * 80).toFixed(1)}%;top:${(26 + r() * 46).toFixed(1)}%;--s:${(3.5 + r() * 4).toFixed(2)}cqw"></b>`).join('');
+    const defaultBack = `<section class="b-info"><div class="b-title"><h2>${sp.name}</h2><span class="no">No.${sp.no}</span></div>
+      <div class="latin">${sp.latin}</div><p>${sp.fact || ''}</p><dl>
+        <div><dt>科属</dt><dd>${sp.family || ''}</dd></div><div><dt>分布</dt><dd>${sp.region || ''}</dd></div>
+        <div><dt>体长</dt><dd>${c.bestLengthCm ? `${c.bestLengthCm} cm` : `${sp.commonCm || ''} cm`}</dd></div><div><dt>习性</dt><dd>${sp.method || ''}</dd></div>
+      </dl></section>`;
+    const shareBack = o.backClass === 'has-design';
+    const back = o.back || defaultBack;
+    const front = `<article class="face front">
+      <div class="clip"><div class="ly ocean" data-depth="-0.55"></div>
+        <div class="ly caustics" data-depth="-0.35"><svg viewBox="0 0 400 560" preserveAspectRatio="none" aria-hidden="true"><rect width="400" height="560" filter="url(#yk-caustic)" /></svg></div>
+        <div class="ly frame-art" data-depth="-0.12"></div><div class="ly bubbles" data-depth="-0.05" aria-hidden="true">${bubbles}</div>
+        <div class="ly hero" data-depth="0.32">${fish}</div><div class="ly sparkles" data-depth="0.7" aria-hidden="true">${sparkles}</div>
+        <div class="holo"></div><div class="glitter"></div><div class="glare"></div><div class="sweep"><i></i></div>
+        <header class="ly f-top" data-depth="0.5"><span class="no">No.<b>${sp.no}</b></span><span class="rare">${rk}</span></header>
+        <footer class="ly f-name" data-depth="0.42"><h1>${sp.name}</h1><div class="latin">${sp.latin}</div></footer>
+      </div><div class="frame"></div><div class="frame-line"></div></article>`;
+    const backFace = `<article class="face back"><div class="clip"><div class="b-bg"></div><div class="holo b-holo"></div><div class="glare"></div>${shareBack ? back : `<div class="b-body">${back}</div>`}</div><div class="frame"></div><div class="frame-line"></div></article>`;
+    const el = document.createElement('div');
+    el.className = `yk-card card-wrap gallery-card gallery-exact${o.interactive ? ' interactive' : ''}`;
+    el.dataset.theme = theme;
+    el.dataset.offset = '14';
+    if (o.interactive) {
+      el.setAttribute('role', 'button');
+      el.tabIndex = 0;
+      el.setAttribute('aria-label', `${sp.name} ${rk}鱼卡，点击翻面`);
+      el.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        flip(el);
+      });
+    }
+    el.innerHTML = `<div class="tilt card-tilt"><div class="flipper card-flip">${front}${backFace}</div></div>`;
+    return el;
+  }
+
   /**
    * @param sp 鱼种
    * @param o { variant:'normal'|'ur', card: 用户卡片数据, interactive, back: 背面 HTML, giantInfo:{lengthCm, at, city}, size }
    */
   function render(sp, o = {}) {
+    if (o.presentation === 'gallery') return renderGallery(sp, o);
     const ur = o.variant === 'ur';
     const rk = ur ? 'UR' : sp.rarity;
     const cfg = RV[rk];
@@ -138,7 +213,7 @@
         <div class="frame frame-${rk}"></div>
         <div class="cd-top">
           <span class="cd-no">No.${sp.no}</span>
-          <span class="cd-badge b-${rk}">${rk}</span>
+          <span class="cd-badge rarity-badge b-${rk}" data-rarity="${rk}">${rk}</span>
         </div>
         <div class="cd-name">${sp.name}${ur ? '<em>巨物</em>' : ''}</div>
         <div class="cd-bottom">${bottom}</div>
@@ -151,6 +226,18 @@
     el.style.setProperty('--rc', cfg.color);
     el.style.setProperty('--rot', cfg.rotate);
     el.dataset.offset = cfg.offset;
+    if (o.interactive) {
+      // The detail card flips on activation, so expose it as a keyboard
+      // control as well as a pointer target.
+      el.setAttribute('role', 'button');
+      el.tabIndex = 0;
+      el.setAttribute('aria-label', `${sp.name} ${cfg.name}鱼卡，点击翻面`);
+      el.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        flip(el);
+      });
+    }
     el.innerHTML = `<div class="card-tilt"><div class="card-flip">${front}${back}</div></div>`;
     return el;
   }
@@ -263,7 +350,30 @@
     el.addEventListener('pointermove', onMove);
     el.addEventListener('pointerleave', onLeave);
     el.addEventListener('pointercancel', onLeave);
-    M.cards.set(el, { x: gsap.quickSetter(el, '--tx'), y: gsap.quickSetter(el, '--ty') });
+    const gallery = el.classList.contains('gallery-exact');
+    const tilt = gallery && el.querySelector('.tilt');
+    const setX = gsap.quickSetter(el, '--tx');
+    const setY = gsap.quickSetter(el, '--ty');
+    M.cards.set(el, {
+      x(v) {
+        setX(v);
+        el.style.setProperty('--px', v);
+        if (gallery) {
+          tilt.style.setProperty('--ry', `${(v * 14).toFixed(3)}deg`);
+          tilt.style.setProperty('--mx', `${(50 + v * 48).toFixed(2)}%`);
+          tilt.style.setProperty('--hyp', Math.min(1, Math.hypot(v, M.y)).toFixed(3));
+        }
+      },
+      y(v) {
+        setY(v);
+        el.style.setProperty('--py', v);
+        if (gallery) {
+          tilt.style.setProperty('--rx', `${(-v * 14).toFixed(3)}deg`);
+          tilt.style.setProperty('--my', `${(50 + v * 48).toFixed(2)}%`);
+          tilt.style.setProperty('--hyp', Math.min(1, Math.hypot(M.x, v)).toFixed(3));
+        }
+      },
+    });
     startTicker();
     startIdle();
     return () => {
@@ -281,6 +391,22 @@
     const inner = el.querySelector('.card-flip');
     const back = toBack == null ? !el.classList.contains('flipped') : toBack;
     el.classList.toggle('flipped', back);
+    if (el.classList.contains('gallery-exact')) {
+      const tilt = el.querySelector('.tilt');
+      const dir = M.x >= 0 ? 1 : -1;
+      const target = back ? 180 : 0;
+      gsap.killTweensOf([inner, tilt, el]);
+      return gsap.timeline({ overwrite: 'auto' })
+        .to(el, { '--lift': 1, duration: .32, ease: 'power2.out' }, 0)
+        .to(tilt, { '--hyp': 1, duration: .3, ease: 'power1.in' }, .1)
+        .to(inner, { scale: .94, duration: .32, ease: 'power2.out' }, 0)
+        .to(inner, { rotationY: target + dir * 8, duration: .62, ease: 'power3.inOut' }, .06)
+        .to(inner, { rotationY: target, duration: .55, ease: 'elastic.out(1, .55)' }, .68)
+        .to(tilt, { '--hyp': .45, duration: .6, ease: 'power2.out' }, .5)
+        .to(inner, { scale: 1, duration: .6, ease: 'back.out(1.8)' }, .62)
+        .to(el, { '--lift': 0, duration: .6, ease: 'power3.out' }, .62)
+        .set(tilt, { '--hyp': 0 }, 1.28);
+    }
     return gsap.to(inner, { rotationY: back ? 180 : 0, duration: opts.duration == null ? 0.6 : opts.duration, ease: opts.ease || 'power3.inOut', overwrite: 'auto' });
   }
   function setFace(el, back) {
@@ -294,6 +420,15 @@
     mm.add('(prefers-reduced-motion: no-preference)', () => {
       const sway = el.querySelectorAll('.fish-sway .fish-svg, .fish-break .fish-svg');
       if (sway.length) gsap.to(sway, { rotation: -1.6, yPercent: -1.2, transformOrigin: '30% 50%', duration: 1.7, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+      const galleryFish = el.querySelectorAll('.gallery-exact .hero .fish');
+      if (galleryFish.length) gsap.to(galleryFish, { rotation: -1.2, yPercent: -1, transformOrigin: '35% 50%', duration: 2.4, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+      el.querySelectorAll('.gallery-exact .bubbles span').forEach((p) => {
+        const d = parseFloat(p.style.getPropertyValue('--dur')) || 5;
+        gsap.fromTo(p, { y: '8cqw', autoAlpha: 0 }, { y: '-28cqw', autoAlpha: .72, duration: d, delay: parseFloat(p.style.getPropertyValue('--delay')) || 0, ease: 'none', repeat: -1 });
+      });
+      el.querySelectorAll('.gallery-exact .sparkles b').forEach((p) => gsap.to(p, { autoAlpha: .8, scale: 1.2, duration: 1.4, delay: parseFloat(p.style.getPropertyValue('--delay')) || 0, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
+      const sweep = el.querySelector('.gallery-exact .sweep i');
+      if (sweep) gsap.to(sweep, { xPercent: 520, duration: 5.8, ease: 'none', repeat: -1, repeatDelay: 2.6 });
       el.querySelectorAll('.pt').forEach((p) => {
         const d = gsap.utils.random(3, 6);
         gsap.timeline({ repeat: -1, delay: -gsap.utils.random(0, d) })
@@ -309,3 +444,4 @@
 
   window.YK_CARD = { render, attach, animate, flip, setFace, requestPermission, gyroActive, RV, HAB, STARS, fmtDate, motion: M };
 })();
+
