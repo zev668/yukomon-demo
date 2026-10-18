@@ -1,0 +1,12 @@
+import { DatabaseSync, backup } from 'node:sqlite';
+import { mkdirSync, cpSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+const source = resolve(process.env.DATA_DIR || 'server/data');
+const destination = resolve(process.env.BACKUP_DIR || 'server/backups', new Date().toISOString().replaceAll(':', '-'));
+mkdirSync(destination, { recursive: true });
+const db = new DatabaseSync(join(source, 'yukomon.sqlite'), { readOnly: true });
+await backup(db, join(destination, 'yukomon.sqlite'));
+cpSync(join(source, 'media'), join(destination, 'media'), { recursive: true });
+cpSync(join(source, 'media-signing-key'), join(destination, 'media-signing-key'));
+db.close();
+console.log(destination);

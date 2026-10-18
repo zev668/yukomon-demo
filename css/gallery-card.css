@@ -1,6 +1,6 @@
 /* Exact card rules extracted from fishcard.css v16 and scoped to embedded gallery cards. */
 @scope (.gallery-card) {
-:scope { width: min(78vw, 46vh, 400px); aspect-ratio: 63 / 88; perspective: 1200px; touch-action: none; cursor: pointer; outline: none; position: relative; }
+:scope { width: min(78vw, 46dvh, 400px, 100%); max-width: 100%; min-width: 0; aspect-ratio: 63 / 88; perspective: 1200px; touch-action: none; cursor: pointer; outline: none; position: relative; }
 :scope::before { content: ''; position: absolute; left: 10%; right: 10%; bottom: -5%; height: 9%; border-radius: 50%;
   background: radial-gradient(closest-side, rgba(20, 45, 70, .45), transparent);
   transform: translateX(calc(var(--px, 0) * -6%)) scaleX(calc(1 - var(--lift, 0) * .12)); filter: blur(6px); opacity: calc(.85 - var(--lift, 0) * .3); }
@@ -337,5 +337,18 @@
 .gallery-exact .card-face.card-back { padding: 0; border: 0; }
 
 }
+
+/* Fit the embedded card to the app surface, including its tilt clearance. */
+.gallery-exact .back .b-bg.marble-back { inset: 0; background: #202428 !important; filter: none; }
+.gallery-exact .back .b-bg.marble-back::before,
+.gallery-exact .back .b-bg.marble-back::after { display: none !important; }
+.marble-back iframe { display: block; position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+.card-stage:has(> .gallery-card) { min-width: 0; padding-inline: 8px; }
+.share-view .share-stage { padding: 16px 24px; container-type: size; }
+.share-view .card-host { width: 100%; min-width: 0; display: flex; justify-content: center; }
+.share-view .card-host > .gallery-card {
+  width: min(100%, 78vw, 46dvh, 400px, calc((100cqh - 48px) * 63 / 88));
+}
+.share-view .card-tip { flex: none; }
 
 

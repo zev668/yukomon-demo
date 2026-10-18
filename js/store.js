@@ -56,17 +56,9 @@
     });
   }
   function save() {
-    // localStorage 约 5MB：超出时从最旧的渔获开始丢弃照片（正式版照片在云存储，无此问题）
-    for (let i = 0; i < 50; i++) {
-      try {
-        localStorage.setItem(KEY, JSON.stringify(db));
-        return;
-      } catch (e) {
-        const old = db.catches.slice().reverse().find((c) => c.photo);
-        if (!old) return;
-        old.photo = null;
-      }
-    }
+    try { localStorage.setItem(KEY, JSON.stringify(db)); }
+    catch (e) { throw new Error('本机存储空间不足，请先导出记录或连接服务器'); }
+    document.dispatchEvent(new CustomEvent('yk-store-save'));
   }
   function reset() {
     localStorage.removeItem(KEY);
@@ -234,6 +226,7 @@
     db.draft = null;
     const before = rankOf('nation').me;
     const res = settle(c);
+    commitQuota(c.createdAt);
     const after = rankOf('nation').me;
     res.rankDelta = before && after ? before.rank - after.rank : 0;
     res.dex = dexProgress();
@@ -253,11 +246,18 @@
     };
     db.catches.unshift(c);
     db.draft = null;
+    commitQuota(c.createdAt);
     save();
     return c;
   }
 
   // 提交前校验：每日渔获上限、频率、重复照片
+  function commitQuota(now) {
+    const today = new Date(now).toDateString();
+    if (!db.daily || db.daily.date !== today) db.daily = { date: today, count: 0, recent: [] };
+    db.daily.count++;
+    db.daily.recent = [...(db.daily.recent || []).filter(t => now - t < 60000), now];
+  }
   function precheck(form) {
     const today = new Date().toDateString();
     if (!db.daily || db.daily.date !== today) db.daily = { date: today, count: 0, recent: [] };
@@ -269,9 +269,6 @@
       const h = hash(form.photo);
       if (db.catches.some((c) => c.photoHash === h)) return '这张照片已经记录过了';
     }
-    db.daily.count += 1;
-    db.daily.recent.push(now);
-    save();
     return null;
   }
 
@@ -481,6 +478,7 @@
 
   window.YK_STORE = {
     load, save, reset, wipe, get db() { return db; },
+    replace(next) { db = next; save(); },
     SPECIES, PROTECTED, byId, CITIES, STAR_STEPS, SCORE,
     confusableTip, checkin, encounter, removeCatch, updateCatch, precheck,
     likesOf, toggleLike,

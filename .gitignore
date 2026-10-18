@@ -1,0 +1,12 @@
+node_modules/
+**/node_modules/
+.playwright-cli/
+output/
+test-results/
+server/.env
+server/data/
+server/backups/
+*.keystore
+*.pem
+*.key
+*.log

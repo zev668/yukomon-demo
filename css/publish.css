@@ -248,7 +248,16 @@ svg.i.fill { stroke: none; fill: currentColor; }
 .layer.page { position: absolute; }
 .layer.page > .sub-head { position: absolute; left: 0; right: 0; top: 0; }
 .layer.page > .page-body { padding-top: calc(var(--head-h) + 6px); }
-.size-rank .scope { top: var(--head-h); }
+/* Keep the detail header outside its scrollport so sticky offsets are not
+   added to the header's reserved padding a second time. */
+.layer.page.size-rank-page > .sub-head { position: relative; }
+.layer.page.size-rank-page > .page-body { min-height: 0; padding-top: 0; }
+.size-rank-page .size-rank > .scope {
+  top: 0;
+  z-index: 4;
+  margin-inline: calc(-1 * var(--gutter));
+  padding-inline: var(--gutter);
+}
 /* 发布 · 编辑信息：#view 是滚动容器，头部吸顶 */
 #view > .sub-head { position: sticky; top: 0; }
 #view > .sub-head + .screen { padding-top: 8px; }

@@ -1,0 +1,22 @@
+{
+  "waveSpeed": 0.03,
+  "waveFrequency": 2,
+  "waveAmplitude": 0.11,
+  "waveColor": "#4f4f4f",
+  "backgroundColor": "#ffffff",
+  "colorNum": 6,
+  "pixelSize": 2,
+  "scale": 0.85,
+  "contrast": 1.65,
+  "brightness": 0,
+  "mouseRadius": 0.15,
+  "mouseStrength": 0.7,
+  "trail": 1,
+  "disableAnimation": false,
+  "enableMouseInteraction": false,
+  "clickRipple": false,
+  "intro": false,
+  "mode": 0,
+  "effect": 1,
+  "palette": []
+}

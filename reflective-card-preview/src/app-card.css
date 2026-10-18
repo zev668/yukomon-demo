@@ -1,0 +1,51 @@
+.yk-card.reflective-shell { --w: 300px; --rot: 8; aspect-ratio: 320 / 500; color: #fff; border-radius: 24px; }
+.yk-card.reflective-shell.interactive { --w: min(300px, 76vw); touch-action: pan-y; cursor: pointer; }
+.reflective-shell .card-face { border-radius: 24px; border: 0; padding: 0; overflow: hidden; }
+.reflective-shell .reflective-mount { position: absolute; inset: 0; }
+.reflective-shell .reflective-card { width: 100%; height: 100%; --rc-radius: 24px; --rc-base: #25272c; --rc-ink: #fff; }
+.reflective-shell .reflective-card__body { box-shadow: inset 0 1px 0 #ffffff38, 0 16px 30px -14px #0009; }
+.reflective-shell .reflective-card__content { padding: 3.2cqw; }
+.reflective-shell .yukomon-fish-card__inner { height: calc(100% - 13cqw); border-radius: 18px; }
+.reflective-shell .yukomon-fish-card__laser { mask-image: var(--yk-logo); -webkit-mask-image: var(--yk-logo); mask-size: 140cqw auto; -webkit-mask-size: 140cqw auto; }
+.reflective-shell .yukomon-fish-card__fish-sheen { mask-image: var(--yk-fish); -webkit-mask-image: var(--yk-fish); }
+.reflective-shell .yukomon-fish-card__number, .reflective-shell .yukomon-fish-card__rarity { top: 5cqw; height: 6cqw; line-height: 6cqw; letter-spacing: 0; }
+.reflective-shell .yukomon-fish-card__number { left: 5cqw; font: 500 4cqw/6cqw var(--mono); }
+.reflective-shell .yukomon-fish-card__rarity { right: 5cqw; font: 600 5.5cqw/6cqw var(--mono); }
+.reflective-shell .yukomon-fish-card__identity { left: 5cqw; right: 5cqw; bottom: 5cqw; }
+.reflective-shell .yukomon-fish-card__identity h3 { font: 600 8cqw/1.2 var(--sans); letter-spacing: 0; }
+.reflective-shell .yukomon-fish-card__identity p { font: 4cqw/1.3 Georgia, serif; overflow-wrap: anywhere; letter-spacing: 0; }
+.reflective-shell .yukomon-fish-card__description { left: 6cqw; right: 6cqw; bottom: 5cqw; margin: 0; font: 3.5cqw/1.3 var(--sans); color: #e7e7eb; }
+.reflective-shell .yukomon-fish-card__fish-stage { inset: 12% 3% 18%; }
+.reflective-shell .yukomon-fish-card__fish { image-rendering: pixelated; }
+.reflective-shell .card-back { background: linear-gradient(145deg, #6e7782, #2d323b 40%, #14171d); box-shadow: inset 0 0 0 1px #ffffff45; }
+.reflective-back-foil { position: absolute; inset: 0; opacity: .18; background: linear-gradient(135deg, #b7e7e8, #f5dfef 30%, transparent 70%); mask-image: var(--yk-logo); mask-size: 130cqw; transform: rotate(-18deg) scale(1.5); }
+.reflective-back-content { position: absolute; inset: 0; padding: 8cqw; overflow-y: auto; scrollbar-width: thin; color: #f4f5f7; }
+.reflective-back-content .b-title { display: flex; justify-content: space-between; align-items: baseline; gap: 3cqw; }
+.reflective-back-content h2 { font: 600 8cqw/1.3 var(--sans); margin: 0; }
+.reflective-back-content .no { font: 3.5cqw var(--mono); }
+.reflective-back-content .latin { font: italic 4cqw/1.4 Georgia, serif; color: #e1e5eb; margin-top: 2cqw; }
+.reflective-back-content p { font: 4.6cqw/1.7 var(--sans); margin: 8cqw 0; }
+.reflective-back-content dl { margin: 0; display: grid; gap: 4cqw; font: 4cqw/1.5 var(--sans); }
+.reflective-back-content dl > div { display: grid; grid-template-columns: 13cqw 1fr; gap: 3cqw; }
+.reflective-back-content dt { color: #bfc9d4; }
+.reflective-back-content dd { margin: 0; overflow-wrap: anywhere; }
+.reflective-back-content .mine { font: 4cqw/1.6 var(--sans); margin-top: 5cqw; border-color: #ffffff30; }
+.reflective-back-content .mine b { color: #fff; }
+.reflective-back-content .cardback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7cqw; background: transparent; }
+.reflective-back-content .cb-logo { font: 600 9cqw var(--mono); letter-spacing: 0; }
+.reflective-back-content .cb-ring { width: 24cqw; height: 24cqw; color: #fff; border-color: #ffffff50; }
+.reflective-back-content .cb-ring svg { width: 100%; height: 100%; }
+.reflective-back-content .cb-sub { font: 4cqw var(--sans); letter-spacing: 0; }
+.reflective-back-content:has(.shareback) { padding: 0; }
+.reflective-back-content .shareback { background: #232831; height: 100%; }
+.reflective-back-content .shareback > img { width: 100%; height: 56%; object-fit: cover; display: block; }
+.reflective-back-content .shareback .sb-body { padding: 5cqw; }
+.reflective-back-content .shareback p { margin: 0 0 4cqw; }
+.reflective-shell.thumb { --rc-radius: 18px; }
+.reflective-shell.thumb .reflective-card__body { border-radius: 18px; }
+.reflective-shell.thumb .yukomon-fish-card__inner { border-radius: 12px; }
+.reflective-shell.thumb .yukomon-fish-card__laser { opacity: .25; }
+.reflective-shell.thumb .reflective-card__content { padding: 4cqw; }
+.reflective-shell.thumb .yukomon-fish-card__description { font-size: 4cqw; }
+.reflective-shell:focus-visible { outline: 3px solid #ff0a0b; outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { .reflective-shell .card-tilt { transform: none; } .reflective-shell .yukomon-fish-card__fish-stage { transform: none; } }

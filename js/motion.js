@@ -149,6 +149,7 @@
    * @param cues   { sfx(), flip(), haptics() } —— 声音/震动挂在时间线上，跳过时不会再触发
    */
   function unlockTimeline(host, cardEl, rk, cues) {
+    if (cardEl.classList.contains('reflective-shell')) return reflectiveUnlock(host, cardEl, rk, cues);
     const q = (s) => host.querySelector(s);
     const cardHost = q('.card-host'), head = q('.headline'), sub = q('.sub'), actions = q('.actions');
     const glow = q('.glow'), rays = q('.rays'), flash = q('.flash'), ring = q('.ring'), pillar = q('.pillar');
@@ -246,8 +247,40 @@
     return tl;
   }
 
+  function reflectiveUnlock(host, cardEl, rk, cues) {
+    host.classList.add('pixel-unlock');
+    const cardHost = host.querySelector('.card-host');
+    const inner = cardEl.querySelector('.card-flip');
+    const text = host.querySelectorAll('.headline, .sub, .actions');
+    const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+    const reveal = { N: .35, R: .48, SR: .64, SSR: .8, UR: 1 }[rk];
+    gsap.set(inner, { rotationY: 180 });
+    gsap.set(cardHost, { autoAlpha: 0, scale: .9, y: 18 });
+    gsap.set(text, { autoAlpha: 0, y: 8 });
+    if (reduced()) {
+      return tl.set(inner, { rotationY: 0 }).to(cardHost, { autoAlpha: 1, scale: 1, y: 0, duration: .15 }).to(text, { autoAlpha: 1, y: 0, duration: .15 }, 0);
+    }
+    tl.call(cues.sfx, null, 0)
+      .to(cardHost, { autoAlpha: 1, scale: 1, y: 0, duration: .55 }, .05)
+      .call(() => { cardEl.classList.remove('flipped'); cues.flip(); window.YK_AUDIO.haptic(rk === 'UR' ? 'medium' : 'light'); }, null, reveal)
+      .to(inner, { rotationY: 0, duration: .78, ease: 'power3.inOut' }, reveal)
+      .to(text, { autoAlpha: 1, y: 0, duration: .4, stagger: .07 }, reveal + .64);
+    const box = host.querySelector('.burst');
+    const count = { N: 8, R: 12, SR: 16, SSR: 22, UR: 30 }[rk];
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('i'); box.append(p);
+      const angle = i * Math.PI * 2 / count;
+      const length = 100 + (i % 5) * 17;
+      gsap.set(p, { autoAlpha: 0 });
+      tl.fromTo(p, { x: Math.cos(angle) * 38, y: Math.sin(angle) * 55, autoAlpha: 0, scale: 1 }, { x: Math.round(Math.cos(angle) * length / 4) * 4, y: Math.round(Math.sin(angle) * length / 4) * 4, autoAlpha: i % 3 ? .65 : 1, duration: .44, ease: 'steps(8)' }, reveal + .25)
+        .to(p, { autoAlpha: 0, scale: 0, duration: .3, ease: 'steps(4)' }, reveal + .7);
+    }
+    return tl;
+  }
+
   /** 常驻光晕慢转（UR 解锁后），离开即 kill */
   function idleGlow(host) {
+    if (host.classList.contains('pixel-unlock')) return () => {};
     if (reduced()) return () => {};
     const tw = gsap.to(host.querySelector('.glow'), { rotation: '+=360', duration: 14, ease: 'none', repeat: -1 });
     return () => tw.kill();

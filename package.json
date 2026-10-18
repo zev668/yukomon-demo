@@ -1,0 +1,29 @@
+{
+  "name": "yukomon-workspace",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=server/.env server/index.mjs",
+    "dev": "node --watch --env-file-if-exists=server/.env server/index.mjs",
+    "test": "node --test server/test/*.test.mjs",
+    "build:cards": "npm --prefix reflective-card-preview run build:app",
+    "test:e2e": "node tools/test-connected.mjs",
+    "backup": "node --env-file-if-exists=server/.env server/backup.mjs"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "ffprobe-static": "^3.1.0",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
+    "sharp": "^0.35.5",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.0"
+  }
+}

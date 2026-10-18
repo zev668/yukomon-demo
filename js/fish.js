@@ -145,6 +145,34 @@
     return p + `L ${x1},${y1} Z`;
   }
 
+  const pixelSilhouettes = new Map();
+  function silhouetteSVG(type, body, fins) {
+    if (pixelSilhouettes.has(type)) return pixelSilhouettes.get(type);
+    const step = 5, cols = 40, rows = 20;
+    const canvas = document.createElement('canvas');
+    canvas.width = cols; canvas.height = rows;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(1 / step, 1 / step);
+    [body, ...fins].forEach((d) => ctx.fill(new Path2D(d)));
+    const { data } = ctx.getImageData(0, 0, cols, rows);
+    let path = '';
+    // Convert the sampled mask into horizontal SVG runs with square edges.
+    for (let y = 0; y < rows; y++) {
+      let start = -1;
+      for (let x = 0; x <= cols; x++) {
+        const filled = x < cols && data[(y * cols + x) * 4 + 3] >= 128;
+        if (filled && start < 0) start = x;
+        else if (!filled && start >= 0) {
+          path += `M${start * step} ${y * step}h${(x - start) * step}v${step}H${start * step}Z`;
+          start = -1;
+        }
+      }
+    }
+    const svg = `<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" class="fish-svg pixel-fish" shape-rendering="crispEdges"><path fill="#05101a" d="${path}"/></svg>`;
+    pixelSilhouettes.set(type, svg);
+    return svg;
+  }
+
   function fishSVG(sp, opt = {}) {
     const id = `f${++uid}`;
     const type = shapeOf(sp);
@@ -172,8 +200,7 @@
     const eyeR = Math.max(2.2, S.ht * 0.11);
 
     if (sil) {
-      return `<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" class="fish-svg">
-        <g fill="#05101a">${fins.map((f) => `<path d="${f}"/>`).join('')}<path d="${body}"/></g></svg>`;
+      return silhouetteSVG(type, body, fins);
     }
 
     // 花纹

@@ -253,8 +253,25 @@
     const budget = Math.min(w, h) / 2;
     // 胶囊 / 正圆不做平滑（Figma 对这类形状也几乎无变化）；无圆角的也跳过
     if (rs.every((r) => r === 0) || rs.every((r) => r >= budget - 0.5)) { el.style.clipPath = ''; return; }
-    el.style.clipPath = `path('${squirclePath(w, h, rs)}')`;
+    const path = squirclePath(w, h, rs);
+    el.style.clipPath = `path('${path}')`;
     el.classList.add('yk-sq');
+    // Reuse the clipping contour so the glass rim follows the smoothed corners.
+    if (el.matches('.dex-summary')) {
+      let rim = el.querySelector(':scope > .summary-glass-rim');
+      if (!rim) {
+        rim = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        rim.classList.add('summary-glass-rim');
+        rim.setAttribute('aria-hidden', 'true');
+        rim.setAttribute('focusable', 'false');
+        rim.innerHTML = '<path class="rim-edge"/><path class="rim-light"/>';
+        el.append(rim);
+      }
+      rim.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      rim.firstElementChild.setAttribute('d', path);
+      rim.lastElementChild.setAttribute('d', squirclePath(w - 2, h - 2, rs.map((r) => Math.max(0, r - 1))));
+      rim.lastElementChild.setAttribute('transform', 'translate(1 1)');
+    }
   }
   const sqSeen = new WeakSet();
   const ro = 'ResizeObserver' in window ? new ResizeObserver((es) => es.forEach((e) => applySquircle(e.target))) : null;
@@ -275,7 +292,7 @@
 
   // 主题色（浏览器地址栏）
   const meta = document.querySelector('meta[name=theme-color]');
-  if (meta) meta.setAttribute('content', '#e8e8e8');
+  if (meta) meta.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--canvas').trim());
 
   window.YK_ASCII = { asciiOf, mount, gridHTML, squirclePath };
 })();

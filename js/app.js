@@ -17,49 +17,45 @@
   // Shared rarity token used by summary stats, filters and card badges.
   const rb = (r) => `<span class="rb rarity-badge ${r}" data-rarity="${esc(r)}">${esc(r)}</span>`;
   const tagno = (no) => `<span class="tagno">No.${no}</span>`;
-  const RARITIES = ['N', 'R', 'SR', 'SSR', 'UR', 'SP'];
+  const RARITIES = ['N', 'R', 'SR', 'SSR', 'UR'];
   const GEAR = [['rod', '鱼竿', '如：溪流竿1.8m UL'], ['reel', '鱼轮', '如：喜玛诺26款Majestic'], ['line', '鱼线', '如：PE 0.8号'], ['bait', '鱼饵', '如：米诺9cm']];
   const DESC_MAX = 40;
-  const svg = (d) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
-  const svgBox = (viewBox, d) => `<svg class="i fill" viewBox="${viewBox}" aria-hidden="true" fill="currentColor">${d}</svg>`;
-  const assetIcon = (src, label) => `<img class="i asset-icon" src="${src}" alt=""${label ? ` aria-label="${label}"` : ''}>`;
+  function pixelIcon(name) {
+    const source = 'img/pixel-icons.svg?v=1#';
+    const glyph = name === 'heart'
+      ? `<use class="heart-outline" href="${source}heart"/><use class="heart-solid" href="${source}heart-filled"/>`
+      : `<use href="${source}${name}"/>`;
+    return `<svg class="i fill pixel-icon" data-icon="${name}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${glyph}</svg>`;
+  }
   const ICON = {
-    back: svg('<path d="M19 12H5M11 6l-6 6 6 6"/>'),
-    arrow: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
-    chev: svg('<path d="M9 6l6 6-6 6"/>'),
-    close: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
-    plus: svg('<path d="M12 5v14M5 12h14"/>'),
-    search: svg('<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>'),
-    gear: '<svg class="i fill" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.47.47 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>',
-    camera: svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'),
-    fish: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-4.5 7-6 11-6 3 0 5.5 2.5 7 6-1.5 3.5-4 6-7 6-4 0-8-1.5-11-6z"/><path d="M3 12l-1-4M3 12l-1 4"/><circle cx="16" cy="11" r="0.8"/></svg>',
-    heart: svg('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'),
+    back: pixelIcon('back'),
+    arrow: pixelIcon('arrow'),
+    chev: pixelIcon('chev'),
+    close: pixelIcon('close'),
+    plus: pixelIcon('plus'),
+    search: pixelIcon('search'),
+    gear: pixelIcon('gear'),
+    camera: pixelIcon('camera'),
+    fish: pixelIcon('fish'),
+    heart: pixelIcon('heart'),
+    lock: pixelIcon('lock'),
+    rank: pixelIcon('rank'),
+    pin: pixelIcon('pin'),
+    locate: pixelIcon('locate'),
+    eye: pixelIcon('eye'),
+    copy: pixelIcon('copy'),
+    trash: pixelIcon('trash'),
+    album: pixelIcon('album'),
+    rankLine: pixelIcon('rank'),
+    trophy: pixelIcon('unlock'),
+    ruler: pixelIcon('fish'),
+    flipCamera: pixelIcon('flip-camera'),
     logo: `<svg class="brand" viewBox="6 179 674 326" aria-hidden="true"><path d="M141.205 479.932L74.1064 498.459V490.447L140.704 475.926L141.205 479.932ZM214.312 250.096L121.176 323.202L140.704 469.917L74.1064 480.934L78.1123 343.732L12.0156 257.105L65.0938 207.533L104.15 279.639L170.748 207.533L165.74 185L214.312 250.096ZM321.469 289.152C320.968 291.823 321.168 298.967 325.975 306.178C330.781 313.388 336.657 320.531 338.994 323.202L269.393 352.245L334.988 388.298L314.959 420.345L267.39 370.271C265.387 382.289 265.287 408.026 280.909 414.836C274.499 417.24 253.535 436.535 243.854 445.882C239.676 437.144 238.653 414.586 237.55 390.082C234.209 419.307 224.905 442.116 204.297 443.378C179.761 444.88 137.77 417.212 134.695 380.786C131.959 348.356 162.135 305.878 179.761 310.684C197.369 315.486 225.534 328.605 235.366 352.596C233.082 326.266 228.603 305.152 217.316 306.178L269.393 289.152L267.39 323.202L321.469 289.152ZM347.507 396.31L324.473 429.858L318.965 424.851L336.49 391.803L347.507 396.31ZM493.977 279.639C495.646 290.655 502.489 317.894 516.51 338.725C534.035 364.762 541.046 370.771 546.554 372.774C538.942 377.582 518.679 392.136 509.499 398.812L484.463 345.735C479.289 353.58 468.94 370.872 468.939 377.281C468.939 383.69 470.609 387.296 471.443 388.298C458.591 380.286 432.287 362.961 429.883 357.753C429.883 366.966 424.375 374.778 429.883 413.835L391.827 416.339C390.659 405.156 388.522 379.284 389.323 365.264C390.325 347.738 391.827 295.662 380.811 289.152C380.811 289.152 402.343 284.145 419.868 279.639C421.868 290.638 461.807 330.59 461.93 330.713L467.938 294.16L493.977 279.639ZM196.786 344.734C187.273 340.228 187.772 353.748 183.767 357.253C180.562 360.056 177.09 358.421 175.755 357.253C172.751 369.771 183.767 394.306 196.786 392.805C209.805 391.302 206.3 349.241 196.786 344.734ZM327.733 341.729C329.736 323.703 364.787 323.202 382.813 329.211C390.324 341.229 382.814 384.292 367.291 391.803C337.247 391.802 328.401 358.421 327.733 341.729ZM671.981 289.152L649.949 381.287L614.397 342.23C614.064 350.075 615.199 366.966 622.409 371.773C611.994 373.776 598.374 376.614 592.866 377.782C589.695 355.082 582.651 306.277 579.847 292.657C580.514 293.659 582.751 295.862 586.356 296.663C589.962 297.464 604.55 295.662 611.394 294.66C612.896 306.01 619.005 330.713 631.423 338.725C632.625 329.911 637.932 292.991 640.436 275.633L671.981 289.152ZM530.53 322.201C539.21 311.185 559.372 292.257 570.589 304.675C584.609 320.197 585.11 361.258 578.601 367.768C572.09 374.277 522.519 356.751 522.519 318.195L530.53 322.201ZM358.891 342.831C349.579 342.541 348.583 365.441 360.928 362.036C372.741 358.777 368.202 343.122 358.891 342.831ZM568.83 331.715C565.224 322.502 552.64 326.541 546.798 329.712C544.294 341.729 559.817 348.74 565.826 349.741C571.835 350.743 573.337 343.232 568.83 331.715ZM673.484 283.144L641.938 270.625V264.616L673.484 283.144ZM614.309 257.621C613.808 240.095 618.715 205.746 642.35 208.55C665.984 211.354 659.647 235.978 653.365 240.096C641.763 247.7 620.818 244.602 614.309 257.621ZM569.242 214.058C567.822 192.597 601.192 196.275 598.03 217.141C596.027 230.36 597.116 240.597 598.785 250.11C585.265 244.602 570.632 235.055 569.242 214.058Z" fill="currentColor"/></svg>`,
-    lock: svg('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
-    rank: `<svg class="i fill" viewBox="0 0 200 200" aria-hidden="true"><path d="M168.796 96.3788H139.722V169H169.033C175.083 169 180 163.992 180 157.837V107.726C180.004 101.475 174.993 96.4008 168.796 96.3788ZM130.134 41.1958C130.134 35.0194 125.212 30 119.167 30H81.8309C75.7816 30 70.862 35.026 70.862 41.1958L70.8663 169H130.138V96.9771H130.129V41.1958M21 79.1957V157.837C21 163.989 25.9219 169 31.9668 169H61.2865V67.9295H32.198C26.0222 67.9273 21.0131 72.9665 21 79.1957Z" fill="currentColor"/></svg>`,
-    rankLine: svg('<path d="M4 19V9h4v10M10 19V4h4v15M16 19v-7h4v7"/><path d="M3 20h18"/>'),
-    trophy: svg('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M10 17h4"/>'),
-    ruler: svg('<path d="M4 17.5 17.5 4 20 6.5 6.5 20z"/><path d="m13 8 3 3M10.5 10.5l3 3M8 13l3 3"/>'),
-    pin: svg('<path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>'),
-    locate: svg('<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>'),
-    eye: svg('<path d="M2.5 12s3.2-5 9.5-5 9.5 5 9.5 5-3.2 5-9.5 5-9.5-5-9.5-5z"/><circle cx="12" cy="12" r="2.5"/>'),
-    copy: svg('<rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
-    trash: svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7l1-3h4l1 3"/>'),
   };
-
-  // Keep utility icons as stroke-based line art so they match the compact controls.
-  // Product-supplied filled icon set. Keep the same viewBox proportions as the source SVGs.
-  ICON.gear = svgBox('0 0 1024 1024', '<path d="M469.333 60.693a85.333 85.333 0 0 1 85.334 0l326.826 188.715a85.333 85.333 0 0 1 42.667 73.899v377.386a85.333 85.333 0 0 1-42.667 73.899L554.667 963.307a85.333 85.333 0 0 1-85.334 0L142.507 774.592a85.333 85.333 0 0 1-42.667-73.899V323.307a85.333 85.333 0 0 1 42.667-73.899zM512 134.592 185.173 323.307v377.386L512 889.408l326.827-188.715V323.307zM512 341.333a170.667 170.667 0 1 1 0 341.334 170.667 170.667 0 0 1 0-341.334zm0 85.334a85.333 85.333 0 1 0 0 170.666 85.333 85.333 0 0 0 0-170.666z"/>');
-  ICON.rank = svgBox('0 0 1127 1024', '<path d="M921.6 358.4h-153.6V153.6C768 68.762 699.238 0 614.4 0H460.8C375.962 0 307.2 68.762 307.2 153.6v204.8H153.6C68.762 358.4 0 427.162 0 512v409.6C0 978.176 45.824 1024 102.4 1024h870.4c56.525 0 102.4-45.824 102.4-102.4V512c0-84.838-68.762-153.6-153.6-153.6zM307.2 921.6H138.24c-19.814 0-35.84-16.026-35.84-35.84V537.6c0-42.394 34.406-76.8 76.8-76.8h128v460.8zm358.4 0H409.6V179.2c0-42.445 34.406-76.8 76.8-76.8h102.4c42.394 0 76.8 34.355 76.8 76.8v742.4zm307.2-30.72c0 16.947-13.773 30.72-30.72 30.72H768V460.8h128c42.394 0 76.8 34.406 76.8 76.8v353.28z"/>');
-  ICON.camera = svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>');
-  ICON.album = svgBox('0 0 1024 1024', '<path d="M938.667 553.92V768c0 64.8-52.534 117.333-117.334 117.333H202.667C137.867 885.333 85.333 832.8 85.333 768V256c0-64.8 52.534-117.333 117.334-117.333h618.666c64.8 0 117.334 52.533 117.334 117.333v297.92zM874.667 479.296V256a53.333 53.333 0 0 0-53.334-53.333H202.667A53.333 53.333 0 0 0 149.333 256v344.48A290.09 290.09 0 0 1 192 597.333a286.88 286.88 0 0 1 183.296 65.845C427.029 528.384 556.907 437.333 704 437.333c65.707 0 126.997 16.779 170.667 41.963zm0 82.24c-5.334-8.32-21.131-21.653-43.648-32.917-34.251-17.131-77.974-27.285-127.019-27.285-121.771 0-229.131 76.266-270.432 188.693-2.731 7.445-7.403 20.32-13.995 38.581-7.68 21.301-34.453 28.107-51.37 13.056-16.437-14.635-28.555-25.067-36.139-31.147A222.89 222.89 0 0 0 192 661.333c-14.464 0-28.725 1.366-42.667 4.054V768a53.333 53.333 0 0 0 53.334 53.333h618.666A53.333 53.333 0 0 0 874.667 768V561.536zM320 480a96 96 0 1 1 0-192 96 96 0 0 1 0 192zm0-64a32 32 0 1 0 0-64 32 32 0 0 0 0 64z"/>');
-  ICON.flipCamera = svgBox('0 0 1024 1024', '<path d="M233.92 230.251l61.76 61.76A255.872 255.872 0 0 0 170.667 512c0 139.2 111.125 252.459 249.493 255.915L426.667 768h96.469L457.6 702.464l60.331-60.331 25.365 25.366-.064.085 166.741 166.72c-31.893 11.157-65.92 17.707-101.333 18.837l-.192.171-.171-.149-5.461.128L597.333 853.333H426.667C238.144 853.333 85.333 700.523 85.333 512c0-116.992 58.88-220.245 148.587-281.749zM597.333 170.667C785.856 170.667 938.667 323.477 938.667 512c0 116.992-58.88 220.245-148.587 281.749l-61.76-61.76A255.872 255.872 0 0 0 853.333 512c0-141.376-114.624-256-256-256h-96.469l65.515 65.515-60.331 60.33-118.016-118.037.064-.043-74.069-74.069a340.288 340.288 0 0 1 101.333-18.837l.213.171 5.44-.128 5.504-.235h170.666z"/>');
-  ICON.trophy = svgBox('0 0 1024 1024', '<path d="M777.2 419.6H356.3V299.8h-.1c1.3-84.7 70.5-153.2 155.5-153.2S666 215.2 667.2 299.9c-.1 1.2-.2 2.5-.2 3.7 0 22.1 17.9 40 40 40 22 0 39.8-17.7 40-39.7h.2V302c0-62.9-24.5-122-69-166.5S574.6 66.5 511.7 66.5c-62.9 0-122 24.5-166.5 69-43.9 43.9-68.3 102.2-68.9 164.2v119.8h-30c-46.5 0-84.2 37.8-84.2 84.2v372c0 46.5 37.8 84.2 84.2 84.2h531c46.5 0 84.2-37.8 84.2-84.2v-372c0-46.3-37.8-84.1-84.3-84.1zM781.5 875.8c0 2.3-2 4.2-4.2 4.2h-531c-2.3 0-4.2-2-4.2-4.2v-372c0-2.3 2-4.2 4.2-4.2h531c2.3 0 4.2 2 4.2 4.2v372z"/>');
-  ICON.ruler = svgBox('0 0 1024 1024', '<path d="M365.382 311.855c102.4 0 211.782 62.836 274.618 155.927 11.636 18.618 32.582 32.582 55.855 34.909h11.636c18.618 0 37.236-6.982 51.2-18.618l107.055-90.764c11.636-9.309 20.945-11.636 30.254-11.636 13.964 0 25.6 6.982 34.909 16.291 16.291 18.618 13.964 48.873-4.655 65.164l-102.4 86.109c-18.618 16.291-30.255 39.564-27.927 62.836 0 23.273 11.636 46.545 30.255 62.836l102.4 83.782c18.618 16.291 23.273 44.218 6.982 65.164-9.309 11.636-20.945 16.291-34.909 16.291-6.982 0-18.618-2.327-27.927-9.309L742.72 639.909c-13.964-11.636-32.582-18.618-51.2-18.618h-9.309c-20.945 2.327-41.891 13.964-53.527 30.255-65.164 81.455-165.236 134.982-258.327 134.982C209.455 872.727 86.109 721.455 86.109 591.127s118.691-279.272 279.273-279.272z"/>');
   const mono = (name, cls = '') => `<span class="mono ${cls}" aria-hidden="true">${esc([...String(name || '钓')][0])}</span>`;
   const rankMedal = (rank) => {
     const file = ({ 1: 'rank-first.svg', 2: 'rank-second.svg', 3: 'rank-third.svg' })[Number(rank)];
-    return file ? `<span class="n rank-medal"><img src="img/${file}" alt="第${rank}名"></span>` : `<span class="n">${esc(rank)}</span>`;
+    return file ? `<span class="n rank-medal"><img src="img/${file}?v=pixel-1" alt="第${rank}名"></span>` : `<span class="n">${esc(rank)}</span>`;
   };
 
   const toast = (msg, ms) => M.toast($('#toast'), msg, ms);
@@ -127,7 +123,11 @@
   function confirmSheet(title, text, okLabel, onOk) {
     const rec = sheet(title, `<p class="muted" style="margin:0 0 16px">${esc(text)}</p><div class="row"><button class="btn grow" data-no>取消</button><button class="btn grow primary" data-ok>${esc(okLabel)}</button></div>`);
     $('[data-no]', rec.node).onclick = () => closeLayer(rec);
-    $('[data-ok]', rec.node).onclick = () => { closeLayer(rec); onOk(); };
+    $('[data-ok]', rec.node).onclick = async (e) => {
+      const button = e.currentTarget; button.disabled = true;
+      try { await onOk(); closeLayer(rec); }
+      catch (error) { toast(error.message); button.disabled = false; }
+    };
   }
 
   // ---------- 主视图：渔获 / 图鉴 / 排行榜 ----------
@@ -240,16 +240,22 @@
       const r = $('[data-retry]', msg); if (r) r.onclick = () => startCamera(view);
     }
   }
+  let mediaSelection = 0;
   async function useMedia(d, file, source) {
     if (file.size > 60 * 1024 * 1024) return toast('请选择小于 60MB 的视频或图片');
-    const old = d.videoId;
+    const old = d.videoId, selection = ++mediaSelection;
+    let photo, videoId = null, duration = 0;
     if (file.type.startsWith('video/')) {
       const info = await window.YK_MEDIA.probeVideo(file), id = S.uuid();
+      if (!info.duration || info.duration > 60) throw new Error('视频需在 60 秒内');
+      if (selection !== mediaSelection || state.tab !== 'catch' || state.draft !== d) return;
       if (await window.YK_MEDIA.put(id, file) == null) throw new Error('storage');
-      d.photo = info.poster; d.videoId = id; d.duration = info.duration;
-    } else { d.photo = await window.YK_MEDIA.compressImage(file); d.videoId = null; d.duration = 0; }
+      photo = info.poster; videoId = id; duration = info.duration;
+    } else photo = await window.YK_MEDIA.compressImage(file);
+    if (selection !== mediaSelection || state.tab !== 'catch' || state.draft !== d) { if (videoId) await window.YK_MEDIA.del(videoId); return; }
+    d.photo = photo; d.videoId = videoId; d.duration = duration;
     if (old && old !== d.videoId) window.YK_MEDIA.del(old);
-    d.source = source;
+    d.source = source; d.sample = false;
     saveDraft(); stopCamera(); publishStep = 'preview'; render();
   }
   let lastPubStep = null;
@@ -328,7 +334,7 @@
         A.haptic('light');
         if (!M.reduced()) gsap.fromTo($('.cam-stage', view), { filter: 'brightness(2.2)' }, { filter: 'brightness(1)', duration: 0.35, clearProps: 'filter' });
         const url = window.YK_MEDIA.frame(live, live.videoWidth, live.videoHeight, 1280, cam.facing === 'user');
-        d.photo = url; d.videoId = null; d.duration = 0; d.source = 'camera';
+        d.photo = url; d.videoId = null; d.duration = 0; d.source = 'camera'; d.sample = false;
         saveDraft(); stopCamera(); publishStep = 'preview'; return render();
       }
       // 录像：再按一次结束
@@ -408,7 +414,7 @@
       if (!a) return;
       const act = a.dataset.act;
       if (act === 'camera' || act === 'album') $('#in-' + act, view).click();
-      else if (act === 'sample') { d.photo = plate(S.byId[d.speciesId] || S.SPECIES[Math.floor(Math.random() * 30)], String(Date.now())); d.source = 'camera'; A.play('ui_shutter'); saveDraft(); render(); }
+      else if (act === 'sample') { d.photo = plate(S.byId[d.speciesId] || S.SPECIES[Math.floor(Math.random() * 30)], String(Date.now())); d.source = 'album'; d.sample = true; A.play('ui_shutter'); saveDraft(); render(); }
       else if (act === 'retake') { publishStep = 'capture'; render(); }
       else if (act === 'species') speciesSheet();
       else if (act === 'location') locationSheet();
@@ -478,8 +484,10 @@
       <ol><li>不要带走、出售或食用</li><li>${esc(p.action)}</li><li>尽量让鱼留在水里，缩短离水时间</li></ol>
       <button class="btn primary block" data-ok>已放生，记下这次遇见</button>
       <p class="muted" style="font-size:12px;text-align:center;margin-top:10px">只留一条遇见记录，不生成鱼卡</p></div>`);
-    $('[data-ok]', rec.node).onclick = () => {
-      S.encounter({ ...draft() }, p);
+    $('[data-ok]', rec.node).onclick = async (e) => {
+      const button = e.currentTarget; button.disabled = true;
+      try { await S.encounter({ ...draft() }, p); }
+      catch (error) { toast(error.message); button.disabled = false; return; }
       resetDraft();
       closeLayer(rec);
       go('dex');
@@ -538,14 +546,19 @@
     if (miss[0] === '全长') gsap.delayedCall(0.45, () => $('#f-len', view).focus({ preventScroll: true }));
   }
 
-  function submit(btn) {
+  async function submit(btn) {
+    if (btn.disabled) return;
     const d = draft();
     const miss = missing(d);
     if (miss.length) return showMissing(miss);
+    if (d.lengthCm && (!Number.isFinite(Number(d.lengthCm)) || Number(d.lengthCm) < 1 || Number(d.lengthCm) > 300 || Math.abs(Number(d.lengthCm) * 10 - Math.round(Number(d.lengthCm) * 10)) > 1e-8)) return toast('全长请填写 1–300cm，最多一位小数');
     if (/赌博|色情/.test(`${d.desc}${Object.values(d.gear).join('')}`)) { M.nudge(btn); return toast('描述里有不合适的内容，请修改'); }
     const err = S.precheck(d);
     if (err) { M.nudge(btn); return toast(err); }
-    const res = S.checkin({ ...d, desc: d.desc.trim(), lengthCm: Number(d.lengthCm) }, d.speciesId);
+    btn.disabled = true;
+    let res;
+    try { res = await S.checkin({ ...d, desc: d.desc.trim(), lengthCm: Number(d.lengthCm) }, d.speciesId); }
+    catch (error) { toast(error.message); btn.disabled = false; return; }
     resetDraft();
     publishStep = 'capture';
     go('dex');
@@ -602,7 +615,12 @@
     const settled = () => { skip.hidden = true; if (ur) rec.cleanups.push(M.idleGlow(node)); if (res.rankDelta > 0) A.play('ui_rank_up'); };
     tl.eventCallback('onComplete', settled);
     rec.cleanups.push(() => tl.kill());
-    skip.onclick = () => { A.stopAll(); tl.eventCallback('onComplete', null); tl.progress(1, true); settled(); };
+    skip.onclick = () => {
+      A.stopAll(); tl.eventCallback('onComplete', null); tl.progress(1, true);
+      C.setFace(cardEl, false);
+      gsap.set([$('.headline', node), $('.sub', node), $('.actions', node), $('.card-host', node)], { autoAlpha: 1, y: 0, scale: 1 });
+      settled();
+    };
     cardEl.onclick = () => { if (tl.isActive()) return; C.flip(cardEl); A.play('ui_flip'); };
 
     $('.actions', node).onclick = (e) => {
@@ -638,6 +656,7 @@
     const by = {}, totalBy = {};
     RARITIES.forEach((r) => { by[r] = 0; totalBy[r] = 0; });
     S.SPECIES.forEach((sp) => { totalBy[sp.rarity]++; if (cards[sp.no]) by[sp.rarity]++; });
+    by.UR = giants; totalBy.UR = total;
     const filters = [['all', '全部'], ['have', '已解锁'], ['miss', '未解锁'], ...RARITIES.map((r) => [r, r])];
     const bio = data.bio || (ctx.me ? '还没有个性签名，去设置里写一句' : '');
 
@@ -658,7 +677,6 @@
           <div class="stat"><span class="eyebrow">城市</span>${unit(cities.size, '座')}</div>
           <div class="stat"><span class="eyebrow">巨物</span>${unit(giants, '张')}</div>
         </div>
-        <div class="summary-fish-pixel" aria-hidden="true"><span>·</span><b>&gt;°)))&gt;</b><span>·</span></div>
       </section>
       <div class="section-h"><h3>鱼卡</h3><span class="num">共 ${total} 种</span></div>
       <div class="dex-filter">${filters.map(([k, t]) => `<button class="pill ${ctx.filter === k ? 'on' : ''}" data-f="${k}">${t}</button>`).join('')}</div>
@@ -671,7 +689,7 @@
     const tray = $('.tray', root);
     const fill = () => {
       const f = ctx.filter;
-      const list = S.SPECIES.filter((sp) => f === 'all' || (f === 'have' && cards[sp.no]) || (f === 'miss' && !cards[sp.no]) || sp.rarity === f);
+      const list = S.SPECIES.filter((sp) => f === 'all' || (f === 'have' && cards[sp.no]) || (f === 'miss' && !cards[sp.no]) || (f === 'UR' && cards[sp.no]?.giant.status === 'approved') || sp.rarity === f);
       tray.innerHTML = list.length ? '' : '<div class="empty" style="grid-column:1/-1">这一类还没有</div>';
       list.forEach((sp, i) => {
         const card = cards[sp.no], g = card && card.giant.status === 'approved';
@@ -746,7 +764,7 @@
     const boardTabs = `<div class="board-switch" role="tablist"><i class="ind" aria-hidden="true"></i><button role="tab" aria-selected="${state.board === 'unlock'}" class="${state.board === 'unlock' ? 'on' : ''}" data-board="unlock">${ICON.trophy}解锁榜</button><button role="tab" aria-selected="${state.board === 'giant'}" class="${state.board === 'giant' ? 'on' : ''}" data-board="giant">${ICON.ruler}巨物榜</button></div>`;
     const scopeRow = (note) => `<div class="scope"><button class="pill ${state.rank === 'nation' ? 'on' : ''}" data-scope="nation">全国</button><button class="pill ${state.rank === 'city' ? 'on' : ''}" data-scope="city">${esc(S.db.me.city)}</button><span class="grow"></span><span class="board-note">${note}</span></div>`;
     const b = rankBody();
-    // 标题块（榜单切换 + 全国/城市）合成一个吸顶头，中间不留缝
+    // Controls stay outside the independently scrolling ranking list.
     view.innerHTML = `<div class="screen rank-page"><div class="rank-head">${boardTabs}</div><div class="rank-scope">${scopeRow(b.note)}</div><div class="rank-body">${b.html}</div></div>`;
     b.mount(view);
     gsap.set($('.board-switch .ind', view), { xPercent: state.board === 'giant' ? 100 : 0 });
@@ -781,17 +799,15 @@
       };
     }
     const r = S.rankOf(state.rank);
-    const row = (u, extra = '', i = 99) => `<button class="rank-row ${u.rank <= 3 ? 'top' : ''} ${extra}" data-user="${u.id}" ${i < 12 ? 'data-stagger' : ''}>
+    const row = (u, extra = '', i = 99) => `<button class="rank-row ${extra}" data-user="${u.id}" ${i < 12 ? 'data-stagger' : ''}>
       ${rankMedal(u.rank)}${mono(u.nickname, 'sm')}
       <span class="who"><span class="nm">${esc(u.nickname)}${u.me ? ' · 我' : ''}</span><small>${esc(u.city)}${u.urs ? ` · 巨物 ${u.urs}` : ''}</small></span>
       <span class="best" title="${esc(S.byId[u.best].name)}">${F.fishSVG(S.byId[u.best])}</span>
       <span class="cnt"><b>${u.count}</b><small>鱼种</small></span></button>`;
-    const first = r.top[0];
-    const leader = first ? row(first, 'leader', 0) : '';
     return {
       note: `前 ${r.top.length} 名 · 共 <span class="num">${r.total}</span> 人`,
-      html: `${leader}<div class="board">${r.top.slice(1).map((u, i) => row(u, u.me ? 'is-me' : '', i)).join('')}</div>
-        ${r.me ? row(r.me, 'rank-me') : '<div class="rank-row rank-me none">用现场拍摄记录一条渔获，就能上榜。</div>'}`,
+      html: `<div class="board">${r.top.map((u, i) => row(u, u.me ? 'is-me' : '', i)).join('')}</div>
+        <div class="rank-float">${r.me ? row(r.me, 'rank-me') : '<div class="rank-row rank-me none">用现场拍摄记录一条渔获，就能上榜。</div>'}</div>`,
       mount() {},
     };
   }
@@ -800,7 +816,7 @@
     const head = $('.rank-head', view), scopeHead = $('.rank-scope', view), body = $('.rank-body', view), ind = $('.board-switch .ind', head);
     $$('[data-board]', head).forEach((x) => { const selected = x.dataset.board === state.board; x.classList.toggle('on', selected); x.setAttribute('aria-selected', selected); });
     $$('[data-scope]', scopeHead).forEach((x) => x.classList.toggle('on', x.dataset.scope === state.rank));
-    const fill = () => { const nb = rankBody(); $('.board-note', scopeHead).innerHTML = nb.note; body.innerHTML = nb.html; nb.mount(view); view.scrollTop = 0; };
+    const fill = () => { const nb = rankBody(); $('.board-note', scopeHead).innerHTML = nb.note; body.innerHTML = nb.html; nb.mount(view); body.scrollTop = 0; };
     if (M.reduced()) { gsap.set(ind, { xPercent: state.board === 'giant' ? 100 : 0 }); fill(); return; }
     if (dir) {
       gsap.to(ind, { xPercent: state.board === 'giant' ? 100 : 0, duration: 0.5, ease: 'expo.out' });
@@ -821,6 +837,7 @@
   function sizeRankPage(sp) {
     let scope = state.rank;
     const rec = page(`${sp.name} · 巨物榜`, '<div class="size-rank"></div>');
+    rec.node.classList.add('size-rank-page');
     const root = $('.size-rank', rec.node);
     const draw = (swap) => {
       const r = S.sizeRankOf(sp.no, scope);
@@ -830,7 +847,7 @@
         <span class="who"><span class="nm">${esc(u.nickname)}${u.me ? ' · 我' : ''}</span><small>${ICON.pin}${esc(u.place)}</small></span>
         <span class="len"><b>${u.lengthCm}</b><small>cm</small></span></button>`;
       const list = `<div class="board">${r.top.length ? r.top.map((u) => row(u, u.me ? 'is-me' : '')).join('') : '<div class="empty">这个范围还没有人上榜</div>'}</div>
-        ${r.me ? row(r.me, 'rank-me') : ''}`;
+        ${r.me ? `<div class="rank-float">${row(r.me, 'rank-me')}</div>` : ''}`;
       const stats = `<div><small>巨物线</small><b>${sp.giantThresholdCm}<i>cm</i></b></div><div><small>${scope === 'city' ? '同城' : '全国'}纪录</small><b data-n="${king ? king.lengthCm : 0}">${king ? king.lengthCm : '—'}</b><i>cm</i></div><div><small>上榜</small><b data-n="${r.total}">${r.total}</b><i>人</i></div>`;
       if (swap) {
         $('.sp-stats', root).innerHTML = stats;
@@ -872,8 +889,9 @@
     return rec;
   }
 
-  function openProfile(userId) {
+  async function openProfile(userId) {
     if (userId === 'me') { closeAll(); return go('dex'); }
+    if (S.fetchProfile) { try { await S.fetchProfile(userId); } catch (error) { return toast(error.message); } }
     const p = S.profileOf(userId);
     if (!p) return;
     const rec = page(`${p.user.nickname}的图鉴`, '<div class="profile-root"></div>');
@@ -902,8 +920,13 @@
         ${kv('时间', `<span class="num">${ctx.me ? fmtFull(c.createdAt) : C.fmtDate(c.createdAt)}</span>`)}
         ${GEAR.map(([k, label]) => kv(label, esc(g[k]))).join('')}
       </div>
-      ${ctx.me ? `<div class="actions-row" style="margin-bottom:8px">${sp ? `<button class="btn" data-share>${ICON.copy}分享链接</button>` : ''}<button class="btn danger" data-del>${ICON.trash}删除</button></div>` : '<div style="height:8px"></div>'}`, 'tall');
+      ${ctx.me ? `<div class="actions-row" style="margin-bottom:8px">${sp ? `<button class="btn" data-share>${ICON.copy}分享链接</button>` : ''}<button class="btn" data-edit>编辑</button><button class="btn danger" data-del>${ICON.trash}删除</button></div>` : '<div style="height:8px"></div>'}`, 'tall');
     const node = rec.node;
+    if (c.videoUrl) {
+      const video = document.createElement('video'); video.controls = true; video.playsInline = true; video.preload = 'metadata'; video.poster = photoOf(c); video.src = c.videoUrl;
+      $('.hero-photo img', node).replaceWith(video);
+      rec.cleanups.push(() => { video.pause(); video.removeAttribute('src'); video.load(); });
+    }
     if (c.videoId) window.YK_MEDIA.get(c.videoId).then(blob => {
       if (!blob || rec.closing) return;
       const v = document.createElement('video'), url = URL.createObjectURL(blob);
@@ -912,8 +935,12 @@
       rec.cleanups.push(() => { v.pause(); v.removeAttribute('src'); v.load(); URL.revokeObjectURL(url); });
     });
     const like = $('[data-like]', node);
-    if (like) like.onclick = () => {
-      const r = S.toggleLike(c);
+    if (like) like.onclick = async () => {
+      if (like.disabled) return;
+      like.disabled = true;
+      let r;
+      try { r = await S.toggleLike(c); } catch (error) { toast(error.message); like.disabled = false; return; }
+      like.disabled = false;
       like.classList.toggle('on', r.liked);
       like.setAttribute('aria-pressed', r.liked);
       $('.num', like).textContent = r.count;
@@ -922,9 +949,34 @@
       if (onLike) onLike(c, r);
     };
     const sh = $('[data-share]', node);
+    const edit = $('[data-edit]', node);
+    if (edit) edit.onclick = () => editCatch(c, ctx);
     if (sh) sh.onclick = () => { const cd = S.db.cards[sp.no]; shareSheet(sp, cd, cd.giant.status === 'approved' && cd.giant.catchId === c.id, c); };
     const del = $('[data-del]', node);
-    if (del) del.onclick = () => confirmSheet('删除这条渔获？', sp ? `如果这是唯一一条${sp.name}，对应的鱼卡也会收回。` : '删除后无法恢复。', '删除', () => { S.removeCatch(c.id); closeAll(); render(); toast('已删除'); });
+    if (del) del.onclick = () => confirmSheet('删除这条渔获？', sp ? `如果这是唯一一条${sp.name}，对应的鱼卡也会收回。` : '删除后无法恢复。', '删除', async () => { await S.removeCatch(c.id); if (c.videoId) await window.YK_MEDIA.del(c.videoId); closeAll(); render(); toast('已删除'); });
+  }
+
+  function editCatch(c, ctx) {
+    const sp = S.byId[c.speciesId];
+    const rec = sheet('编辑渔获', `<form class="catch-edit">
+      <label for="edit-desc">描述</label><textarea id="edit-desc" required maxlength="200">${esc(c.desc)}</textarea>
+      ${GEAR.map(([key, label]) => `<label for="edit-${key}">${label}</label><input id="edit-${key}" maxlength="80" value="${esc(c.gear?.[key] || '')}">`).join('')}
+      ${c.status !== 'protected' && sp?.releasePolicy !== 'forbid' ? `<label class="edit-release"><input id="edit-released" type="checkbox" ${c.released ? 'checked' : ''}>已放流</label>` : ''}
+      <button class="btn primary block" type="submit">保存</button></form>`);
+    $('.catch-edit', rec.node).onsubmit = async e => {
+      e.preventDefault();
+      const button = $('button[type="submit"]', rec.node); button.disabled = true;
+      const patch = { desc: $('#edit-desc', rec.node).value.trim(), gear: Object.fromEntries(GEAR.map(([key]) => [key, $('#edit-' + key, rec.node).value.trim()])) };
+      const released = $('#edit-released', rec.node); if (released) patch.released = released.checked;
+      if (!patch.desc) { toast('请填写描述'); button.disabled = false; return; }
+      try {
+        await S.updateCatch(c.id, patch);
+        closeAll(); render();
+        const updated = S.db.catches.find(x => x.id === c.id);
+        if (updated) catchDetail(updated, ctx);
+        toast('已保存');
+      } catch (error) { toast(error.message); button.disabled = false; }
+    };
   }
 
   // 一张卡用哪条渔获做代表：巨物卡用认证的那条，否则用最大的一条，再否则用最早的一条
@@ -1000,8 +1052,17 @@
   }
   const shareURL = (p) => `${location.href.split('#')[0]}#share=${b64.enc(p)}`;
 
-  function shareSheet(sp, card, ur, c) {
-    const p = sharePayload(sp, card, ur, c), url = shareURL(p);
+  async function shareSheet(sp, card, ur, c) {
+    const p = sharePayload(sp, card, ur, c);
+    let url = shareURL(p);
+    if (window.YK_API.remote) {
+      if (!c?.id) return toast('试看卡片不能生成在线分享');
+      try {
+        const shared = await window.YK_API.share(c.id, ur);
+        url = `${location.href.split('#')[0]}#shared=${shared.id}&api=${encodeURIComponent(window.YK_API.base)}`;
+        p.photo = c.photo;
+      } catch (error) { return toast(error.message); }
+    }
     const rec = sheet('分享这张鱼卡', `
       <p class="muted" style="margin:0 0 12px;font-size:14px">对方打开链接会看到这张会动的鱼卡，翻到背面是你的渔获照片、地点、时间和描述。地点只显示到城市。</p>
       <input class="link-box" readonly value="${esc(url)}" aria-label="分享链接">
@@ -1022,14 +1083,14 @@
     const ur = !!p.ur;
     // 演示版没有服务器：同一浏览器能取到原照片，其他设备上用标本板占位；正式版照片走云存储
     const local = S.db.catches.find((c) => c.id === p.id);
-    const photo = (local && local.photo) || plate(sp, 'share');
+    const photo = p.photo || (local && local.photo) || plate(sp, 'share');
     const back = `<div class="shareback"><img src="${esc(photo)}" alt="${esc(sp.name)}的渔获照片">
       <div class="sb-body"><p class="sb-desc">${esc(p.d)}</p>
         <div class="sb-meta"><span>${esc(p.city || '未知水域')}</span><span class="num">${C.fmtDate(p.t)}</span></div>
         <div class="sb-by">${esc(p.by)} · ${esc(sp.name)}${p.len ? ` <span class="num">${p.len}cm</span>` : ''}</div></div></div>`;
     const node = el(`<div class="layer page share-view">
       <header class="share-head"><span class="grow">${mono(p.by, 'sm')}<span><b>${esc(p.by)}</b> 的渔获</span></span><button class="btn sm" data-close>${fromLink ? '进入 Yukomon' : '关闭预览'}</button></header>
-      <div class="share-stage"><div class="card-host"></div><p class="card-tip">点卡片翻到背面</p></div>
+      <div class="share-stage"><div class="card-host"></div></div>
       <div class="share-foot"><button class="cta" data-cta><span>我也来记录渔获</span><i class="dot">${ICON.arrow}</i></button></div></div>`);
     const card = { stars: p.st, bestLengthCm: p.len, giant: { status: ur ? 'approved' : 'none' } };
     const ce = C.render(sp, { card, interactive: true, presentation: 'gallery', back, backClass: 'has-design', variant: ur ? 'ur' : 'normal', giantInfo: ur ? { lengthCm: p.len, at: p.t, city: p.city } : null });
@@ -1062,7 +1123,7 @@
         <div class="set-row"><span>解锁音效</span><button class="switch ${A.settings.sfx ? 'on' : ''}" data-set="sfx" role="switch" aria-checked="${A.settings.sfx}" aria-label="解锁音效"></button></div>
         <div class="set-row"><span>震动</span><button class="switch ${A.settings.haptics ? 'on' : ''}" data-set="haptics" role="switch" aria-checked="${A.settings.haptics}" aria-label="震动"></button></div>
       </div></div>
-      <div class="settings-group"><span class="eyebrow">试看解锁动画</span><div class="box"><div class="sfx-row">${[...RARITIES, 'UR'].map((r) => `<button class="btn sm" data-try="${r}">${r}</button>`).join('')}</div></div></div>
+      <div class="settings-group"><span class="eyebrow">试看解锁动画</span><div class="box"><div class="sfx-row">${RARITIES.map((r) => `<button class="btn sm" data-try="${r}">${r}</button>`).join('')}</div></div></div>
       <div class="settings-group"><span class="eyebrow">数据</span><div class="box">
         <div class="set-row"><span>恢复演示数据</span><button class="btn sm" style="background:var(--bg)" data-reset>恢复</button></div>
         <div class="set-row"><span>清空全部记录</span><button class="btn sm danger" style="background:var(--bg)" data-wipe>清空</button></div>
@@ -1110,8 +1171,8 @@
       const ds = t.dataset;
       if (ds.set) { const k = ds.set; A.settings[k] = !A.settings[k]; db.settings[k] = A.settings[k]; S.save(); t.classList.toggle('on', A.settings[k]); t.setAttribute('aria-checked', A.settings[k]); if (A.settings[k]) k === 'sfx' ? A.play('ui_rank_up') : A.haptic('medium'); }
       else if (ds.try) demoUnlock(ds.try);
-      else if ('reset' in ds) { S.reset(); state.draft = null; closeLayer(rec); render(); toast('已恢复演示数据'); }
-      else if ('wipe' in ds) confirmSheet('清空全部记录？', '所有渔获和鱼卡都会删除，无法恢复。', '清空', () => { S.wipe(); state.draft = null; closeLayer(rec); render(); toast('已清空'); });
+      else if ('reset' in ds) { try { S.reset(); window.YK_MEDIA.prune(); state.draft = null; closeLayer(rec); render(); toast('已恢复演示数据'); } catch (error) { toast(error.message); } }
+      else if ('wipe' in ds) confirmSheet('清空全部记录？', '所有渔获和鱼卡都会删除，无法恢复。', '清空', async () => { await S.wipe(); await window.YK_MEDIA.prune(); state.draft = null; closeLayer(rec); render(); toast('已清空'); });
     });
   }
   // 不写入数据，只播放某个稀有度的解锁演出
@@ -1126,7 +1187,7 @@
   // collection on the left, capture in the middle, ranking on the right.
   const nav = $('#tabbar');
   if (nav) {
-    const navAssets = { dex: 'img/nav-dex.svg', catch: 'img/nav-catch.svg', rank: 'img/nav-rank.svg' };
+    const navAssets = { dex: 'img/nav-dex.svg?v=pixel-2', catch: 'img/nav-catch.svg?v=pixel-2', rank: 'img/nav-rank.svg?v=pixel-2' };
     Object.entries(navAssets).forEach(([key, src]) => {
       const button = nav.querySelector(`[data-tab="${key}"]`);
       const old = button && button.querySelector('svg.ti');
@@ -1170,5 +1231,32 @@
     if (state.tab !== 'dex') { go('dex'); return true; }
     return false;
   }
+  document.addEventListener('yk-notice', e => toast(e.detail, 4000));
+  document.addEventListener('yk-data-ready', () => { closeAll(); state.draft = null; render(); });
+  document.addEventListener('yk-service-settings', () => {
+    const api = window.YK_API;
+    const rec = sheet('服务连接', `<div class="service-state" role="status">${api.remote ? api.connected ? '已连接' : '连接中断' : '本机演示'}</div>
+      <label class="service-label" for="service-url">服务器地址</label><input id="service-url" class="link-box" type="url" placeholder="https://api.example.com" value="${esc(api.base)}">
+      <div class="actions-row"><button class="btn primary" data-connect>连接</button><button class="btn" data-disconnect>断开</button><button class="btn" data-export>导出记录</button></div>`);
+    $('[data-connect]', rec.node).onclick = async e => { const b = e.currentTarget; b.disabled = true; try { await api.connect($('#service-url', rec.node).value.trim()); toast('已连接服务器'); } catch (error) { toast(error.message); b.disabled = false; } };
+    $('[data-disconnect]', rec.node).onclick = () => { api.disconnect(); toast('已切回本机演示'); };
+    $('[data-export]', rec.node).onclick = async () => { try { await api.exportData(); } catch (error) { toast(error.message); } };
+  });
+  const originalSettingsPage = settingsPage;
+  function connectedSettings() {
+    originalSettingsPage();
+    const body = document.querySelector('#layers .layer.page:last-child .page-body');
+    if (!body) return;
+    const button = el(`<button class="btn block service-settings">${window.YK_API.remote ? '服务已连接' : '服务连接'}<span aria-hidden="true"> ↗</span></button>`);
+    button.onclick = () => document.dispatchEvent(new Event('yk-service-settings'));
+    body.prepend(button);
+  }
+  settingsPage = connectedSettings;
   window.YK_APP = { go, openProfile, demoUnlock, settingsPage, shareView, back };
+  window.YK_API.init().then(async () => {
+    if (q.get('shared')) {
+      try { shareView(await window.YK_API.shared(q.get('shared'), q.get('api')), true); }
+      catch (error) { toast(error.message); }
+    }
+  });
 })();

@@ -18,7 +18,7 @@
 :root {
   --ink: #000000;
   --paper: #ffffff;
-  --canvas: #e9e9e9;          /* 画布：不用纯白，带一点灰（卡片 #FFF 在其上靠底色差分层） */
+  --canvas: #f2f2f2;          /* 画布：不用纯白，带一点灰（卡片 #FFF 在其上靠底色差分层） */
   --g100: #ededed;
   --g200: #e3e3e3;
   --g300: #d2d2d2;
@@ -50,7 +50,6 @@
   --SR: #444444;
   --SSR: #000000;
   --UR: var(--red);
-  --SP: #00a6a6;
 
   --sans: 'YK Pixel Num', 'Inter', 'SF Pro Display', 'SF Pro Text', 'Segoe UI Variable Display', 'Segoe UI', 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', 'Microsoft YaHei UI', 'Microsoft YaHei', system-ui, sans-serif;
   --mono: 'YK Pixel Num', 'JetBrains Mono', 'SF Mono', 'Cascadia Mono', 'Consolas', 'Menlo', ui-monospace, monospace;
@@ -254,19 +253,19 @@ body.cam-on #tabbar .tab-ind { background: #fff; }
 
 .rank-row .n { font-family: var(--mono); font-weight: 500; font-size: 14px; }
 .rank-row.top .n, .size-row .n { background: var(--g200); color: var(--ink); }
-.rank-row.top:nth-child(1) .n, .size-row.r1 .n { background: var(--ink) !important; color: #fff; }
-.size-row.r2 .n, .size-row.r3 .n { background: var(--g200) !important; }
+.rank-row.top:nth-child(1) .n:not(.rank-medal), .size-row.r1 .n:not(.rank-medal) { background: var(--ink) !important; color: #fff; }
+.size-row.r2 .n:not(.rank-medal), .size-row.r3 .n:not(.rank-medal) { background: var(--g200) !important; }
 .rank-row .who small, .rank-row .cnt small, .size-row small { color: var(--g500); font-weight: 400; }
 .rank-row .best svg, .species-pick .fish svg, .sp-row .fish svg { filter: grayscale(1) contrast(1.15); }
 .rank-row.is-me, .size-row.is-me { background: var(--ink) !important; color: #fff; }
 .rank-row.is-me small, .rank-row.is-me .cnt small, .size-row.is-me small { color: var(--g700) !important; }
-.rank-row.is-me .n { background: var(--red) !important; color: #fff; }
+.rank-row.is-me .n:not(.rank-medal) { background: var(--red) !important; color: #fff; }
 .rank-row.is-me .mono.sm { background: var(--g800); color: #fff; }
 .rank-row.is-me .best svg { filter: grayscale(1) invert(1) brightness(1.4); }
 
 /* 我的名次：贴底悬浮，用 1.5px 墨线代替弥散阴影 */
 .rank-row.rank-me, .size-row.rank-me { background: var(--paper) !important; box-shadow: 0 0 0 1.5px var(--ink) !important; }
-.rank-row.rank-me .n, .size-row.rank-me .n { background: var(--red) !important; color: #fff; }
+.rank-row.rank-me .n:not(.rank-medal), .size-row.rank-me .n:not(.rank-medal) { background: var(--red) !important; color: #fff; }
 .rank-row.rank-me.none { color: var(--g500); }
 
 .board-switch { background: var(--g200); }
@@ -302,7 +301,7 @@ body, button, input, textarea, select { font-family: 'YK Pixel Num', 'Segoe UI',
 .dex-summary .ds-stats { border-top: 1px solid #dededb; }
 .dex-summary .ds-stats .stat + .stat { border-left: 0 !important; }
 .dex-summary .ds-stats .stat { border-right: 0 !important; }
-.breakdown { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.breakdown { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .breakdown > div { border: 0 !important; }
 .breakdown .rb { justify-content: center; }
 .num, .big b, .stat b, .breakdown b, .rank-row .n, .rank-row .cnt b, .size-row .len b, .leader .big b { font-family: 'YK Pixel Num', 'Cascadia Mono', Consolas, monospace !important; font-variant-numeric: tabular-nums; }
@@ -348,7 +347,7 @@ body, button, input, textarea, select { font-family: 'YK Pixel Num', 'Segoe UI',
 .yk-card.thumb .holo, .yk-card.thumb .holo-rainbow, .yk-card.thumb .holo-gold, .yk-card.thumb .particles, .yk-card.thumb .shine { display: none !important; }
 .yk-card.thumb .cd-bottom { background: transparent !important; border-top: 0 !important; }
 .cell .slot .fish-svg { filter: grayscale(1) contrast(1.8) !important; image-rendering: pixelated; }
-.cell .slot { background: #dededc !important; }
+.cell .slot { background: var(--paper) !important; }
 .board-switch button.on { border-radius: 12px !important; }
 #tabbar button span { position: static; width: auto; height: auto; clip: auto; overflow: visible; white-space: nowrap; display: none; font-size: 11px; }
 #tabbar button.on { width: auto; min-width: 56px; padding: 0 12px; gap: 5px; }
@@ -392,12 +391,14 @@ body, button, input, textarea, select { font-family: 'YK Pixel Num', 'Segoe UI',
 .cell .slot .grade { display: inline-flex; align-items: center; justify-content: center; min-width: 2.4em; padding: 4px 8px !important; border-radius: 999px !important; white-space: nowrap; }
 
 /* Static collection thumbnails are deliberately independent from interactive cards. */
-.yk-card.thumb .card-face.card-front { box-shadow: none !important; background: #4b4b4b !important; }
-.yk-card.thumb .card-clip { background: #4b4b4b !important; filter: grayscale(1) contrast(1.08) !important; }
+.yk-card.thumb { color: var(--ink); }
+.yk-card.thumb .card-face.card-front { box-shadow: none !important; background: var(--paper) !important; }
+.yk-card.thumb .card-clip { background: var(--paper) !important; filter: grayscale(1) contrast(1.08) !important; }
+.yk-card.thumb .cd-name, .yk-card.thumb .cd-no { color: var(--ink); text-shadow: none; }
 .yk-card.thumb .card-clip > .ly:not(.fish) { display: none !important; }
 .yk-card.thumb .card-clip > .ly.fish { display: flex !important; filter: grayscale(1) contrast(1.15); }
 .yk-card.thumb > .card-tilt > .card-flip > .card-face > .fish-break { display: flex !important; filter: grayscale(1) contrast(1.15); }
-.yk-card.thumb .card-face.card-front > .frame { background: #8b8b8b !important; background-image: none !important; border: 2px solid #8b8b8b !important; padding: 0 !important; }
+.yk-card.thumb .card-face.card-front > .frame { background: transparent !important; background-image: none !important; border: 2px solid #8b8b8b !important; padding: 0 !important; }
 .yk-card.thumb .frame::after { content: none !important; border: 0 !important; }
 .yk-card.thumb .holo, .yk-card.thumb .particles, .yk-card.thumb .glare, .yk-card.thumb .sheen, .yk-card.thumb .caustics, .yk-card.thumb .vignette { display: none !important; }
 .yk-card.thumb .cd-name { top: 13cqw !important; }
@@ -683,7 +684,6 @@ body.cam-on #tabbar button.on span { color: #fff; }
 .rarity-badge.SR { --rarity-bg: #eee8ff; --rarity-fg: #6541aa; --rarity-line: #ad96e8; }
 .rarity-badge.SSR { --rarity-bg: #fff3d8; --rarity-fg: #8a5700; --rarity-line: #e2b44f; }
 .rarity-badge.UR { --rarity-bg: linear-gradient(100deg, #ff5e9c, #a975ff 48%, #4cccf2); --rarity-fg: #fff; --rarity-line: #ff78bc; }
-.rarity-badge.SP { --rarity-bg: linear-gradient(100deg, #a5f3df, #68d4d9 45%, #b9b3ff); --rarity-fg: #123f42; --rarity-line: #52bfc0; }
 .cd-badge.rarity-badge { font-size: 3.8cqw; padding: 0.55cqw 2cqw !important; border-width: 0.3cqw !important; }
 .yk-card.thumb .cd-badge.rarity-badge { font-size: 6cqw; padding: .7cqw 2.2cqw !important; }
 
@@ -705,7 +705,7 @@ body.cam-on #tabbar button.on span { color: #fff; }
 /* Unlocked cards keep a quiet solid edge, matching the locked slot. */
 .yk-card.thumb .card-face.card-front > .frame {
   border: 2px solid #8b8b8b !important;
-  background: #8b8b8b !important;
+  background: transparent !important;
   background-image: none !important;
   -webkit-mask: none !important;
   mask: none !important;
@@ -872,7 +872,22 @@ body.cam-on #tabbar button.on span { color: #fff; }
 
 /* Low-contrast pixel fish drift under the dex summary data without competing
    with the numbers or labels. */
-.dex-summary { overflow: hidden !important; }
+.dex-summary {
+  overflow: hidden !important;
+  isolation: isolate;
+  background: rgba(255, 255, 255, .72) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  backdrop-filter: blur(16px) saturate(1.08);
+}
+.dex-summary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .65), rgba(255, 255, 255, 0) 55%, rgba(255, 255, 255, .14));
+  pointer-events: none;
+}
+.dex-summary > canvas.summary-water { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .45; mix-blend-mode: multiply; pointer-events: none; }
 .summary-fish-pixel {
   position: absolute;
   left: 0;
@@ -893,6 +908,9 @@ body.cam-on #tabbar button.on span { color: #fff; }
 .summary-fish-pixel b { font-weight: 400; }
 .dex-summary > * { position: relative; z-index: 1; }
 .dex-summary .summary-fish-pixel { z-index: 0; }
+.dex-summary > .summary-glass-rim { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; fill: none; pointer-events: none; }
+.summary-glass-rim .rim-edge { stroke: rgba(100, 111, 122, .3); stroke-width: 2; }
+.summary-glass-rim .rim-light { stroke: rgba(255, 255, 255, .9); stroke-width: 1; }
 @keyframes yk-summary-fish { 0%,100% { transform: translateX(-16px); opacity: .32; } 50% { transform: translateX(16px); opacity: .72; } }
 @media (prefers-reduced-motion: reduce) { .summary-fish-pixel { animation: none; } }
 
@@ -926,19 +944,25 @@ body.cam-on #tabbar button.on span { color: #fff; }
   pointer-events: none !important;
 }
 
-/* Final rank sticky pass: keep both controls pinned in one opaque, hard-edged
-   stack while leaving the scope row itself free of a panel or divider. */
+/* Only the list scrolls, keeping the transparent controls above a hard edge. */
+#view.view-rank { min-height: 0; overflow: hidden; }
+.view-rank .rank-page {
+  height: 100%;
+  min-height: 0;
+  padding-bottom: 0;
+}
 .view-rank .rank-head,
 .view-rank .rank-scope {
-  background: #fff !important;
+  flex-shrink: 0;
+  position: relative !important;
+  top: auto !important;
+  background: transparent !important;
   background-image: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-.view-rank .rank-head { top: 0 !important; }
 .view-rank .rank-scope {
-  top: 60px !important;
   border: 0 !important;
   isolation: isolate;
 }
@@ -955,10 +979,39 @@ body.cam-on #tabbar button.on span { color: #fff; }
   display: none !important;
   content: none !important;
 }
-.view-rank .rank-body { position: relative; z-index: 1; }
-.view-rank .rank-row.rank-me,
-.view-rank .size-row.rank-me {
-  filter: drop-shadow(0 14px 20px rgba(17,17,16,.22));
+.view-rank .rank-body {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  margin: 0 -16px;
+  padding: 0 16px calc(var(--tb-space) + 8px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.view-rank .rank-body::-webkit-scrollbar { width: 0; }
+.view-rank .rank-body > * { flex-shrink: 0; }
+.view-rank .rank-body > .board { flex: 1 0 auto; }
+
+/* The wrapper casts the shadow outside the row's smooth corner clip. */
+.rank-float {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  width: 100%;
+  margin: 8px 0 12px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 12px 14px rgba(17,17,16,.24));
+}
+/* The scroll area's bottom padding already reserves the navigation space. */
+.view-rank .rank-float { bottom: 4px; }
+.rank-float > .rank-row.rank-me {
+  position: relative;
+  bottom: auto;
+  margin: 0;
+  filter: none;
   box-shadow: none !important;
 }
 
@@ -975,11 +1028,43 @@ body.cam-on #tabbar button.on span { color: #fff; }
   position: absolute !important;
   z-index: 1 !important;
   top: 18px !important;
-  left: 19px !important;
-  width: 22px !important;
-  height: 22px !important;
+  left: 18px !important;
+  width: 24px !important;
+  height: 24px !important;
   margin: 0 !important;
+  image-rendering: pixelated;
 }
 #tabbar button.on img.ti {
   top: 8px !important;
 }
+
+/* Utility glyphs share the navigation's 24-unit pixel grid. */
+#app svg.pixel-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor !important;
+  stroke: none !important;
+  shape-rendering: crispEdges;
+}
+#app svg.pixel-icon > use { fill: currentColor; stroke: none; }
+#app .collector .icon-btn svg.pixel-icon,
+#app .page-head .detail-rank-btn svg.pixel-icon {
+  width: 24px !important;
+  height: 24px !important;
+}
+#app .board-switch svg.pixel-icon,
+#app .chev svg.pixel-icon,
+#app .city-trigger svg.pixel-icon,
+#app .actions-row svg.pixel-icon { width: 18px; height: 18px; }
+#app .corner svg.pixel-icon,
+#app .where svg.pixel-icon,
+#app .size-row small svg.pixel-icon,
+#app .entry .likes svg.pixel-icon { width: 12px; height: 12px; }
+#app .album-btn svg.pixel-icon { width: 48px; height: 48px; }
+#app .pixel-icon .heart-solid { display: none; }
+#app .like.on .pixel-icon,
+#app .likes.on .pixel-icon { color: var(--red); }
+#app .like.on .heart-outline,
+#app .likes.on .heart-outline { display: none; }
+#app .like.on .heart-solid,
+#app .likes.on .heart-solid { display: inline; }

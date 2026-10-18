@@ -139,7 +139,7 @@
         <header class="ly f-top" data-depth="0.5"><span class="no">No.<b>${sp.no}</b></span><span class="rare">${rk}</span></header>
         <footer class="ly f-name" data-depth="0.42"><h1>${sp.name}</h1><div class="latin">${sp.latin}</div></footer>
       </div><div class="frame"></div><div class="frame-line"></div></article>`;
-    const backFace = `<article class="face back"><div class="clip"><div class="b-bg"></div><div class="holo b-holo"></div><div class="glare"></div>${shareBack ? back : `<div class="b-body">${back}</div>`}</div><div class="frame"></div><div class="frame-line"></div></article>`;
+    const backFace = `<article class="face back"><div class="clip"><div class="b-bg marble-back" data-marble-rarity="${rk}"></div><div class="holo b-holo"></div><div class="glare"></div>${shareBack ? back : `<div class="b-body">${back}</div>`}</div><div class="frame"></div><div class="frame-line"></div></article>`;
     const el = document.createElement('div');
     el.className = `yk-card card-wrap gallery-card gallery-exact${o.interactive ? ' interactive' : ''}`;
     el.dataset.theme = theme;
@@ -163,6 +163,7 @@
    * @param o { variant:'normal'|'ur', card: 用户卡片数据, interactive, back: 背面 HTML, giantInfo:{lengthCm, at, city}, size }
    */
   function render(sp, o = {}) {
+    if (window.YK_REFLECTIVE) return window.YK_REFLECTIVE.create(sp, o);
     if (o.presentation === 'gallery') return renderGallery(sp, o);
     const ur = o.variant === 'ur';
     const rk = ur ? 'UR' : sp.rarity;
@@ -391,6 +392,15 @@
     const inner = el.querySelector('.card-flip');
     const back = toBack == null ? !el.classList.contains('flipped') : toBack;
     el.classList.toggle('flipped', back);
+    el.setAttribute('aria-label', `${el.getAttribute('aria-label')?.split('，')[0]}，${back ? '背面资料' : '正面'}，点击翻面`);
+    if (el.classList.contains('reflective-shell')) {
+      gsap.killTweensOf(inner);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return gsap.set(inner, { rotationY: back ? 180 : 0, scale: 1 });
+      return gsap.timeline({ overwrite: 'auto' })
+        .to(inner, { scale: .965, duration: .18, ease: 'power2.out' }, 0)
+        .to(inner, { rotationY: back ? 180 : 0, duration: .64, ease: 'power3.inOut' }, 0)
+        .to(inner, { scale: 1, duration: .24, ease: 'power2.out' }, .4);
+    }
     if (el.classList.contains('gallery-exact')) {
       const tilt = el.querySelector('.tilt');
       const dir = M.x >= 0 ? 1 : -1;

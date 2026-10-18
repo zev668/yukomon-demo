@@ -34,6 +34,12 @@
   const put = (id, blob) => tx('readwrite', (s) => s.put(blob, id));
   const get = (id) => tx('readonly', (s) => s.get(id));
   const del = (id) => tx('readwrite', (s) => s.delete(id));
+  async function prune(referenced = []) {
+    const keep = new Set(referenced);
+    const keys = await tx('readonly', s => s.getAllKeys());
+    if (!keys) return;
+    await Promise.all(keys.filter(id => !keep.has(id)).map(del));
+  }
 
   // 把一帧画面画到 canvas，长边压到 max，导出 JPEG dataURL
   function frame(src, w, h, max = 720, mirror = false) {
@@ -80,5 +86,5 @@
 
   const fmtDur = (s) => { s = Math.max(0, Math.round(s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
-  window.YK_MEDIA = { put, get, del, frame, compressImage, probeVideo, fmtDur };
+  window.YK_MEDIA = { put, get, del, prune, frame, compressImage, probeVideo, fmtDur };
 })();

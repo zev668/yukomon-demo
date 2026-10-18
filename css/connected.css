@@ -1,0 +1,25 @@
+.service-settings { margin-bottom: 22px; }
+.catch-edit { display: grid; gap: 10px; }
+.catch-edit > label { font: 13px/1.5 var(--sans); color: #666; }
+.catch-edit > input, .catch-edit textarea { font: 15px/1.5 var(--sans); width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 6px; color: #111; background: #fff; min-width: 0; }
+.catch-edit textarea { min-height: 88px; resize: vertical; }
+.catch-edit .edit-release { display: flex; align-items: center; gap: 8px; min-height: 40px; }
+.service-state { font: 500 14px/1.5 var(--sans); padding: 0 0 20px; }
+.service-state::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 8px; background: currentColor; }
+.service-label { display: block; font: 13px/1.5 var(--sans); color: #666; margin-bottom: 8px; }
+.service-label + input { width: 100%; min-width: 0; box-sizing: border-box; }
+.unlock.pixel-unlock { background: #101215 !important; }
+.pixel-unlock .glow, .pixel-unlock .rays, .pixel-unlock .pillar, .pixel-unlock .ring, .pixel-unlock .blackout, .pixel-unlock .crack, .pixel-unlock .flash { display: none; }
+.pixel-unlock .burst { position: absolute; inset: 0; pointer-events: none; }
+.pixel-unlock .burst i { position: absolute; top: 48%; left: 50%; width: 4px; height: 4px; background: #d5eaf4; box-shadow: 1px 1px 0 #ffffff40; }
+.pixel-unlock .stage { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: max(48px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); box-sizing: border-box; }
+.pixel-unlock .headline { position: static; font: 600 22px/1.25 var(--sans); letter-spacing: 0; margin: 0; }
+.pixel-unlock .card-host { width: min(270px, 64vw, 42dvh); height: auto; aspect-ratio: 320 / 500; margin: 0; }
+.pixel-unlock .card-host .yk-card { --w: 100%; width: 100%; }
+.pixel-unlock .sub { position: static; margin: 0; color: #c6cbd1; font: 14px/1.5 var(--sans); text-align: center; }
+.pixel-unlock .actions { position: static; margin: 0; display: flex; gap: 8px; max-width: 100%; }
+.pixel-unlock .actions .btn { min-width: 0; padding: 0 16px; font-size: 13px; height: 44px; }
+.pixel-unlock .skip { top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 5; }
+.pixel-unlock .card-host::after { content: ''; position: absolute; inset: 0; border-radius: 24px; pointer-events: none; background: linear-gradient(115deg, transparent 30%, #e9f9ff70 50%, transparent 70%); transform: translateX(-140%); opacity: var(--scan-opacity, 0); }
+.pixel-unlock.r-UR .headline { color: #ffb9bc; }
+@media (max-height: 650px) { .pixel-unlock .stage { gap: 9px; padding-top: 36px; } .pixel-unlock .headline { font-size: 18px; } .pixel-unlock .actions .btn { height: 38px; } }
