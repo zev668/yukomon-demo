@@ -66,7 +66,7 @@ for (const file of changed) {
   console.log(`Uploaded ${file.path}`);
 }
 const nextTree = api(`${repo}/git/trees`, { base_tree: base, tree: updates }, 'POST');
-const commit = api(`${repo}/git/commits`, { message: 'Release 0.2.0: connected server and reflective pixel-glass cards', tree: nextTree.sha, parents: [head] }, 'POST');
+const commit = api(`${repo}/git/commits`, { message: process.env.RELEASE_MESSAGE || 'Release 0.2.0: connected server and reflective pixel-glass cards', tree: nextTree.sha, parents: [head] }, 'POST');
 if (api(`${repo}/git/ref/heads/${branch}`).object.sha !== head) throw new Error('Remote changed during upload; rerun to preserve its changes');
 api(`${repo}/git/refs/heads/${branch}`, { sha: commit.sha, force: false }, 'PATCH');
 const verified = api(`${repo}/git/trees/${commit.sha}?recursive=1`);

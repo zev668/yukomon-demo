@@ -14,8 +14,7 @@
   const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
   const pad2 = (n) => String(n).padStart(2, '0');
   const fmtFull = (t) => { const d = new Date(t); return `${C.fmtDate(t)} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
-  // Shared rarity token used by summary stats, filters and card badges.
-  const rb = (r) => `<span class="rb rarity-badge ${r}" data-rarity="${esc(r)}">${esc(r)}</span>`;
+  const rb = (r, className = 'rb') => window.YK_RARITY.html(r, className);
   const tagno = (no) => `<span class="tagno">No.${no}</span>`;
   const RARITIES = ['N', 'R', 'SR', 'SSR', 'UR'];
   const GEAR = [['rod', '鱼竿', '如：溪流竿1.8m UL'], ['reel', '鱼轮', '如：喜玛诺26款Majestic'], ['line', '鱼线', '如：PE 0.8号'], ['bait', '鱼饵', '如：米诺9cm']];
@@ -439,7 +438,7 @@
     const rec = sheet('这是什么鱼', `
       <div class="sheet-fixed">
         <div class="search-bar"><input class="search" type="search" placeholder="搜索名字、别名或拉丁学名" aria-label="搜索鱼种"><button class="icon-btn yellow" data-go aria-label="搜索">${ICON.search}</button></div>
-        <div class="filter-row">${['全部', ...RARITIES].map((r, i) => `<button class="pill ${i ? '' : 'on'}" data-r="${i ? r : 'all'}">${r}</button>`).join('')}</div>
+        <div class="filter-row">${['全部', ...RARITIES].map((r, i) => `<button class="pill ${i ? '' : 'on'}" data-r="${i ? r : 'all'}">${i ? rb(r) : r}</button>`).join('')}</div>
       </div>
       <div class="sheet-scroll">
         <div class="sp-list list">${S.SPECIES.map(row).join('')}</div>
@@ -662,9 +661,10 @@
 
     const unit = (n, u) => `<b><span data-n="${n}">${n}</span><small>${u}</small></b>`;
     root.innerHTML = `<div class="screen dex-page">
-      <div class="collector">${mono(data.name)}
-        <div class="who"><h1>${esc(data.name)}</h1>${bio ? `<p class="bio">${esc(bio)}</p>` : ''}</div>
-        ${ctx.me ? `<button class="icon-btn" data-act="settings" aria-label="设置">${ICON.gear}</button>` : ''}
+      <div class="collector">
+        <${ctx.me ? 'button type="button" data-act="settings" aria-label="设置"' : 'div'} class="collector-profile">${mono(data.name)}
+          <div class="who"><h1>${esc(data.name)}</h1>${bio ? `<p class="bio">${esc(bio)}</p>` : ''}</div>
+        </${ctx.me ? 'button' : 'div'}>
       </div>
       <section class="dex-summary" data-stagger>
         <div class="ds-top">
@@ -679,7 +679,7 @@
         </div>
       </section>
       <div class="section-h"><h3>鱼卡</h3><span class="num">共 ${total} 种</span></div>
-      <div class="dex-filter">${filters.map(([k, t]) => `<button class="pill ${ctx.filter === k ? 'on' : ''}" data-f="${k}">${t}</button>`).join('')}</div>
+      <div class="dex-filter">${filters.map(([k, t]) => `<button class="pill ${ctx.filter === k ? 'on' : ''}" data-f="${k}">${RARITIES.includes(k) ? rb(k) : t}</button>`).join('')}</div>
       <div class="tray"></div>
       ${ctx.me && met.length ? `<div class="met-row" data-act="met" role="button" tabindex="0"><span class="grow">遇见过的保护鱼类</span><span class="num">${met.length}</span><span class="chev">${ICON.chev}</span></div>` : ''}
     </div>`;
@@ -694,7 +694,7 @@
       list.forEach((sp, i) => {
         const card = cards[sp.no], g = card && card.giant.status === 'approved';
         const cell = el(`<div class="cell" data-sp="${sp.no}" role="button" tabindex="0" ${i < 12 ? 'data-stagger' : ''}>
-          ${card ? '' : `<div class="slot">${tagno(sp.no)}<span class="grade rarity-badge ${sp.rarity}" data-rarity="${esc(sp.rarity)}">${esc(sp.rarity)}</span>${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`}</div>`);
+          ${card ? '' : `<div class="slot">${tagno(sp.no)}${rb(sp.rarity, 'grade')}${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`}</div>`);
         if (card) cell.prepend(withCorner(C.render(sp, { card, thumb: true, variant: g ? 'ur' : 'normal', giantInfo: g ? giantInfo(card, data.catches) : null }), `<b class="num">${card.catchCount}</b>条`));
         tray.append(cell);
       });
@@ -789,7 +789,7 @@
           const tray = $('.giant-tray', view);
           S.SPECIES.forEach((sp, i) => {
             const card = cards[sp.no], g = card && card.giant.status === 'approved';
-            const lockedCell = card ? '' : `<div class="slot">${tagno(sp.no)}<span class="grade rarity-badge ${sp.rarity}" data-rarity="${esc(sp.rarity)}">${esc(sp.rarity)}</span>${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`;
+            const lockedCell = card ? '' : `<div class="slot">${tagno(sp.no)}${rb(sp.rarity, 'grade')}${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`;
             const cell = el(`<div class="cell" data-sp="${sp.no}" role="button" tabindex="0" ${i < 12 ? 'data-stagger' : ''}>
               ${lockedCell}</div>`);
             if (card) cell.prepend(withCorner(C.render(sp, { card, thumb: true, variant: g ? 'ur' : 'normal', giantInfo: g ? giantInfo(card, S.db.catches) : null }), card.bestLengthCm ? `<b class="num">${card.bestLengthCm}</b>cm` : ''));
@@ -1081,13 +1081,12 @@
     const sp = S.byId[p.s];
     if (!sp) return toast('这个分享链接已失效');
     const ur = !!p.ur;
-    // 演示版没有服务器：同一浏览器能取到原照片，其他设备上用标本板占位；正式版照片走云存储
     const local = S.db.catches.find((c) => c.id === p.id);
     const photo = p.photo || (local && local.photo) || plate(sp, 'share');
-    const back = `<div class="shareback"><img src="${esc(photo)}" alt="${esc(sp.name)}的渔获照片">
+    const back = `<div class="shareback"><div class="sb-photo"><img src="${esc(photo)}" alt="${esc(sp.name)}的渔获照片"></div>
       <div class="sb-body"><p class="sb-desc">${esc(p.d)}</p>
         <div class="sb-meta"><span>${esc(p.city || '未知水域')}</span><span class="num">${C.fmtDate(p.t)}</span></div>
-        <div class="sb-by">${esc(p.by)} · ${esc(sp.name)}${p.len ? ` <span class="num">${p.len}cm</span>` : ''}</div></div></div>`;
+        <div class="sb-by"><span>${esc(p.by)}</span><span>${esc(sp.name)}${p.len ? ` <span class="num">${p.len}cm</span>` : ''}</span></div></div></div>`;
     const node = el(`<div class="layer page share-view">
       <header class="share-head"><span class="grow">${mono(p.by, 'sm')}<span><b>${esc(p.by)}</b> 的渔获</span></span><button class="btn sm" data-close>${fromLink ? '进入 Yukomon' : '关闭预览'}</button></header>
       <div class="share-stage"><div class="card-host"></div></div>
@@ -1123,7 +1122,7 @@
         <div class="set-row"><span>解锁音效</span><button class="switch ${A.settings.sfx ? 'on' : ''}" data-set="sfx" role="switch" aria-checked="${A.settings.sfx}" aria-label="解锁音效"></button></div>
         <div class="set-row"><span>震动</span><button class="switch ${A.settings.haptics ? 'on' : ''}" data-set="haptics" role="switch" aria-checked="${A.settings.haptics}" aria-label="震动"></button></div>
       </div></div>
-      <div class="settings-group"><span class="eyebrow">试看解锁动画</span><div class="box"><div class="sfx-row">${RARITIES.map((r) => `<button class="btn sm" data-try="${r}">${r}</button>`).join('')}</div></div></div>
+      <div class="settings-group"><span class="eyebrow">试看解锁动画</span><div class="box"><div class="sfx-row">${RARITIES.map((r) => `<button class="btn sm" data-try="${r}">${rb(r)}</button>`).join('')}</div></div></div>
       <div class="settings-group"><span class="eyebrow">数据</span><div class="box">
         <div class="set-row"><span>恢复演示数据</span><button class="btn sm" style="background:var(--bg)" data-reset>恢复</button></div>
         <div class="set-row"><span>清空全部记录</span><button class="btn sm danger" style="background:var(--bg)" data-wipe>清空</button></div>

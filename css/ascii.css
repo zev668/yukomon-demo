@@ -658,35 +658,6 @@ body.cam-on #tabbar button.on span { color: #fff; }
 }
 .city-option:hover, .city-option:focus-visible, .city-option.on { background: var(--g200); }
 
-/* Shared rarity badges: one reusable capsule with a clear low-to-high color scale. */
-.rarity-badge {
-  --rarity-bg: #f1f1f1;
-  --rarity-fg: #404040;
-  --rarity-line: #c9c9c9;
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.5em;
-  padding: 4px 9px !important;
-  border: 1px solid var(--rarity-line) !important;
-  border-radius: 999px !important;
-  background: var(--rarity-bg) !important;
-  color: var(--rarity-fg) !important;
-  line-height: 1 !important;
-  letter-spacing: 0 !important;
-  text-align: center;
-  white-space: nowrap;
-  box-shadow: none !important;
-}
-.rarity-badge::before { display: none !important; }
-.rarity-badge.N { --rarity-bg: #f1f1f1; --rarity-fg: #505050; --rarity-line: #c5c5c5; }
-.rarity-badge.R { --rarity-bg: #e8f0ff; --rarity-fg: #2459a8; --rarity-line: #8db1ea; }
-.rarity-badge.SR { --rarity-bg: #eee8ff; --rarity-fg: #6541aa; --rarity-line: #ad96e8; }
-.rarity-badge.SSR { --rarity-bg: #fff3d8; --rarity-fg: #8a5700; --rarity-line: #e2b44f; }
-.rarity-badge.UR { --rarity-bg: linear-gradient(100deg, #ff5e9c, #a975ff 48%, #4cccf2); --rarity-fg: #fff; --rarity-line: #ff78bc; }
-.cd-badge.rarity-badge { font-size: 3.8cqw; padding: 0.55cqw 2cqw !important; border-width: 0.3cqw !important; }
-.yk-card.thumb .cd-badge.rarity-badge { font-size: 6cqw; padding: .7cqw 2.2cqw !important; }
-
 /* Card/detail pass: static unlocked thumbnails use the same clipped squircle
    silhouette as locked slots. Keeping the clip on every face layer removes
    antialiased frame corners without changing the interactive card treatment. */

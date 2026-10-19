@@ -62,6 +62,25 @@ try {
     const context = await browser.newContext({ viewport: { width, height: width === 1440 ? 1000 : 844 } });
     const page = await initPage(context, { offline: true });
     assert.equal(await page.evaluate(() => YK_API.remote), false);
+    assert.equal(await page.locator('.collector > .icon-btn').count(), 0, 'settings is no longer a separate corner icon');
+    const settingsEntry = page.locator('button.collector-profile[data-act="settings"]');
+    assert.equal(await settingsEntry.locator('.who').count(), 1, 'avatar/profile region opens settings');
+    await settingsEntry.click();
+    await page.locator('#set-name').waitFor();
+    await page.keyboard.press('Escape');
+    await settle(page);
+    const rarityLabels = await page.locator('.breakdown yk-rarity').evaluateAll(nodes => nodes.map(node => {
+      const style = getComputedStyle(node);
+      return { level: node.getAttribute('level'), font: style.fontFamily, background: style.backgroundColor, image: style.backgroundImage, border: style.borderWidth, color: style.color };
+    }));
+    assert.equal(rarityLabels.length, 5);
+    assert.equal(new Set(rarityLabels.map(label => label.color)).size, 5, 'five distinct rarity text colors');
+    for (const label of rarityLabels) {
+      assert.match(label.font, /Georgia/);
+      assert.equal(label.background, 'rgba(0, 0, 0, 0)');
+      assert.equal(label.image, 'none');
+      assert.equal(label.border, '0px');
+    }
     await noOverflow(page, `static-dex-${width}`);
     assert.equal(await page.locator('.tray .reflective-shell').count(), 0, 'small cards render independently of large cards');
     const smallCards = await page.locator('.tray .cell > .yk-card, .tray .cell > .slot').evaluateAll(nodes => nodes.map(node => {
@@ -160,6 +179,17 @@ try {
   await shared.locator('.share-view .reflective-shell').waitFor(); await settle(shared);
   await shared.locator('.share-view .reflective-shell').click(); await settle(shared);
   assert.ok(await shared.locator('.shareback img').evaluate(i => i.complete && i.naturalWidth > 0));
+  const shareLayout = await shared.locator('.shareback').evaluate(back => ({
+    imageFit: getComputedStyle(back.querySelector('img')).objectFit,
+    bodyOverflow: back.querySelector('.sb-body').scrollWidth > back.querySelector('.sb-body').clientWidth,
+    overflow: back.scrollWidth > back.clientWidth,
+    descriptionColor: getComputedStyle(back.querySelector('.sb-desc')).color,
+    authorColor: getComputedStyle(back.querySelector('.sb-by')).color
+  }));
+  assert.equal(shareLayout.imageFit, 'contain', 'shared photo keeps its complete framing');
+  assert.equal(shareLayout.bodyOverflow || shareLayout.overflow, false, 'share back has no horizontal scrolling');
+  assert.equal(shareLayout.descriptionColor, 'rgb(244, 246, 248)');
+  assert.equal(shareLayout.authorColor, 'rgb(229, 237, 245)');
   await noOverflow(shared, 'cross-device-share');
   await shared.screenshot({ path: join(output, 'release-share-390.png') });
   report.journeys.push('clean browser opens public share with real photo and city-only location');

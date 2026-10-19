@@ -10,7 +10,7 @@
 .reflective-shell .yukomon-fish-card__fish-sheen { mask-image: var(--yk-fish); -webkit-mask-image: var(--yk-fish); }
 .reflective-shell .yukomon-fish-card__number, .reflective-shell .yukomon-fish-card__rarity { top: 5cqw; height: 6cqw; line-height: 6cqw; letter-spacing: 0; }
 .reflective-shell .yukomon-fish-card__number { left: 5cqw; font: 500 4cqw/6cqw var(--mono); }
-.reflective-shell .yukomon-fish-card__rarity { right: 5cqw; font: 600 5.5cqw/6cqw var(--mono); }
+.reflective-shell .yukomon-fish-card__rarity { right: 5cqw; }
 .reflective-shell .yukomon-fish-card__identity { left: 5cqw; right: 5cqw; bottom: 5cqw; }
 .reflective-shell .yukomon-fish-card__identity h3 { font: 600 8cqw/1.2 var(--sans); letter-spacing: 0; }
 .reflective-shell .yukomon-fish-card__identity p { font: 4cqw/1.3 Georgia, serif; overflow-wrap: anywhere; letter-spacing: 0; }
@@ -19,7 +19,7 @@
 .reflective-shell .yukomon-fish-card__fish { image-rendering: pixelated; }
 .reflective-shell .card-back { background: linear-gradient(145deg, #6e7782, #2d323b 40%, #14171d); box-shadow: inset 0 0 0 1px #ffffff45; }
 .reflective-back-foil { position: absolute; inset: 0; opacity: .18; background: linear-gradient(135deg, #b7e7e8, #f5dfef 30%, transparent 70%); mask-image: var(--yk-logo); mask-size: 130cqw; transform: rotate(-18deg) scale(1.5); }
-.reflective-back-content { position: absolute; inset: 0; padding: 8cqw; overflow-y: auto; scrollbar-width: thin; color: #f4f5f7; }
+.reflective-back-content { position: absolute; inset: 0; padding: 8cqw; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; color: #f4f5f7; }
 .reflective-back-content .b-title { display: flex; justify-content: space-between; align-items: baseline; gap: 3cqw; }
 .reflective-back-content h2 { font: 600 8cqw/1.3 var(--sans); margin: 0; }
 .reflective-back-content .no { font: 3.5cqw var(--mono); }
@@ -36,11 +36,7 @@
 .reflective-back-content .cb-ring { width: 24cqw; height: 24cqw; color: #fff; border-color: #ffffff50; }
 .reflective-back-content .cb-ring svg { width: 100%; height: 100%; }
 .reflective-back-content .cb-sub { font: 4cqw var(--sans); letter-spacing: 0; }
-.reflective-back-content:has(.shareback) { padding: 0; }
-.reflective-back-content .shareback { background: #232831; height: 100%; }
-.reflective-back-content .shareback > img { width: 100%; height: 56%; object-fit: cover; display: block; }
-.reflective-back-content .shareback .sb-body { padding: 5cqw; }
-.reflective-back-content .shareback p { margin: 0 0 4cqw; }
+.reflective-back-content:has(.shareback) { padding: 0; overflow: hidden; }
 .reflective-shell.thumb { --rc-radius: 18px; }
 .reflective-shell.thumb .reflective-card__body { border-radius: 18px; }
 .reflective-shell.thumb .yukomon-fish-card__inner { border-radius: 12px; }

@@ -1,6 +1,8 @@
 import React from 'react';
 import ReflectiveCard from './ReflectiveCard.jsx';
 import './YukomonFishCard.css';
+import '@yukomon/rarity';
+import '@yukomon/rarity-style';
 
 const YukomonFishCard = ({
   number = 'YK-001',
@@ -45,7 +47,7 @@ const YukomonFishCard = ({
       <span className="yukomon-fish-card__foil" aria-hidden="true" />
       <span className="yukomon-fish-card__grain" aria-hidden="true" />
       <span className="yukomon-fish-card__number">{number}</span>
-      <span className="yukomon-fish-card__rarity">{rarity}</span>
+      <yk-rarity class="yukomon-fish-card__rarity" level={rarity} tone="dark">{rarity}</yk-rarity>
       <span className="yukomon-fish-card__fish-stage">
         <img className="yukomon-fish-card__fish" src={imageUrl} alt={name} draggable={false} />
         <span className="yukomon-fish-card__fish-sheen" aria-hidden="true" />

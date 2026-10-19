@@ -136,7 +136,7 @@
         <div class="ly frame-art" data-depth="-0.12"></div><div class="ly bubbles" data-depth="-0.05" aria-hidden="true">${bubbles}</div>
         <div class="ly hero" data-depth="0.32">${fish}</div><div class="ly sparkles" data-depth="0.7" aria-hidden="true">${sparkles}</div>
         <div class="holo"></div><div class="glitter"></div><div class="glare"></div><div class="sweep"><i></i></div>
-        <header class="ly f-top" data-depth="0.5"><span class="no">No.<b>${sp.no}</b></span><span class="rare">${rk}</span></header>
+        <header class="ly f-top" data-depth="0.5"><span class="no">No.<b>${sp.no}</b></span>${window.YK_RARITY.html(rk, 'rare', 'dark')}</header>
         <footer class="ly f-name" data-depth="0.42"><h1>${sp.name}</h1><div class="latin">${sp.latin}</div></footer>
       </div><div class="frame"></div><div class="frame-line"></div></article>`;
     const backFace = `<article class="face back"><div class="clip"><div class="b-bg marble-back" data-marble-rarity="${rk}"></div><div class="holo b-holo"></div><div class="glare"></div>${shareBack ? back : `<div class="b-body">${back}</div>`}</div><div class="frame"></div><div class="frame-line"></div></article>`;
@@ -215,7 +215,7 @@
         <div class="frame frame-${rk}"></div>
         <div class="cd-top">
           <span class="cd-no">No.${sp.no}</span>
-          <span class="cd-badge rarity-badge b-${rk}" data-rarity="${rk}">${rk}</span>
+          ${window.YK_RARITY.html(rk, 'cd-badge')}
         </div>
         <div class="cd-name">${sp.name}${ur ? '<em>巨物</em>' : ''}</div>
         <div class="cd-bottom">${bottom}</div>

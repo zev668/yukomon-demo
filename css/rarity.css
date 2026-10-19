@@ -1,0 +1,36 @@
+yk-rarity {
+  --rarity-light: #555e69;
+  --rarity-dark: #f0f2f5;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: var(--rarity-light) !important;
+  font-family: Georgia, 'Times New Roman', serif !important;
+  font-size: 14px;
+  font-weight: 700 !important;
+  font-style: normal;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap;
+  text-shadow: none !important;
+  vertical-align: baseline;
+}
+yk-rarity::before, yk-rarity::after { display: none !important; }
+yk-rarity[level='R'] { --rarity-light: #2560ac; --rarity-dark: #a4ceff; }
+yk-rarity[level='SR'] { --rarity-light: #7446b0; --rarity-dark: #d6b6ff; }
+yk-rarity[level='SSR'] { --rarity-light: #926000; --rarity-dark: #ffdc8b; }
+yk-rarity[level='UR'] { --rarity-light: #b12b64; --rarity-dark: #ffadd0; }
+yk-rarity[tone='dark'] { color: var(--rarity-dark) !important; }
+.breakdown yk-rarity { align-self: flex-start; font-size: 15px; }
+.yk-card.thumb yk-rarity.cd-badge { font-size: 9cqw; }
+.cell .slot yk-rarity.grade { top: 8px; right: 8px; font-size: 10px; }
+.reflective-shell yk-rarity.yukomon-fish-card__rarity { font-size: 6.5cqw; }
+.gallery-card yk-rarity.rare { font-size: 5cqw; }
+.pill:has(> yk-rarity), .sfx-row .btn:has(> yk-rarity) { background: transparent !important; border: 0; }
+.pill.on:has(> yk-rarity) yk-rarity { text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1px; }

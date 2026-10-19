@@ -1,4 +1,20 @@
 .service-settings { margin-bottom: 22px; }
+.collector-profile { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; font: inherit; }
+button.collector-profile { cursor: pointer; }
+.collector-profile:focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; border-radius: 4px; }
+
+.share-view .share-head > .grow, .share-view .share-head > .grow > span { min-width: 0; overflow-wrap: anywhere; }
+.share-view .share-head > button { flex: none; }
+.share-view .card-host > .reflective-shell { --w: min(300px, 100%, calc((100cqh - 16px) * .64)); width: var(--w); }
+.shareback { position: absolute; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr) 44%; overflow: hidden; background: #1c222b; color: #f4f6f8; }
+.shareback .sb-photo { min-width: 0; min-height: 0; margin: 5cqw 5cqw 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #12171e; border-radius: 3cqw; }
+.shareback .sb-photo > img { display: block; width: 100%; height: 100%; margin: 0; border-radius: 0; object-fit: contain; }
+.shareback .sb-body { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 3cqw; padding: 5cqw 6cqw 6cqw; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #778696 transparent; overscroll-behavior: contain; }
+.shareback .sb-body > * { min-width: 0; flex: none; overflow-wrap: anywhere; }
+.shareback .sb-body .sb-desc { display: block; margin: 0; padding: 0; overflow: visible; -webkit-line-clamp: unset; color: #f4f6f8; font: 500 max(12px, 5cqw)/1.5 var(--sans); letter-spacing: 0; }
+.shareback .sb-meta { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 3cqw; padding-top: 3cqw; border-top: 1px solid #ffffff29; color: #bfccd9; font: max(11px, 4cqw)/1.5 var(--sans); }
+.shareback .sb-meta > * { min-width: 0; overflow-wrap: anywhere; }
+.shareback .sb-by { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1cqw 3cqw; margin: 0; color: #e5edf5; font: 500 max(11px, 4cqw)/1.5 var(--sans); }
 .catch-edit { display: grid; gap: 10px; }
 .catch-edit > label { font: 13px/1.5 var(--sans); color: #666; }
 .catch-edit > input, .catch-edit textarea { font: 15px/1.5 var(--sans); width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 6px; color: #111; background: #fff; min-width: 0; }
