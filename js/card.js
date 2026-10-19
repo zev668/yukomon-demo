@@ -215,7 +215,7 @@
         <div class="frame frame-${rk}"></div>
         <div class="cd-top">
           <span class="cd-no">No.${sp.no}</span>
-          ${window.YK_RARITY.html(rk, 'cd-badge')}
+          ${window.YK_RARITY.html(rk, `cd-badge${o.thumb ? ' small-card-rarity' : ''}`)}
         </div>
         <div class="cd-name">${sp.name}${ur ? '<em>巨物</em>' : ''}</div>
         <div class="cd-bottom">${bottom}</div>

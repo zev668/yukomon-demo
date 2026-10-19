@@ -79,7 +79,9 @@ try {
     assert.ok(Math.abs(small[0].ratio - 5 / 7) < .01 && Math.abs(small[1].ratio - 5 / 7) < .01);
     await page.locator('.cell[data-sp="002"]').click();
     await page.waitForFunction(() => document.querySelector('.card-stage video')?.videoWidth === 512); await settle(page);
-    assert.equal(await page.locator('.card-detail-page').evaluate(n => getComputedStyle(n).backgroundColor), 'rgb(0, 0, 0)');
+    assert.equal(await page.locator('.card-detail-page').evaluate(n => getComputedStyle(n).backgroundColor), 'rgb(242, 242, 242)');
+    const heroBackground = await page.locator('.card-detail-hero').evaluate(n => getComputedStyle(n).backgroundImage);
+    assert.ok(heroBackground.includes('linear-gradient') && heroBackground.includes('rgb(0, 0, 0)') && heroBackground.includes('rgb(242, 242, 242)'), 'detail fades from black to the normal canvas');
     assert.deepEqual(await page.evaluate(() => YK_REFLECTIVE.material), material);
     for (const [name, expected] of [['uWarp', 1.4], ['uWarpScale', .5], ['uShine', 2.05], ['uRimIntensity', 0]]) assert.ok(Math.abs(await page.evaluate(name => __tunedUniforms[name], name) - expected) < .001, name);
     assert.ok(await page.evaluate(() => __tunedPixel[3] > 0 && __tunedPixel.slice(0, 3).some(n => n > 10)), 'actual material pixels');

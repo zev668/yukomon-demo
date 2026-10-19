@@ -54,7 +54,7 @@
   const mono = (name, cls = '') => `<span class="mono ${cls}" aria-hidden="true">${esc([...String(name || '钓')][0])}</span>`;
   const rankMedal = (rank) => {
     const file = ({ 1: 'rank-first.svg', 2: 'rank-second.svg', 3: 'rank-third.svg' })[Number(rank)];
-    return file ? `<span class="n rank-medal"><img src="img/${file}?v=pixel-1" alt="第${rank}名"></span>` : `<span class="n">${esc(rank)}</span>`;
+    return file ? `<span class="n rank-medal"><img src="img/${file}?v=original-1" alt="第${rank}名"></span>` : `<span class="n">${esc(rank)}</span>`;
   };
 
   const toast = (msg, ms) => M.toast($('#toast'), msg, ms);
@@ -694,7 +694,7 @@
       list.forEach((sp, i) => {
         const card = cards[sp.no], g = card && card.giant.status === 'approved';
         const cell = el(`<div class="cell" data-sp="${sp.no}" role="button" tabindex="0" ${i < 12 ? 'data-stagger' : ''}>
-          ${card ? '' : `<div class="slot">${tagno(sp.no)}${rb(sp.rarity, 'grade')}${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`}</div>`);
+          ${card ? '' : `<div class="slot">${tagno(sp.no)}${rb(sp.rarity, 'grade small-card-rarity')}${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`}</div>`);
         if (card) cell.prepend(withCorner(C.render(sp, { card, thumb: true, variant: g ? 'ur' : 'normal', giantInfo: g ? giantInfo(card, data.catches) : null }), `<b class="num">${card.catchCount}</b>条`));
         tray.append(cell);
       });
@@ -789,7 +789,7 @@
           const tray = $('.giant-tray', view);
           S.SPECIES.forEach((sp, i) => {
             const card = cards[sp.no], g = card && card.giant.status === 'approved';
-            const lockedCell = card ? '' : `<div class="slot">${tagno(sp.no)}${rb(sp.rarity, 'grade')}${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`;
+            const lockedCell = card ? '' : `<div class="slot">${tagno(sp.no)}${rb(sp.rarity, 'grade small-card-rarity')}${F.fishSVG(sp, { silhouette: true })}<div class="q">${esc(sp.hint)}</div>${cornerTag(null)}</div>`;
             const cell = el(`<div class="cell" data-sp="${sp.no}" role="button" tabindex="0" ${i < 12 ? 'data-stagger' : ''}>
               ${lockedCell}</div>`);
             if (card) cell.prepend(withCorner(C.render(sp, { card, thumb: true, variant: g ? 'ur' : 'normal', giantInfo: g ? giantInfo(card, S.db.catches) : null }), card.bestLengthCm ? `<b class="num">${card.bestLengthCm}</b>cm` : ''));
@@ -996,14 +996,15 @@
         <div><dt>体长</dt><dd>${sp.commonCm}cm · 巨物线 ${sp.giantThresholdCm}cm</dd></div><div><dt>习性</dt><dd>${esc(sp.method)}</dd></div>
       </dl><div class="mine">${ctx.me ? '我' : 'TA'}钓到 <b>${card.catchCount}</b> 次${card.bestLengthCm ? `，最大 <b>${card.bestLengthCm}cm</b>` : ''}<br>${C.fmtDate(card.unlockedAt)} 解锁</div></section>`;
     const rec = page(`No.${sp.no} ${sp.name}`, `
-      <div class="card-stage"></div>
+      <div class="card-detail-hero card-scene"><div class="card-stage"></div>
       ${hasUR ? '<div class="variant"><button class="pill on" data-v="ur">巨物卡</button><button class="pill" data-v="normal">普通卡</button></div>' : ''}
-      ${ctx.me ? '<div class="actions-row"><button class="btn primary" data-share>分享链接</button></div>' : ''}
+      ${ctx.me ? '<div class="actions-row"><button class="btn primary" data-share>分享链接</button></div>' : ''}</div>
       <div class="section-h"><h3>${ctx.me ? '我的' : 'TA 的'}${esc(sp.name)}</h3><span class="num">${card.catchCount} 条</span></div>
       <div class="mine-list entry-list"></div>`);
-    rec.node.classList.add('card-scene', 'card-detail-page');
+    rec.node.classList.add('card-detail-page');
     // 右上角：该鱼种的尺寸排行（巨物榜）。跳到排行榜页的巨物榜，并打开这条鱼的榜单
     const head = $('.page-head', rec.node);
+    head.classList.add('card-scene');
     const rk = el(`<button class="head-act icon-btn detail-rank-btn" data-rank aria-label="${esc(sp.name)}尺寸排行" title="${esc(sp.name)}尺寸排行">${ICON.rankLine}</button>`);
     head.append(rk);
     rk.onclick = () => { closeAll(); state.board = 'giant'; go('rank'); sizeRankPage(sp); };

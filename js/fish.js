@@ -148,7 +148,7 @@
   const pixelSilhouettes = new Map();
   function silhouetteSVG(type, body, fins) {
     if (pixelSilhouettes.has(type)) return pixelSilhouettes.get(type);
-    const step = 5, cols = 40, rows = 20;
+    const step = 2, cols = 100, rows = 50;
     const canvas = document.createElement('canvas');
     canvas.width = cols; canvas.height = rows;
     const ctx = canvas.getContext('2d');
