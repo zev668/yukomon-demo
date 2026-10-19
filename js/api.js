@@ -123,11 +123,22 @@
       await refresh();
     }
     if (localBackup) localStorage.setItem('yukomon-local-demo-backup', localBackup);
+    delete config.mode;
     persist(); install();
     document.dispatchEvent(new Event('yk-data-ready'));
     } catch (error) { config = previous; throw error; }
   }
   async function init() {
+    const url = new URL(location.href);
+    if (url.searchParams.get('demo') === '1') {
+      disconnect();
+      S.fillDemo();
+      url.searchParams.delete('demo');
+      history.replaceState(null, '', url);
+      document.dispatchEvent(new Event('yk-data-ready'));
+      return;
+    }
+    if (config.mode === 'demo') return;
     if (config.base) {
       // Keep remote accounts read-only when temporarily offline, never fall back to local settlement.
       if (S.db.remoteAccount) { install(); cache = S.db; }
@@ -140,13 +151,16 @@
     }
   }
   function disconnect() {
-    clearTimeout(saveTimer); config = {}; persist(); remote = connected = false;
+    clearTimeout(saveTimer);
+    const wasRemote = remote || !!S.db.remoteAccount;
+    if (wasRemote) localStorage.setItem('yukomon-last-cloud-cache', JSON.stringify(S.db));
+    config = { mode: 'demo' }; persist(); remote = connected = false;
     Object.assign(S, originals); delete S.fetchProfile;
     // Preserve the cloud cache separately; a demo must never reuse its server IDs.
-    localStorage.setItem('yukomon-last-cloud-cache', JSON.stringify(S.db));
-    const saved = localStorage.getItem('yukomon-local-demo-backup');
+    const saved = wasRemote && localStorage.getItem('yukomon-local-demo-backup');
     if (saved) { try { S.replace(JSON.parse(saved)); } catch { S.reset(); } }
-    else S.reset();
+    else if (wasRemote) S.reset();
+    Object.assign(window.YK_AUDIO.settings, S.db.settings);
     document.dispatchEvent(new Event('yk-data-ready'));
   }
   document.addEventListener('yk-store-save', () => {

@@ -89,6 +89,19 @@
   // 演示用：预置几条历史渔获，让图鉴/排行榜不是空的
   function seed() {
     db = emptyDB();
+    fillDemo(false);
+    db.gear = { rod: '路亚竿 2.1m ML', reel: '纺车轮 2500型', line: 'PE 1.0号', bait: '米诺 9cm' };
+    db.gearHistory = {
+      rod: ['路亚竿 2.1m ML', '台钓竿 4.5m', '溪流竿 1.8m UL', '雷强竿 2.1m H'],
+      reel: ['纺车轮 2500型', '水滴轮 7.2速比', '纺车轮 1000型'],
+      line: ['PE 1.0号', '尼龙 1.5号', 'PE 0.4号'],
+      bait: ['米诺 9cm', '商品饵', '亮片 2g', '蚯蚓', '雷蛙'],
+    };
+    return db;
+  }
+
+  function fillDemo(persist = true) {
+    if (db.remoteAccount) throw new Error('请先切回本机演示');
     const now = Date.now();
     const day = 86400000;
     const plan = [
@@ -103,12 +116,20 @@
       ['002', 3, 64, '杭州', false, '相册补录：去年的鲤鱼', { rod: '台钓竿 5.4m', line: '尼龙 3.0号', bait: '玉米' }],
       // 尺寸 ≥ 鲇的巨物线 80cm → 直接解锁巨物卡（UR）
       ['022', 1, 86, '杭州', true, '夜钓巨鲶，量鱼板都放不下了', { rod: '路亚竿 2.4m MH', reel: '纺车轮 4000型', line: 'PE 3.0号', bait: '软虫 12cm' }],
+      ['058', 18, 84, '武汉', true, '江边缓流钓到南方鲇，量完尺寸拍照留念', { rod: '路亚竿 2.4m MH', reel: '纺车轮 4000型', line: 'PE 3.0号', bait: '软饵 10cm' }],
+      ['060', 11, 17, '杭州', true, '山溪里的光唇鱼，浅滩石缝有惊喜', { rod: '溪流竿 1.8m UL', reel: '纺车轮 1000型', line: 'PE 0.4号', bait: '亮片 2g' }],
+      ['073', 6, 96, '杭州', true, '水库守到一条青鱼，遛了很久才靠岸', { rod: '台钓竿 7.2m', reel: '', line: '尼龙 6.0号', bait: '螺蛳' }],
+      ['078', 2, 72, '哈尔滨', true, '北方水库的黑斑狗鱼，斑纹比想象中漂亮', { rod: '路亚竿 2.4m H', reel: '水滴轮 7.2速比', line: 'PE 3.0号', bait: '米诺 13cm' }],
     ];
+    const changed = new Set();
     plan.forEach(([no, ago, len, city, verified, desc, gear], i) => {
+      const id = `demo-catch-${i + 1}`;
+      // Recognize the previous release's samples as well as the stable new IDs.
+      if (db.catches.some(c => c.id === id || (!c.photo && c.speciesId === no && c.lengthCm === len && c.desc === desc && c.verified === verified))) return;
       const c = CITIES[city];
       const r = rng(i * 97 + 3);
       const catchObj = {
-        id: uuid(),
+        id,
         status: 'confirmed',
         speciesId: no,
         photo: null,
@@ -125,15 +146,11 @@
         createdAt: now - ago * day - i * 3600000,
       };
       settle(catchObj);
+      changed.add(no);
     });
-    db.gear = { rod: '路亚竿 2.1m ML', reel: '纺车轮 2500型', line: 'PE 1.0号', bait: '米诺 9cm' };
-    db.gearHistory = {
-      rod: ['路亚竿 2.1m ML', '台钓竿 4.5m', '溪流竿 1.8m UL', '雷强竿 2.1m H'],
-      reel: ['纺车轮 2500型', '水滴轮 7.2速比', '纺车轮 1000型'],
-      line: ['PE 1.0号', '尼龙 1.5号', 'PE 0.4号'],
-      bait: ['米诺 9cm', '商品饵', '亮片 2g', '蚯蚓', '雷蛙'],
-    };
-    return db;
+    changed.forEach(rebuildCard);
+    db.catches.sort((a, b) => b.createdAt - a.createdAt);
+    if (persist) save();
   }
 
   // ---------- 易混淆提示（用户自选鱼种时提醒保护物种近似种） ----------
@@ -477,7 +494,7 @@
   }
 
   window.YK_STORE = {
-    load, save, reset, wipe, get db() { return db; },
+    load, save, reset, wipe, fillDemo, get db() { return db; },
     replace(next) { db = next; save(); },
     SPECIES, PROTECTED, byId, CITIES, STAR_STEPS, SCORE,
     confusableTip, checkin, encounter, removeCatch, updateCatch, precheck,

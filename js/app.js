@@ -723,7 +723,7 @@
       else lockedSheet(sp);
     };
     const s = $('[data-act="settings"]', root);
-    if (s) s.onclick = settingsPage;
+    if (s) s.onclick = () => settingsPage();
     const m = $('[data-act="met"]', root);
     if (m) m.onclick = () => metSheet(met, ctx);
     // 刚解锁的那一格：滚到视野里，盖章解锁
@@ -1124,6 +1124,7 @@
       </div></div>
       <div class="settings-group"><span class="eyebrow">试看解锁动画</span><div class="box"><div class="sfx-row">${RARITIES.map((r) => `<button class="btn sm" data-try="${r}">${rb(r)}</button>`).join('')}</div></div></div>
       <div class="settings-group"><span class="eyebrow">数据</span><div class="box">
+        <div class="set-row"><span>填充测试数据</span><button class="btn sm" style="background:var(--bg)" data-demo>填充</button></div>
         <div class="set-row"><span>恢复演示数据</span><button class="btn sm" style="background:var(--bg)" data-reset>恢复</button></div>
         <div class="set-row"><span>清空全部记录</span><button class="btn sm danger" style="background:var(--bg)" data-wipe>清空</button></div>
       </div></div>`);
@@ -1170,6 +1171,7 @@
       const ds = t.dataset;
       if (ds.set) { const k = ds.set; A.settings[k] = !A.settings[k]; db.settings[k] = A.settings[k]; S.save(); t.classList.toggle('on', A.settings[k]); t.setAttribute('aria-checked', A.settings[k]); if (A.settings[k]) k === 'sfx' ? A.play('ui_rank_up') : A.haptic('medium'); }
       else if (ds.try) demoUnlock(ds.try);
+      else if ('demo' in ds) { try { window.YK_API.disconnect(); S.fillDemo(); closeAll(); render(); toast('已填充测试数据'); } catch (error) { toast(error.message); } }
       else if ('reset' in ds) { try { S.reset(); window.YK_MEDIA.prune(); state.draft = null; closeLayer(rec); render(); toast('已恢复演示数据'); } catch (error) { toast(error.message); } }
       else if ('wipe' in ds) confirmSheet('清空全部记录？', '所有渔获和鱼卡都会删除，无法恢复。', '清空', async () => { await S.wipe(); await window.YK_MEDIA.prune(); state.draft = null; closeLayer(rec); render(); toast('已清空'); });
     });

@@ -286,6 +286,71 @@ try {
   assert.equal(await a.evaluate(() => YK_API.remote), false);
   assert.equal(await a.evaluate(() => YK_STORE.db.me.nickname), '大鱼');
   report.journeys.push('edit and delete through UI, giant retraction, export download, disconnect restores original local data');
+
+  // Exercise demo mode against a healthy service, including account round trips.
+  await a.evaluate(() => {
+    YK_STORE.checkin({ source: 'album', photo: null, desc: '保留的本机记录', lengthCm: 42, released: true, location: { city: '杭州' }, gear: {} }, '003');
+    YK_STORE.db.me.nickname = '演示保留';
+    YK_STORE.db.draft = { desc: '保留的本机草稿' };
+    YK_STORE.save();
+  });
+  await a.locator('[data-act="settings"]').click();
+  await a.locator('[data-demo]').click(); await settle(a);
+  assert.equal(await a.evaluate(() => YK_STORE.db.catches.length), 15);
+  await a.reload(); await settle(a);
+  assert.equal(await a.evaluate(() => YK_API.remote), false, 'demo choice survives a healthy localhost reload');
+  assert.equal(await a.evaluate(() => YK_STORE.db.me.nickname), '演示保留');
+  assert.equal(await a.evaluate(() => YK_STORE.db.draft.desc), '保留的本机草稿');
+  await a.locator('[data-act="settings"]').click(); await a.locator('.service-settings').click();
+  await a.locator('#service-url').fill(base); await a.locator('[data-connect]').click();
+  await a.waitForFunction(() => YK_API.connected && YK_API.remote);
+  assert.equal(await a.evaluate(() => YK_STORE.db.catches.length), 2, 'demo samples never enter the online account');
+  assert.equal(await a.evaluate(() => JSON.parse(localStorage.getItem('yukomon-api-config-v1')).mode), undefined);
+  await a.goto(`${base}/?demo=1`); await a.waitForFunction(() => !!window.YK_APP && !YK_API.remote);
+  await settle(a);
+  assert.equal(new URL(a.url()).searchParams.has('demo'), false, 'entry parameter is consumed so manual reconnect remains usable');
+  assert.equal(await a.evaluate(() => YK_STORE.db.catches.length), 15);
+  assert.equal(await a.evaluate(() => YK_STORE.db.me.nickname), '演示保留');
+  assert.equal(await a.evaluate(() => JSON.parse(localStorage.getItem('yukomon-last-cloud-cache')).catches.length), 2);
+  await a.goto(`${base}/?demo=1`); await a.waitForFunction(() => !!window.YK_APP && !YK_API.remote); await settle(a);
+  assert.equal(await a.evaluate(() => YK_STORE.db.catches.length), 15, 'repeated entry does not duplicate samples or restore a stale backup');
+  const demoData = await a.evaluate(() => ({
+    catches: YK_STORE.db.catches.length,
+    unlocked: Object.keys(YK_STORE.db.cards).length,
+    by: YK_STORE.dexProgress().by,
+    national: YK_STORE.rankOf('nation').total,
+    city: YK_STORE.rankOf('city').total,
+    mine: YK_STORE.rankOf('nation').me,
+    albumRank: YK_STORE.sizeRankOf('002', 'nation').me,
+    giantRank: YK_STORE.sizeRankOf('022', 'nation').me,
+  }));
+  for (const rarity of ['N', 'R', 'SR', 'SSR', 'UR']) assert.ok(demoData.by[rarity] > 0, `unlocked ${rarity} samples`);
+  assert.equal(demoData.national, 161); assert.ok(demoData.city > 1 && demoData.mine);
+  assert.equal(demoData.albumRank, null, 'album-only catch remains off the size leaderboard');
+  assert.equal(demoData.giantRank.lengthCm, 86);
+  report.demoData = demoData;
+  await noOverflow(a, 'demo-dex-390');
+  await a.screenshot({ path: join(output, 'demo-data-dex-390.png') });
+  await a.locator('[data-f="SSR"]').click(); await settle(a);
+  assert.equal(await a.locator('.tray .cell > .yk-card').count(), 2);
+  await a.locator('.tray .cell[data-sp="073"]').click(); await settle(a);
+  assert.equal(await a.locator('.card-stage .reflective-shell').getAttribute('data-rarity'), 'SSR');
+  await a.locator('.card-stage .reflective-shell').click(); await settle(a);
+  await noOverflow(a, 'demo-SSR-back-390');
+  await a.screenshot({ path: join(output, 'demo-data-SSR-back-390.png') });
+  await a.keyboard.press('Escape'); await settle(a);
+  await a.locator('[data-tab="rank"]').click(); await settle(a);
+  assert.equal(await a.locator('.board .rank-row').count(), 100);
+  await a.screenshot({ path: join(output, 'demo-data-rank-390.png') });
+  await a.locator('.board [data-user]').first().click(); await settle(a);
+  assert.ok(await a.locator('.profile-root .cell > .yk-card').count() > 0);
+  await a.keyboard.press('Escape'); await settle(a);
+  await a.locator('[data-board="giant"]').click(); await settle(a);
+  await a.locator('.giant-tray .cell[data-sp="022"]').click(); await settle(a);
+  assert.ok(await a.locator('.size-rank .board .rank-row').count() > 1);
+  await noOverflow(a, 'demo-size-rank-390');
+  await a.screenshot({ path: join(output, 'demo-data-size-rank-390.png') });
+  report.journeys.push('demo fill preserves local records/draft and online account; repeat/reload persistence; all rarities, mock profiles, national/city/size ranks');
   await aContext.close();
   const reducedContext = await browser.newContext({ viewport: { width: 390, height: 667 }, reducedMotion: 'reduce' });
   const reduced = await initPage(reducedContext, { offline: true });
