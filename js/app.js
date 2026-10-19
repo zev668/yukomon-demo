@@ -587,7 +587,7 @@
     const sp = res.species, card = res.card, ur = !!opts.ur, rk = ur ? 'UR' : sp.rarity;
     const isNew = res.events.includes('new');
     const dex = S.dexProgress();
-    const node = el(`<div class="layer unlock r-${rk}" style="--rc:${C.RV[rk].color}">
+    const node = el(`<div class="layer unlock card-scene r-${rk}" style="--rc:${C.RV[rk].color}">
       <div class="glow"></div><div class="rays"></div><div class="pillar"></div><div class="ring"></div><div class="burst"></div>
       ${ur ? '<div class="blackout"></div><div class="crack"></div>' : ''}<div class="flash"></div>
       <button class="skip">跳过</button>
@@ -1001,6 +1001,7 @@
       ${ctx.me ? '<div class="actions-row"><button class="btn primary" data-share>分享链接</button></div>' : ''}
       <div class="section-h"><h3>${ctx.me ? '我的' : 'TA 的'}${esc(sp.name)}</h3><span class="num">${card.catchCount} 条</span></div>
       <div class="mine-list entry-list"></div>`);
+    rec.node.classList.add('card-scene', 'card-detail-page');
     // 右上角：该鱼种的尺寸排行（巨物榜）。跳到排行榜页的巨物榜，并打开这条鱼的榜单
     const head = $('.page-head', rec.node);
     const rk = el(`<button class="head-act icon-btn detail-rank-btn" data-rank aria-label="${esc(sp.name)}尺寸排行" title="${esc(sp.name)}尺寸排行">${ICON.rankLine}</button>`);
@@ -1087,7 +1088,7 @@
       <div class="sb-body"><p class="sb-desc">${esc(p.d)}</p>
         <div class="sb-meta"><span>${esc(p.city || '未知水域')}</span><span class="num">${C.fmtDate(p.t)}</span></div>
         <div class="sb-by"><span>${esc(p.by)}</span><span>${esc(sp.name)}${p.len ? ` <span class="num">${p.len}cm</span>` : ''}</span></div></div></div>`;
-    const node = el(`<div class="layer page share-view">
+    const node = el(`<div class="layer page share-view card-scene">
       <header class="share-head"><span class="grow">${mono(p.by, 'sm')}<span><b>${esc(p.by)}</b> 的渔获</span></span><button class="btn sm" data-close>${fromLink ? '进入 Yukomon' : '关闭预览'}</button></header>
       <div class="share-stage"><div class="card-host"></div></div>
       <div class="share-foot"><button class="cta" data-cta><span>我也来记录渔获</span><i class="dot">${ICON.arrow}</i></button></div></div>`);

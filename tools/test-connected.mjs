@@ -198,9 +198,9 @@ try {
   await b.locator('.profile-root .cell[data-sp="001"]').click(); await settle(b);
   await b.locator('.mine-list [data-i]').first().click(); await settle(b);
   const like = b.locator('[data-like]'); await like.click(); await b.waitForFunction(() => document.querySelector('[data-like]')?.getAttribute('aria-pressed') === 'true');
-  assert.equal(await like.locator('.num').innerText(), '1');
+  assert.equal(await like.locator('.num').textContent(), '1');
   await like.click(); await b.waitForFunction(() => document.querySelector('[data-like]')?.getAttribute('aria-pressed') === 'false');
-  assert.equal(await like.locator('.num').innerText(), '0');
+  assert.equal(await like.locator('.num').textContent(), '0');
   report.journeys.push('second account opens real rank/profile/catch and likes/unlikes');
   const shareContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const shared = await shareContext.newPage(); watch(shared); await shared.goto(url);

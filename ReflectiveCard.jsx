@@ -122,6 +122,11 @@ uniform float uWarp;
 uniform float uWarpScale;
 uniform float uShine;
 uniform float uBevel;
+uniform float uBevelStrength;
+uniform float uRimIntensity;
+uniform float uRimWidth;
+uniform float uRimSoftness;
+uniform float uRimDepth;
 uniform float uGlare;
 uniform vec2 uPointer;
 uniform float uTheme;
@@ -248,7 +253,7 @@ void main() {
 
   float chamferWidth = min(uBevel, max(r, 1.0));
   float chamfer = chamferWidth > 0.01 ? 1.0 - smoothstep(0.0, chamferWidth, -d) : 0.0;
-  vec2 slope = outward * chamfer;
+  vec2 slope = outward * chamfer * uBevelStrength;
 
   vec2 wp = p / (220.0 * uWarpScale);
   vec3 w1 = gradientNoise(wp);
@@ -290,6 +295,24 @@ void main() {
   vec3 dark = vec3(0.005, 0.005, 0.006) + uTint * (scene * 0.05 * uMetal + highlight * 0.36);
   vec3 light = uTint * (vec3(0.83, 0.83, 0.85) * (1.0 - 0.45 * uMetal * (1.0 - clamp(scene, 0.0, 1.0))) + highlight * 0.35);
   vec3 color = mix(dark, light, uTheme);
+  if (uRimIntensity > 0.0) {
+    // The rounded lip catches world-space lights as the plate tilts.
+    float inset = max(-d, 0.0);
+    float width = max(uRimWidth, 0.25);
+    float sigmaRim = max(width * uRimSoftness, 0.22 / uScale);
+    float ridge = exp(-0.5 * pow((inset - width * 0.65) / sigmaRim, 2.0));
+    float groove = exp(-0.5 * pow((inset - width * 1.95) / max(width * 0.42, 0.35), 2.0));
+    vec3 rimNormal = uRotate * normalize(vec3(outward * 0.48, 0.88));
+    vec3 eye = -view;
+    vec3 keyHalf = normalize(normalize(vec3(-0.65, -0.8, 1.0)) + eye);
+    vec3 fillHalf = normalize(normalize(vec3(0.8, 0.65, 0.65)) + eye);
+    float keyLight = pow(max(dot(rimNormal, keyHalf), 0.0), 22.0);
+    float fillLight = pow(max(dot(rimNormal, fillHalf), 0.0), 32.0);
+    float fresnel = pow(1.0 - clamp(dot(rimNormal, eye), 0.0, 1.0), 3.0);
+    float rimLight = 0.045 + keyLight * 0.65 + fillLight * 0.38 + fresnel * 0.5;
+    color *= 1.0 - min(groove * uRimDepth * uRimIntensity * 0.65, 0.85);
+    color += uTint * ridge * rimLight * uRimIntensity;
+  }
   color = min(color, 0.7) + 0.3 * (1.0 - exp(-max(color - 0.7, 0.0) / 0.3));
   color = pow(clamp(color, 0.0, 1.0), vec3(1.0 / 2.2));
 
@@ -528,6 +551,11 @@ const createRenderer = canvas => {
     gl.uniform1f(u.uWarpScale, settings.warpScale);
     gl.uniform1f(u.uShine, settings.shine);
     gl.uniform1f(u.uBevel, settings.bevel);
+    gl.uniform1f(u.uBevelStrength, settings.bevelStrength);
+    gl.uniform1f(u.uRimIntensity, settings.rimIntensity);
+    gl.uniform1f(u.uRimWidth, settings.rimWidth);
+    gl.uniform1f(u.uRimSoftness, settings.rimSoftness);
+    gl.uniform1f(u.uRimDepth, settings.rimDepth);
     gl.uniform1f(u.uGlare, glare);
     gl.uniform2f(u.uPointer, pointerX, pointerY);
     gl.uniform1f(u.uTheme, settings.theme);
@@ -572,9 +600,16 @@ const ReflectiveCard = ({
   warpScale = 1,
   shine = 1,
   bevel = 3,
+  bevelStrength = 1,
+  rimIntensity = 0,
+  rimWidth = 1,
+  rimSoftness = 0.4,
+  rimDepth = 0.6,
   glare = 0.5,
   enableTilt = true,
   tiltStrength = 12,
+  onTiltChange,
+  interactionElement,
   enableMobileTilt = false,
   mobileTiltSensitivity = 5,
   intro = true,
@@ -592,6 +627,7 @@ const ReflectiveCard = ({
   const wakeRef = useRef(null);
   const aimRef = useRef(null);
   const errorRef = useRef(onWebcamError);
+  const tiltChangeRef = useRef(onTiltChange);
   const [generation, setGeneration] = useState(0);
 
   const palette = theme === 'light' ? 'light' : 'dark';
@@ -605,6 +641,11 @@ const ReflectiveCard = ({
     warpScale: clamp(warpScale, 0.2, 4),
     shine: clamp(shine, 0, 3),
     bevel: clamp(bevel, 0, 16),
+    bevelStrength: clamp(bevelStrength, 0, 2),
+    rimIntensity: clamp(rimIntensity, 0, 2),
+    rimWidth: clamp(rimWidth, 0.35, 3),
+    rimSoftness: clamp(rimSoftness, 0.15, 1.2),
+    rimDepth: clamp(rimDepth, 0, 1),
     glare: clamp(glare, 0, 1),
     enableTilt,
     tiltStrength: clamp(tiltStrength, 0, 30),
@@ -615,6 +656,7 @@ const ReflectiveCard = ({
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
   errorRef.current = onWebcamError;
+  tiltChangeRef.current = onTiltChange;
 
   useEffect(() => {
     wakeRef.current?.();
@@ -635,6 +677,7 @@ const ReflectiveCard = ({
     const videoElement = videoRef.current;
     const camElement = camRef.current;
     if (!root || !body || !canvas || !videoElement || !camElement) return;
+    const input = interactionElement || root;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const renderer = createRenderer(canvas);
@@ -647,6 +690,8 @@ const ReflectiveCard = ({
       element,
       src: '',
       time: -1,
+      frame: 0,
+      frameCallback: 0,
       ready: false,
       failed: false,
       width: 0,
@@ -665,26 +710,40 @@ const ReflectiveCard = ({
     let lost = false;
     let envKey = '';
     let envFresh = false;
+    let pendingPointer = null;
+    let tiltX, tiltY;
+    const written = new Map();
+    const setStyle = (property, value) => {
+      if (written.get(property) === value) return;
+      written.set(property, value);
+      root.style.setProperty(property, value);
+    };
 
     const write = () => {
       const { enableTilt: tiltOn, tiltStrength: strength } = settingsRef.current;
       const angle = tiltOn && !reduced ? strength : 0;
-      const style = root.style;
-      style.setProperty('--rc-rotate-x', `${(y.p * angle).toFixed(3)}deg`);
-      style.setProperty('--rc-rotate-y', `${(-x.p * angle).toFixed(3)}deg`);
-      style.setProperty('--rc-shift-x', `${(x.p * 16).toFixed(2)}px`);
-      style.setProperty('--rc-shift-y', `${(y.p * 16).toFixed(2)}px`);
-      style.setProperty('--rc-light-x', `${((x.p + 1) * 50).toFixed(2)}%`);
-      style.setProperty('--rc-light-y', `${((y.p + 1) * 50).toFixed(2)}%`);
-      style.setProperty('--rc-pointer-x', `${((x.p + 1) * 50).toFixed(2)}%`);
-      style.setProperty('--rc-pointer-y', `${((y.p + 1) * 50).toFixed(2)}%`);
-      style.setProperty('--rc-band-x', `${(50 + x.p * 15).toFixed(2)}%`);
-      style.setProperty('--rc-band-y', `${(50 + y.p * 15).toFixed(2)}%`);
-      style.setProperty('--rc-active', light.p.toFixed(4));
-      style.setProperty('--rc-reach', Math.min(1, Math.hypot(x.p, y.p)).toFixed(4));
+      const nextX = Number((y.p * angle).toFixed(3));
+      const nextY = Number((-x.p * angle).toFixed(3));
+      setStyle('--rc-rotate-x', `${nextX}deg`);
+      setStyle('--rc-rotate-y', `${nextY}deg`);
+      if (nextX !== tiltX || nextY !== tiltY) {
+        tiltX = nextX;
+        tiltY = nextY;
+        tiltChangeRef.current?.({ x: nextX, y: nextY });
+      }
+      setStyle('--rc-shift-x', `${(x.p * 16).toFixed(2)}px`);
+      setStyle('--rc-shift-y', `${(y.p * 16).toFixed(2)}px`);
+      setStyle('--rc-light-x', `${((x.p + 1) * 50).toFixed(2)}%`);
+      setStyle('--rc-light-y', `${((y.p + 1) * 50).toFixed(2)}%`);
+      setStyle('--rc-pointer-x', `${((x.p + 1) * 50).toFixed(2)}%`);
+      setStyle('--rc-pointer-y', `${((y.p + 1) * 50).toFixed(2)}%`);
+      setStyle('--rc-band-x', `${(50 + x.p * 15).toFixed(2)}%`);
+      setStyle('--rc-band-y', `${(50 + y.p * 15).toFixed(2)}%`);
+      setStyle('--rc-active', light.p.toFixed(4));
+      setStyle('--rc-reach', Math.min(1, Math.hypot(x.p, y.p)).toFixed(4));
       const eased = 1 - Math.pow(1 - presence, 3);
-      style.setProperty('--rc-presence', eased.toFixed(4));
-      style.setProperty('--rc-lift', `${((1 - eased) * 14).toFixed(2)}px`);
+      setStyle('--rc-presence', eased.toFixed(4));
+      setStyle('--rc-lift', `${((1 - eased) * 14).toFixed(2)}px`);
     };
 
     const refresh = (key, source) => {
@@ -704,7 +763,10 @@ const ReflectiveCard = ({
         return false;
       }
       if (element.readyState < 2 || !element.videoWidth) return false;
-      const time = element.currentTime;
+      // Media time advances between decoded frames; upload each presented frame once.
+      const time = element.requestVideoFrameCallback
+        ? source.frame
+        : (element.getVideoPlaybackQuality?.().totalVideoFrames || element.currentTime);
       if (source.ready && time === source.time) return false;
       if (!renderer || !renderer.upload(key, element)) {
         source.failed = true;
@@ -743,6 +805,19 @@ const ReflectiveCard = ({
       if (lost) return;
       const dt = Math.min(0.05, (now - last) / 1000 || 0);
       last = now;
+      if (pendingPointer) {
+        const rect = input.getBoundingClientRect();
+        if (rect.width && rect.height) {
+          const nx = clamp(((pendingPointer.x - rect.left) / rect.width) * 2 - 1, -1, 1);
+          const ny = clamp(((pendingPointer.y - rect.top) / rect.height) * 2 - 1, -1, 1);
+          pointer.x = nx * size.width * 0.5;
+          pointer.y = ny * size.height * 0.5;
+          x.target = nx;
+          y.target = ny;
+          light.target = 1;
+        }
+        pendingPointer = null;
+      }
       const slow = now < slowUntil;
       const stiffness = slow ? 24 : 120;
       const damping = slow ? 9 : 16;
@@ -779,7 +854,7 @@ const ReflectiveCard = ({
         if (sources.cam.mix < 1 && refresh('video', sources.video)) envFresh = true;
         if (refresh('cam', sources.cam)) envFresh = true;
         for (const source of [sources.video, sources.cam]) {
-          if (source.src && !source.failed && !source.element.paused) playing = true;
+          if (source.src && !source.failed && !source.element.paused && !source.element.requestVideoFrameCallback) playing = true;
           if (fade(source, dt)) envFresh = true;
           if (source.mix > 0 && source.mix < 1) playing = true;
         }
@@ -826,22 +901,20 @@ const ReflectiveCard = ({
     wakeRef.current = wake;
 
     const aim = (nx, ny, on = true) => {
+      pendingPointer = null;
       x.target = clamp(nx, -1, 1);
       y.target = clamp(ny, -1, 1);
       light.target = on ? 1 : 0;
       slowUntil = 0;
       wake();
     };
-    aimRef.current = aim;
+    aimRef.current = (nx, ny) => { if (touchId === null) aim(nx, ny); };
 
     const aimAt = event => {
-      const rect = root.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      const nx = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      const ny = ((event.clientY - rect.top) / rect.height) * 2 - 1;
-      pointer.x = nx * size.width * 0.5;
-      pointer.y = ny * size.height * 0.5;
-      aim(nx, ny);
+      // Read the stable input plane once per animation frame, before style writes.
+      pendingPointer = { x: event.clientX, y: event.clientY };
+      slowUntil = 0;
+      wake();
     };
 
     const release = () => aim(0, 0, false);
@@ -858,20 +931,23 @@ const ReflectiveCard = ({
     const onDown = event => {
       if (event.pointerType === 'mouse') return;
       touchId = event.pointerId;
+      if (event.isTrusted) input.setPointerCapture?.(touchId);
       aimAt(event);
     };
     const onUp = event => {
       if (event.pointerId !== touchId) return;
       touchId = null;
+      if (input.hasPointerCapture?.(event.pointerId)) input.releasePointerCapture(event.pointerId);
       release();
     };
 
-    root.addEventListener('pointerenter', onEnter);
-    root.addEventListener('pointermove', onMove);
-    root.addEventListener('pointerleave', onLeave);
-    root.addEventListener('pointerdown', onDown);
-    root.addEventListener('pointerup', onUp);
-    root.addEventListener('pointercancel', onUp);
+    input.addEventListener('pointerenter', onEnter);
+    input.addEventListener('pointermove', onMove);
+    input.addEventListener('pointerleave', onLeave);
+    input.addEventListener('pointerdown', onDown);
+    input.addEventListener('pointerup', onUp);
+    input.addEventListener('pointercancel', onUp);
+    input.addEventListener('lostpointercapture', onUp);
 
     const onLost = event => {
       event.preventDefault();
@@ -913,6 +989,15 @@ const ReflectiveCard = ({
     for (const element of [videoElement, camElement]) {
       for (const type of mediaEvents) element.addEventListener(type, onMedia);
     }
+    for (const source of Object.values(sources)) {
+      if (!source.element.requestVideoFrameCallback) continue;
+      const onVideoFrame = () => {
+        source.frame++;
+        wake();
+        source.frameCallback = source.element.requestVideoFrameCallback(onVideoFrame);
+      };
+      source.frameCallback = source.element.requestVideoFrameCallback(onVideoFrame);
+    }
 
     if (settingsRef.current.intro && !reduced && generation === 0) {
       x.p = 0.62;
@@ -934,24 +1019,29 @@ const ReflectiveCard = ({
       resizeObserver.disconnect();
       intersection.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
-      root.removeEventListener('pointerenter', onEnter);
-      root.removeEventListener('pointermove', onMove);
-      root.removeEventListener('pointerleave', onLeave);
-      root.removeEventListener('pointerdown', onDown);
-      root.removeEventListener('pointerup', onUp);
-      root.removeEventListener('pointercancel', onUp);
+      input.removeEventListener('pointerenter', onEnter);
+      input.removeEventListener('pointermove', onMove);
+      input.removeEventListener('pointerleave', onLeave);
+      input.removeEventListener('pointerdown', onDown);
+      input.removeEventListener('pointerup', onUp);
+      input.removeEventListener('pointercancel', onUp);
+      input.removeEventListener('lostpointercapture', onUp);
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
       for (const element of [videoElement, camElement]) {
         for (const type of mediaEvents) element.removeEventListener(type, onMedia);
       }
+      for (const source of Object.values(sources)) {
+        if (source.frameCallback) source.element.cancelVideoFrameCallback(source.frameCallback);
+      }
       renderer?.dispose();
     };
-  }, [generation]);
+  }, [generation, interactionElement]);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root || !enableMobileTilt) return;
+    const input = interactionElement || root;
     let listening = false;
     const onOrientation = event => {
       if (event.beta == null || event.gamma == null) return;
@@ -976,12 +1066,12 @@ const ReflectiveCard = ({
         listen();
       }
     };
-    root.addEventListener('click', request);
+    input.addEventListener('click', request);
     return () => {
-      root.removeEventListener('click', request);
+      input.removeEventListener('click', request);
       window.removeEventListener('deviceorientation', onOrientation);
     };
-  }, [enableMobileTilt, mobileTiltSensitivity]);
+  }, [enableMobileTilt, mobileTiltSensitivity, interactionElement]);
 
   useEffect(() => {
     const video = videoRef.current;

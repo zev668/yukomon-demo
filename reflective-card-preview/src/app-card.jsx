@@ -2,11 +2,13 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import YukomonFishCard from '../../YukomonFishCard.jsx';
+import material from './app-material.json';
 import './app-card.css';
 
 const roots = new Map();
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const logo = new URL('img/yukomon-pixel-logo.svg', document.baseURI).href;
+const videoSrc = new URL(material.videoSrc, document.baseURI).href;
 function create(sp, o = {}) {
   const rarity = o.variant === 'ur' ? 'UR' : sp.rarity;
   const card = o.card || {};
@@ -26,9 +28,11 @@ function create(sp, o = {}) {
   if (o.thumb) {
     host.innerHTML = `<div class="reflective-card yukomon-fish-card"><div class="reflective-card__body"><div class="reflective-card__content"><div class="yukomon-fish-card__inner"><span class="yukomon-fish-card__laser" aria-hidden="true"></span><span class="yukomon-fish-card__number">YK-${sp.no}</span>${window.YK_RARITY.html(rarity, 'yukomon-fish-card__rarity', 'dark')}<span class="yukomon-fish-card__fish-stage"><img class="yukomon-fish-card__fish" src="${esc(imageUrl)}" alt="${esc(sp.name)}" loading="lazy" draggable="false"></span><span class="yukomon-fish-card__scrim"></span><div class="yukomon-fish-card__identity"><h3>${esc(sp.name)}</h3><p>${esc(sp.latin)}</p></div><span class="yukomon-fish-card__inner-rim"></span></div><p class="yukomon-fish-card__description">${esc(description)}</p></div></div></div>`;
   } else {
+    const tilt = shell.querySelector('.card-tilt');
     const root = createRoot(host);
     roots.set(shell, root);
-    flushSync(() => root.render(<YukomonFishCard number={`YK-${sp.no}`} rarity={rarity} name={sp.name} englishName={sp.latin} description={description} imageUrl={imageUrl} width="100%" height="100%" radius={24} intro={false} enableTilt={false} enableMobileTilt={true} holo={rarity === 'N' ? .35 : rarity === 'UR' ? 1 : .8} />));
+    // App timelines own the entrance; the component drives the shared front/back tilt.
+    flushSync(() => root.render(<YukomonFishCard {...material.values} theme={material.theme} videoSrc={videoSrc} number={`YK-${sp.no}`} rarity={rarity} name={sp.name} englishName={sp.latin} description={description} imageUrl={imageUrl} width="100%" height="100%" intro={false} enableTilt={material.enableTilt} enableMobileTilt={true} interactionElement={shell} onTiltChange={({ x, y }) => { tilt.style.transform = `rotateX(${x.toFixed(3)}deg) rotateY(${y.toFixed(3)}deg)`; }} />));
   }
   if (o.interactive) {
     shell.setAttribute('role', 'button'); shell.tabIndex = 0;
@@ -46,4 +50,4 @@ function create(sp, o = {}) {
 new MutationObserver(() => {
   for (const [node, root] of roots) if (!node.isConnected) { root.unmount(); roots.delete(node); }
 }).observe(document.getElementById('app'), { childList: true, subtree: true });
-window.YK_REFLECTIVE = { create, get mountedCount() { return roots.size; } };
+window.YK_REFLECTIVE = { create, material, get mountedCount() { return roots.size; } };

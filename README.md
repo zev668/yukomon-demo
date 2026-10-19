@@ -2,7 +2,7 @@
 
 在线演示：https://zev668.github.io/yukomon-demo/
 
-像素界面与 ReflectiveCard 玻璃卡片的钓鱼收藏原型。图鉴、尺寸榜、卡片详情、翻面、解锁与分享使用同一套卡片材质；缩略图静态渲染，大卡使用 WebGL 反射。
+像素界面与 ReflectiveCard 玻璃卡片的钓鱼收藏原型。详情、翻面、解锁与分享大卡使用 WebGL 反射；图鉴和尺寸榜小卡独立保留原有样式与 5:7 比例。
 
 本版包含可本地运行的服务端：登录会话、媒体、渔获、图鉴结算、排行、点赞、分享、导出和删除。GitHub Pages 运行本机演示；真实多人功能需要连接部署后的后端。产品正式路线是微信原生小程序，当前可操作演示仍是 H5。
 
@@ -34,6 +34,18 @@ npm run test:e2e
 npm --prefix reflective-card-preview ci
 npm run build:cards
 ```
+
+`reflective-card-preview/src/app-material.json` 保存已确认的 App 材质参数。反射使用随仓库提供的慢水波视频，独立参数面板可通过 `npm --prefix reflective-card-preview run dev` 打开。
+
+大卡交互及材质回归检查：
+
+```sh
+node tools/check-card-motion.mjs
+node tools/check-tuned-card.mjs
+node tools/check-card-material.mjs
+```
+
+最后一项需要先启动独立参数面板，默认地址为 http://127.0.0.1:4320/ 。
 
 本地完整设计工作区的主网站在 `demo/`，GitHub 发布仓库的网站在根目录；构建与服务端兼容这两种布局。
 

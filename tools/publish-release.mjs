@@ -36,9 +36,12 @@ for (const path of ['package.json', 'package-lock.json', 'Dockerfile', 'compose.
   'server/app.mjs', 'server/index.mjs', 'server/database.mjs', 'server/catalog.mjs', 'server/backup.mjs', 'server/.env.example', 'server/README.md', 'server/test/api.test.mjs',
   'clients/wechat/api.js', 'ReflectiveCard.jsx', 'ReflectiveCard.css', 'YukomonFishCard.jsx', 'YukomonFishCard.css',
   'reflective-card-preview/package.json', 'reflective-card-preview/package-lock.json', 'reflective-card-preview/vite.config.js', 'reflective-card-preview/vite.app.config.js', 'reflective-card-preview/index.html',
-  'reflective-card-preview/src/main.jsx', 'reflective-card-preview/src/preview.css', 'reflective-card-preview/src/app-card.jsx', 'reflective-card-preview/src/app-card.css',
+  'reflective-card-preview/src/main.jsx', 'reflective-card-preview/src/MaterialLab.jsx', 'reflective-card-preview/src/material-settings.js',
+  'reflective-card-preview/src/preview.css', 'reflective-card-preview/src/app-card.jsx', 'reflective-card-preview/src/app-card.css', 'reflective-card-preview/src/app-material.json',
   'reflective-card-preview/public/assets/clownfish.webp', 'reflective-card-preview/public/assets/yukomon-logo.svg', 'reflective-card-preview/public/assets/yukomon-pixel-logo.svg',
-  'tools/test-connected.mjs', 'tools/publish-release.mjs', 'docs/RELEASE-0.2.0.md']) add(path);
+  'reflective-card-preview/public/assets/reflective-card-reference.png', 'reflective-card-preview/public/videos/slow-ripples.mp4',
+  'tools/test-connected.mjs', 'tools/check-card-motion.mjs', 'tools/check-tuned-card.mjs', 'tools/check-card-material.mjs', 'tools/build-ripple-video.mjs',
+  'tools/publish-release.mjs', 'docs/RELEASE-0.2.0.md']) add(path);
 add(existsSync(join(root, '.release.gitignore')) ? '.release.gitignore' : '.gitignore', '.gitignore');
 for (const file of files.values()) if (/\.(env|sqlite|keystore|pem|key)$|(^|\/)node_modules\/|(^|\/)data\//.test(file.path)) throw new Error(`Private path in manifest: ${file.path}`);
 const branch = api(repo).default_branch;

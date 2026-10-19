@@ -1,0 +1,45 @@
+.card-scene {
+  --canvas: #000;
+  --paper: #171719;
+  --ink: #f4f5f7;
+  --bg: #000;
+  --bg-2: #29292d;
+  --card: #171719;
+  --g100: #2c2c30;
+  --g200: #303034;
+  --g300: #505057;
+  --g500: #aeb0b8;
+  --g600: #babcc5;
+  --g700: #d2d4dc;
+  --g800: #252528;
+  --taupe: #aeb0b8;
+  --sand: #d2d4dc;
+  color: #f4f5f7;
+  color-scheme: dark;
+}
+.page.card-scene, .unlock.card-scene { background: #000 !important; }
+.card-scene .sub-head {
+  background: rgba(0, 0, 0, .86);
+  box-shadow: 0 1px 0 #ffffff1a;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+.card-scene .sub-head .icon-btn { background: #202023; color: #f4f5f7; }
+.card-scene .btn { background: #252528; color: #f4f5f7; }
+.card-scene .btn:hover { background: #343439; }
+.card-scene .btn.primary, .card-scene .btn.accent { background: #f4f5f7; color: #111113; }
+.card-scene .btn.primary:hover, .card-scene .btn.accent:hover { background: #d9dbe1; }
+.card-scene .variant .pill { background: #252528; color: #babcc5; }
+.card-scene .variant .pill.on { background: #f4f5f7; color: #111113; }
+.card-scene .entry { background: #171719; }
+.card-scene .entry:hover { background: #242428; }
+.card-scene .entry .t, .card-scene .entry .t .where { color: #f4f5f7; }
+.card-scene .entry .m, .card-scene .entry .t .when, .card-scene .entry .t .size small { color: #aeb0b8; }
+.card-scene .share-head { padding-top: max(16px, env(safe-area-inset-top)); }
+.card-scene .share-head .grow { color: #babcc5; }
+.card-scene .share-head b { color: #f4f5f7; }
+.card-scene .share-head .mono { background: #29292d; color: #f4f5f7; }
+.card-scene .share-foot .cta { background: #1c1c20; border: 1px solid #414149; color: #f4f5f7; }
+.card-scene .share-foot .cta:hover { background: #2a2a2f; }
+.card-scene .share-foot .dot { background: var(--red); color: #fff; }
+.card-scene .reflective-shell:focus-visible { outline-color: #f4f5f7; }

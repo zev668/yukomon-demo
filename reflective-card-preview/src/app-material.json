@@ -1,0 +1,30 @@
+{
+  "values": {
+    "tint": "#ffffff",
+    "metalness": 1,
+    "roughness": 0.3,
+    "blurStrength": 6,
+    "grayscale": 1,
+    "warp": 1.4,
+    "warpScale": 0.5,
+    "shine": 2.05,
+    "bevel": 3,
+    "glare": 0.5,
+    "rimIntensity": 0,
+    "rimWidth": 1,
+    "rimSoftness": 0.4,
+    "rimDepth": 0.6,
+    "bevelStrength": 1,
+    "radius": 24,
+    "tiltStrength": 12,
+    "width": 320,
+    "height": 500,
+    "holo": 0.8,
+    "mobileTiltSensitivity": 7
+  },
+  "source": "video",
+  "videoSrc": "vendor/reflective-card/slow-ripples.mp4",
+  "edgeMode": "original",
+  "theme": "dark",
+  "enableTilt": true
+}

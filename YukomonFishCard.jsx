@@ -22,8 +22,8 @@ const YukomonFishCard = ({
       '--rc-holo-detail': 1
     }}
     className={`yukomon-fish-card ${props.className || ''}`.trim()}
-    videoSrc={undefined}
-    webcam={false}
+    videoSrc={props.videoSrc}
+    webcam={props.webcam ?? false}
     tint={props.tint ?? '#ffffff'}
     metalness={props.metalness ?? 1}
     roughness={props.roughness ?? 0.3}

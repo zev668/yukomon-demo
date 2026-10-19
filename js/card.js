@@ -338,6 +338,8 @@
 
   /** 让卡片随陀螺仪/指针晃动；返回解除函数 */
   function attach(el) {
+    // ReflectiveCard owns input and cleanup for both faces on its stable shell.
+    if (el.classList.contains('reflective-shell') && window.YK_REFLECTIVE) return () => {};
     listen();
     M.base = null; // 每次打开卡片重新校准
     scaleOffset(el);
