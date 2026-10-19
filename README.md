@@ -43,9 +43,10 @@ npm run build:cards
 node tools/check-card-motion.mjs
 node tools/check-tuned-card.mjs
 node tools/check-card-material.mjs
+node tools/check-card-watermark.mjs
 ```
 
-最后一项需要先启动独立参数面板，默认地址为 http://127.0.0.1:4320/ 。
+`check-card-material.mjs` 需要先启动独立参数面板，默认地址为 http://127.0.0.1:4320/ 。水印检查覆盖正反面、分享与解锁，使用截图像素对比验证 LOGO 镭射实际可见且随倾斜变化。
 
 本地完整设计工作区的主网站在 `demo/`，GitHub 发布仓库的网站在根目录；构建与服务端兼容这两种布局。
 

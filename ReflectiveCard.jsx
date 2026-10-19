@@ -610,6 +610,7 @@ const ReflectiveCard = ({
   tiltStrength = 12,
   onTiltChange,
   interactionElement,
+  motionStyleElement,
   enableMobileTilt = false,
   mobileTiltSensitivity = 5,
   intro = true,
@@ -678,6 +679,7 @@ const ReflectiveCard = ({
     const camElement = camRef.current;
     if (!root || !body || !canvas || !videoElement || !camElement) return;
     const input = interactionElement || root;
+    const motionStyle = (motionStyleElement || root).style;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const renderer = createRenderer(canvas);
@@ -716,7 +718,7 @@ const ReflectiveCard = ({
     const setStyle = (property, value) => {
       if (written.get(property) === value) return;
       written.set(property, value);
-      root.style.setProperty(property, value);
+      motionStyle.setProperty(property, value);
     };
 
     const write = () => {
@@ -1036,7 +1038,7 @@ const ReflectiveCard = ({
       }
       renderer?.dispose();
     };
-  }, [generation, interactionElement]);
+  }, [generation, interactionElement, motionStyleElement]);
 
   useEffect(() => {
     const root = rootRef.current;

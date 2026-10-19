@@ -40,7 +40,7 @@ for (const path of ['package.json', 'package-lock.json', 'Dockerfile', 'compose.
   'reflective-card-preview/src/preview.css', 'reflective-card-preview/src/app-card.jsx', 'reflective-card-preview/src/app-card.css', 'reflective-card-preview/src/app-material.json',
   'reflective-card-preview/public/assets/clownfish.webp', 'reflective-card-preview/public/assets/yukomon-logo.svg', 'reflective-card-preview/public/assets/yukomon-pixel-logo.svg',
   'reflective-card-preview/public/assets/reflective-card-reference.png', 'reflective-card-preview/public/videos/slow-ripples.mp4',
-  'tools/test-connected.mjs', 'tools/check-card-motion.mjs', 'tools/check-tuned-card.mjs', 'tools/check-card-material.mjs', 'tools/build-ripple-video.mjs',
+  'tools/test-connected.mjs', 'tools/check-card-motion.mjs', 'tools/check-tuned-card.mjs', 'tools/check-card-material.mjs', 'tools/check-card-watermark.mjs', 'tools/build-ripple-video.mjs',
   'tools/publish-release.mjs', 'docs/RELEASE-0.2.0.md']) add(path);
 add(existsSync(join(root, '.release.gitignore')) ? '.release.gitignore' : '.gitignore', '.gitignore');
 for (const file of files.values()) if (/\.(env|sqlite|keystore|pem|key)$|(^|\/)node_modules\/|(^|\/)data\//.test(file.path)) throw new Error(`Private path in manifest: ${file.path}`);

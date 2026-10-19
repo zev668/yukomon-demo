@@ -125,10 +125,10 @@ try {
       const card = document.querySelector('.card-stage .reflective-shell'), canvas = card.querySelector('canvas');
       const r = card.getBoundingClientRect();
       const material = card.querySelector('.reflective-card');
-      const before = material.style.getPropertyValue('--rc-pointer-x');
+      const before = getComputedStyle(material).getPropertyValue('--rc-pointer-x');
       material.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerType: 'mouse', clientX: r.right - 10, clientY: r.top + 30 }));
       await new Promise(resolve => setTimeout(resolve, 200));
-      const after = material.style.getPropertyValue('--rc-pointer-x');
+      const after = getComputedStyle(material).getPropertyValue('--rc-pointer-x');
       material.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerType: 'mouse', clientX: r.right - 12, clientY: r.top + 32 }));
       return await new Promise(resolve => requestAnimationFrame(() => {
         const gl = canvas.getContext('webgl2');
