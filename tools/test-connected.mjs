@@ -63,7 +63,16 @@ try {
     const page = await initPage(context, { offline: true });
     assert.equal(await page.evaluate(() => YK_API.remote), false);
     await noOverflow(page, `static-dex-${width}`);
-    assert.equal(await page.locator('.reflective-shell.thumb canvas').count(), 0);
+    assert.equal(await page.locator('.tray .reflective-shell').count(), 0, 'small cards render independently of large cards');
+    const smallCards = await page.locator('.tray .cell > .yk-card, .tray .cell > .slot').evaluateAll(nodes => nodes.map(node => {
+      const rect = node.getBoundingClientRect();
+      return { width: rect.width, height: rect.height, small: node.classList.contains('thumb') };
+    }));
+    assert.ok(smallCards.some(c => c.small) && smallCards.some(c => !c.small));
+    for (const card of smallCards) {
+      assert.ok(Math.abs(card.width - smallCards[0].width) < 1, 'unlocked and locked small cards share width');
+      assert.ok(Math.abs(card.height - card.width * 7 / 5) < 1, 'all small cards retain the original 5:7 ratio');
+    }
     await page.screenshot({ path: join(output, `release-dex-${width}.png`) });
     await page.locator('.cell[data-sp="001"]').click(); await settle(page);
     const card = page.locator('.card-stage .reflective-shell');

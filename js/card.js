@@ -163,7 +163,8 @@
    * @param o { variant:'normal'|'ur', card: 用户卡片数据, interactive, back: 背面 HTML, giantInfo:{lengthCm, at, city}, size }
    */
   function render(sp, o = {}) {
-    if (window.YK_REFLECTIVE) return window.YK_REFLECTIVE.create(sp, o);
+    // Small cards retain their own renderer and 5:7 layout independently of large cards.
+    if (!o.thumb && window.YK_REFLECTIVE) return window.YK_REFLECTIVE.create(sp, o);
     if (o.presentation === 'gallery') return renderGallery(sp, o);
     const ur = o.variant === 'ur';
     const rk = ur ? 'UR' : sp.rarity;
