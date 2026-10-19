@@ -69,7 +69,7 @@
 .card-detail-transition {
   --scene-fade-size: 100%;
   margin-inline: calc(-1 * var(--gutter));
-  padding: 4px var(--gutter) 24px;
+  padding: 16px var(--gutter) 16px;
 }
 .card-detail-transition .actions-row { margin: 0; }
 .card-detail-transition .variant { margin-top: 0; margin-bottom: 12px; }
