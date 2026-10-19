@@ -58,7 +58,7 @@ async function publish(page, { camera = false, color = '#138387', length = '38',
 }
 try {
   // Static Pages mode: real textures, fronts, backs, variants, rank thumbnails and unlocks.
-  for (const width of process.argv.includes('--connected-only') ? [] : [1440, 390, 360]) {
+  for (const width of process.argv.includes('--connected-only') ? [] : [1440, 390, 360, 320]) {
     const context = await browser.newContext({ viewport: { width, height: width === 1440 ? 1000 : 844 } });
     const page = await initPage(context, { offline: true });
     assert.equal(await page.evaluate(() => YK_API.remote), false);
@@ -71,15 +71,39 @@ try {
     await settle(page);
     const rarityLabels = await page.locator('.breakdown yk-rarity').evaluateAll(nodes => nodes.map(node => {
       const style = getComputedStyle(node);
-      return { level: node.getAttribute('level'), font: style.fontFamily, background: style.backgroundColor, image: style.backgroundImage, border: style.borderWidth, color: style.color };
+      return { level: node.getAttribute('level'), font: style.fontFamily, background: style.backgroundColor, image: style.backgroundImage, clip: style.backgroundClip, border: style.borderWidth, color: style.color, animation: style.animationName };
     }));
     assert.equal(rarityLabels.length, 5);
-    assert.equal(new Set(rarityLabels.map(label => label.color)).size, 5, 'five distinct rarity text colors');
+    assert.equal(new Set(rarityLabels.map(label => label.color + label.image)).size, 5, 'five distinct rarity materials');
     for (const label of rarityLabels) {
       assert.match(label.font, /Georgia/);
       assert.equal(label.background, 'rgba(0, 0, 0, 0)');
-      assert.equal(label.image, 'none');
       assert.equal(label.border, '0px');
+      if (label.level === 'N') assert.equal(label.image, 'none');
+      else {
+        assert.match(label.image, /linear-gradient/);
+        assert.ok(label.clip.split(',').every(clip => clip.trim() === 'text'), 'every material layer stays inside the letter shapes');
+        assert.equal(label.color, 'rgba(0, 0, 0, 0)');
+      }
+      assert.equal(label.animation, label.level === 'SSR' ? 'yk-rarity-gold-sweep' : label.level === 'UR' ? 'yk-rarity-holo-flow' : 'none');
+    }
+    if (width === 390) {
+      const materialPositions = () => page.locator('.breakdown yk-rarity:is([level="SSR"], [level="UR"])').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundPosition));
+      const before = await materialPositions();
+      await page.waitForTimeout(650);
+      const after = await materialPositions();
+      assert.notEqual(before[1], after[1], 'holographic material actually moves');
+      const goldMoves = await page.locator('.breakdown yk-rarity[level="SSR"]').evaluate(node => {
+        const animation = node.getAnimations()[0];
+        const originalTime = animation.currentTime;
+        animation.pause(); animation.currentTime = 0;
+        const a = getComputedStyle(node).backgroundPosition;
+        animation.currentTime = 900;
+        const b = getComputedStyle(node).backgroundPosition;
+        animation.currentTime = originalTime; animation.play();
+        return a !== b;
+      });
+      assert.ok(goldMoves, 'gold reflection sweeps across the text');
     }
     await noOverflow(page, `static-dex-${width}`);
     assert.equal(await page.locator('.tray .reflective-shell').count(), 0, 'small cards render independently of large cards');
@@ -136,6 +160,10 @@ try {
       await page.evaluate(rk => YK_APP.demoUnlock(rk), rk); await settle(page);
       await page.locator('.unlock .skip').click(); await settle(page);
       assert.equal(await page.locator('.unlock.pixel-unlock').count(), 1);
+      const unlockRarity = await page.locator('.unlock yk-rarity').evaluate(node => ({ level: node.getAttribute('level'), tone: node.getAttribute('tone'), image: getComputedStyle(node).backgroundImage }));
+      assert.equal(unlockRarity.level, rk);
+      assert.equal(unlockRarity.tone, 'dark');
+      if (rk !== 'N') assert.match(unlockRarity.image, /linear-gradient/);
       const state = await page.locator('.unlock .card-flip').evaluate(el => ({ transform: getComputedStyle(el).transform, rect: el.getBoundingClientRect().toJSON() }));
       assert.ok(!state.transform.includes('-1, 0, 0, 0, 0, 1'), 'skip ends on front');
       await noOverflow(page, `unlock-${rk}-${width}`);
