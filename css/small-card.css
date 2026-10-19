@@ -1,0 +1,39 @@
+yk-card-number {
+  display: inline-block;
+  font: 500 11px/1.2 var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  white-space: nowrap;
+  color: #737373;
+}
+.cell .slot > yk-card-number { position: absolute; top: 10px; left: 10px; }
+.yk-card.thumb .cd-top yk-card-number { color: #d2d2d6; }
+.yk-card.thumb .cd-name { top: calc(10px + 13.2px + 6px) !important; color: #f4f4f6; letter-spacing: 0 !important; }
+.yk-card.thumb .card-face.card-front,
+.yk-card.thumb .card-clip { background: #171719 !important; }
+.yk-card.thumb .card-face.card-front > .frame { display: none; border: 0 !important; }
+.yk-card.thumb .card-clip { filter: none !important; }
+.yk-card.thumb .small-card-foil-area {
+  position: absolute;
+  inset: 60% 0 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(transparent, #000 40%);
+  mask-image: linear-gradient(transparent, #000 40%);
+}
+.yk-card.thumb .small-card-foil {
+  inset: -65% -15% -40%;
+  --rc-grain: none;
+  --rc-band-x: 42%;
+  --rc-band-y: 56%;
+  -webkit-mask-image: url('../img/yukomon-pixel-logo.svg');
+  mask-image: url('../img/yukomon-pixel-logo.svg');
+  -webkit-mask-size: 130cqw auto;
+  mask-size: 130cqw auto;
+  filter: brightness(1.1) contrast(1.25) saturate(.8);
+  mix-blend-mode: screen;
+  opacity: .48;
+}
+.yk-card.thumb .small-card-foil .yukomon-fish-card__laser-glow { opacity: .35; }
+.yk-card.thumb .small-card-foil .yukomon-fish-card__laser-shift { opacity: .4; }
+.cell .yk-card.thumb .corner { background: #ededf0 !important; color: #202024; }

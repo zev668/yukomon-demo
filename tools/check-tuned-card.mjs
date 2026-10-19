@@ -80,7 +80,7 @@ try {
     await page.locator('.cell[data-sp="002"]').click();
     await page.waitForFunction(() => document.querySelector('.card-stage video')?.videoWidth === 512); await settle(page);
     assert.equal(await page.locator('.card-detail-page').evaluate(n => getComputedStyle(n).backgroundColor), 'rgb(242, 242, 242)');
-    const heroBackground = await page.locator('.card-detail-hero').evaluate(n => getComputedStyle(n).backgroundImage);
+    const heroBackground = await page.locator('.card-detail-transition').evaluate(n => getComputedStyle(n).backgroundImage);
     assert.ok(heroBackground.includes('linear-gradient') && heroBackground.includes('rgb(0, 0, 0)') && heroBackground.includes('rgb(242, 242, 242)'), 'detail fades from black to the normal canvas');
     assert.deepEqual(await page.evaluate(() => YK_REFLECTIVE.material), material);
     for (const [name, expected] of [['uWarp', 1.4], ['uWarpScale', .5], ['uShine', 2.05], ['uRimIntensity', 0]]) assert.ok(Math.abs(await page.evaluate(name => __tunedUniforms[name], name) - expected) < .001, name);
@@ -108,7 +108,8 @@ try {
     assert.equal(await card.evaluate(n => n.classList.contains('flipped')), false);
     await page.locator('.card-detail-page [data-share]').click();
     await page.locator('[data-preview]').click(); await settle(page);
-    assert.equal(await page.locator('.share-view').evaluate(n => getComputedStyle(n).backgroundColor), 'rgb(0, 0, 0)');
+    assert.equal(await page.locator('.share-view').evaluate(n => getComputedStyle(n).backgroundColor), 'rgb(242, 242, 242)');
+    assert.match(await page.locator('.share-stage').evaluate(n => getComputedStyle(n).backgroundImage), /linear-gradient/);
     await contrast(page, '.share-view .share-head b, .share-view .share-head [data-close], .share-view .cta');
     await layout(page, `share-front-${width}`);
     await page.screenshot({ path: `${output}/tuned-share-front-${width}.png` });

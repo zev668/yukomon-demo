@@ -22,6 +22,7 @@ function create(sp, o = {}) {
   shell.style.setProperty('--yk-logo', `url("${logo}")`);
   shell.style.setProperty('--yk-fish', `url("${imageUrl}")`);
   shell.style.setProperty('--rc-holo', material.values.holo);
+  shell.style.setProperty('--card-radius', `${material.values.radius}px`);
   const description = o.variant === 'ur' && o.giantInfo ? `巨物 · ${o.giantInfo.lengthCm} cm · ${o.giantInfo.city || ''}` : `${'★'.repeat(card.stars || 1)} · ${window.YK_CARD?.HAB[sp.habitat]?.name || sp.region}`;
   const defaultBack = `<section class="b-info"><div class="b-title"><h2>${esc(sp.name)}</h2><span class="no">YK-${sp.no}</span></div><div class="latin">${esc(sp.latin)}</div><p>${esc(sp.fact)}</p><dl><div><dt>分布</dt><dd>${esc(sp.region)}</dd></div><div><dt>习性</dt><dd>${esc(sp.method)}</dd></div><div><dt>体长</dt><dd>${sp.commonCm} cm</dd></div><div><dt>巨物线</dt><dd>${sp.giantThresholdCm} cm</dd></div></dl></section>`;
   shell.innerHTML = `<div class="card-tilt"><div class="card-flip"><div class="card-face card-front"><div class="reflective-mount"></div></div><div class="card-face card-back"><div class="yukomon-fish-card__laser reflective-back-foil" aria-hidden="true"><span class="yukomon-fish-card__laser-glow"></span><span class="yukomon-fish-card__laser-shift"></span></div><div class="reflective-back-content">${o.back || defaultBack}</div></div></div></div>`;

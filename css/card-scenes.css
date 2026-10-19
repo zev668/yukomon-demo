@@ -35,22 +35,45 @@
 .card-scene .entry:hover { background: #242428; }
 .card-scene .entry .t, .card-scene .entry .t .where { color: #f4f5f7; }
 .card-scene .entry .m, .card-scene .entry .t .when, .card-scene .entry .t .size small { color: #aeb0b8; }
-.card-scene .share-head { padding-top: max(16px, env(safe-area-inset-top)); }
-.card-scene .share-head .grow { color: #babcc5; }
-.card-scene .share-head b { color: #f4f5f7; }
-.card-scene .share-head .mono { background: #29292d; color: #f4f5f7; }
+.share-head.card-scene { padding-top: max(16px, env(safe-area-inset-top)); background: #000; }
+.share-head.card-scene .grow { color: #babcc5; }
+.share-head.card-scene b { color: #f4f5f7; }
+.share-head.card-scene .mono { background: #29292d; color: #f4f5f7; }
 .card-scene .share-foot .cta { background: #1c1c20; border: 1px solid #414149; color: #f4f5f7; }
 .card-scene .share-foot .cta:hover { background: #2a2a2f; }
 .card-scene .share-foot .dot { background: var(--red); color: #fff; }
 .card-scene .reflective-shell:focus-visible { outline-color: #f4f5f7; }
 
-.card-detail-page { --detail-canvas: var(--canvas); }
+.card-gradient-page { --scene-canvas: var(--canvas); }
+.card-gradient {
+  /* Keep one full-surface gradient to avoid seams at fractional pixel heights. */
+  background-color: #000;
+  background-image: linear-gradient(0deg,
+    var(--scene-canvas) 0%,
+    #ededed calc(var(--scene-fade-size, 200px) * .05),
+    #dedede calc(var(--scene-fade-size, 200px) * .14),
+    #b7b7b7 calc(var(--scene-fade-size, 200px) * .28),
+    #797979 calc(var(--scene-fade-size, 200px) * .44),
+    #393939 calc(var(--scene-fade-size, 200px) * .6),
+    #101010 calc(var(--scene-fade-size, 200px) * .76),
+    #020202 calc(var(--scene-fade-size, 200px) * .88),
+    #000 var(--scene-fade-size, 200px));
+}
 .card-detail-page > .sub-head { background: #000; }
 .layer.page.card-detail-page > .page-body { padding-top: 0; }
 .card-detail-hero {
   margin-inline: calc(-1 * var(--gutter));
-  padding: calc(var(--head-h) + 6px) var(--gutter) 28px;
-  background: linear-gradient(180deg, #000 0%, #000 70%, var(--detail-canvas) 100%);
+  padding: calc(var(--head-h) + 6px) var(--gutter) 0;
+  background: #000;
 }
-.card-detail-hero .actions-row { margin-bottom: 0; }
+.card-detail-transition {
+  --scene-fade-size: 100%;
+  min-height: 200px;
+  margin-inline: calc(-1 * var(--gutter));
+  padding: 4px var(--gutter) 80px;
+}
+.card-detail-transition .actions-row { margin: 0; }
+.card-detail-transition .variant { margin-top: 0; margin-bottom: 12px; }
 .card-detail-page .section-h { margin-top: 8px; }
+.share-view .share-stage { --scene-fade-size: clamp(176px, 22dvh, 216px); }
+.share-view .share-foot { background: var(--scene-canvas); }

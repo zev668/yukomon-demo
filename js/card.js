@@ -211,11 +211,12 @@
     const front = `
       <div class="card-face card-front">
         <div class="card-clip">${L.join('')}<div class="glare"></div></div>
+        ${o.thumb ? '<div class="small-card-foil-area" aria-hidden="true"><div class="yukomon-fish-card__laser small-card-foil"><span class="yukomon-fish-card__laser-glow"></span><span class="yukomon-fish-card__laser-shift"></span></div></div>' : ''}
         ${ur ? `<div class="ly fish fish-break" style="--d:0.6">${fish}</div>` : ''}
         <div class="frame frame-${rk}"></div>
         <div class="cd-top">
-          <span class="cd-no">No.${sp.no}</span>
-          ${window.YK_RARITY.html(rk, `cd-badge${o.thumb ? ' small-card-rarity' : ''}`)}
+          ${o.thumb ? window.YK_CARD_NUMBER.html(sp.no) : `<span class="cd-no">No.${sp.no}</span>`}
+          ${window.YK_RARITY.html(rk, `cd-badge${o.thumb ? ' small-card-rarity' : ''}`, o.thumb ? 'dark' : '')}
         </div>
         <div class="cd-name">${sp.name}${ur ? '<em>巨物</em>' : ''}</div>
         <div class="cd-bottom">${bottom}</div>
