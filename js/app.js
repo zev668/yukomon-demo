@@ -1294,7 +1294,7 @@
       window.YK_LANYARD.mount(lanyardHost, {
         frontData: lanyardData,
         backData: lanyardData,
-        assetBase: '/img',
+        assetBase: new URL('img', document.baseURI).pathname.replace(/\/$/, ''),
         cardColor: '#000000',
         // The Lanyard camera is width-bound on narrow phones. A small width
         // lift closes the remaining inset while preserving the desktop card.
