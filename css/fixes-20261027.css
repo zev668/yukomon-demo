@@ -1,0 +1,59 @@
+/* 2026-10-27 用户反馈修复（最后加载） */
+
+/* 6. 鱼种搜索框：输入框自身的焦点框 / 原生 search 外观画在圆角搜索条里面，形成第二个矩形。
+   改为只让外层搜索条显示焦点状态。 */
+.search-bar input,
+.search-bar input[type="search"] {
+  -webkit-appearance: none; appearance: none;
+  border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  background: transparent !important; outline: none !important;
+  padding: 0; margin: 0; height: 100%; line-height: normal;
+  corner-shape: round !important;
+}
+.search-bar input::-webkit-search-decoration,
+.search-bar input::-webkit-search-cancel-button,
+.search-bar input::-webkit-search-results-button,
+.search-bar input::-webkit-search-results-decoration { -webkit-appearance: none; display: none; }
+.search-bar input:focus, .search-bar input:focus-visible { outline: none !important; box-shadow: none !important; }
+.search-bar { transition: box-shadow .16s; }
+.search-bar:focus-within { box-shadow: inset 0 0 0 1.5px var(--ui-action, #1c1d20); }
+.search-bar .icon-btn:focus-visible { outline-offset: -2px; }
+
+/* 9. 分享链接落地页：整屏只做卡片展示 + 下载 App 一件事 */
+body.share-landing-on #tabbar { display: none !important; }
+.share-landing .share-head { justify-content: center; }
+.share-landing .share-stage { position: relative; }
+.share-landing .share-tilt-tip { margin: 14px 0 0; color: #8d8f98; font-size: 13px; text-align: center; }
+.share-landing .share-foot { padding: 14px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
+.share-landing .share-download { display: flex; width: 100%; height: 56px; align-items: center; justify-content: center; gap: 10px; border-radius: 999px; background: #f4f5f7 !important; color: #111113 !important; border: 0 !important; font-size: 17px; font-weight: 600; text-decoration: none; }
+.share-landing .share-download .dot { background: #111113 !important; color: #fff !important; }
+.open-in-browser { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,.82); color: #fff; display: flex; flex-direction: column; align-items: flex-end; padding: max(18px, env(safe-area-inset-top)) 26px 0; }
+.open-in-browser .oib-arrow { font-size: 64px; line-height: 1; margin-right: 4px; }
+.open-in-browser p { margin: 18px 0 0; font-size: 17px; line-height: 1.7; text-align: right; }
+
+/* 11. 钓点：腾讯地图未配置 Key 时的分布示意图（不再空白） */
+.map-schematic { position: relative; height: clamp(220px, 42dvh, 360px); margin: 0 0 14px; border-radius: 18px; overflow: hidden;
+  background:
+    radial-gradient(120% 70% at 20% 30%, rgba(120,170,200,.35), transparent 60%),
+    radial-gradient(90% 60% at 80% 75%, rgba(140,190,160,.32), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.045) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.045) 0 1px, transparent 1px 32px),
+    #e9eeec; }
+.map-schematic::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(118deg, transparent 46%, rgba(255,255,255,.75) 47% 48.5%, transparent 49.5%), linear-gradient(32deg, transparent 60%, rgba(255,255,255,.6) 61% 62%, transparent 63%); }
+.map-pin { position: absolute; z-index: 1; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; }
+.map-pin span { display: grid; place-items: center; min-width: 30px; height: 30px; padding: 0 7px; border-radius: 999px 999px 999px 4px; transform: rotate(-45deg); background: #1c1d20; color: #fff; font-size: 12px; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,.2); }
+.map-pin span { transform: none; border-radius: 999px; }
+.map-pin em { font-style: normal; font-size: 11px; font-weight: 600; color: #1c1d20; background: rgba(255,255,255,.88); padding: 1px 6px; border-radius: 6px; white-space: nowrap; max-width: 96px; overflow: hidden; text-overflow: ellipsis; }
+.map-pin:focus-visible span, .map-pin:hover span { background: var(--ui-action, #2b6cff); }
+
+/* 8. 分享面板：微信 / 朋友圈 / 更多 */
+.share-targets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 4px 0 14px; }
+.share-target { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 0; border: 0; border-radius: 14px; background: var(--ios-bg, #f2f2f4); color: var(--ink, #111); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.share-target i { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #07c160; color: #fff; font-style: normal; font-size: 20px; }
+.share-target[data-target=timeline] i { background: #1aad19; }
+.share-target[data-target=more] i { background: #1c1d20; }
+.share-target:disabled { opacity: .45; }
+
+/* 卡背别称：随卡背文字配色，标签为半透明胶囊 */
+.b-info .b-alias { margin-top: 1.6cqw; font-size: 3cqw; line-height: 1.6; font-weight: 500; color: inherit; opacity: .92; overflow-wrap: anywhere; }
+.b-info .b-alias span { display: inline-block; margin-right: 1.6cqw; padding: 0 1.8cqw; border-radius: 99px; background: rgba(255, 255, 255, .16); box-shadow: inset 0 0 0 .25cqw rgba(255, 255, 255, .28); font-size: 2.6cqw; line-height: 4.4cqw; }

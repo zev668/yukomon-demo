@@ -1,0 +1,99 @@
+/*
+ * Material adapted from the user-supplied React Bits GlassSurface (JS + CSS).
+ * https://reactbits.dev/components/glass-surface
+ * Upstream source and license: https://github.com/DavidHDev/react-bits
+ * Load after ios26.css and nav-glass.css. Existing dimensions and content stay owned by those files.
+ */
+.yk-glass-definitions {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#app .yk-glass-surface,
+#app #tabbar.yk-glass-surface {
+  --yk-glass-rgb: 255,255,255;
+  --yk-glass-frost: .52;
+  --yk-glass-saturation: 1.02;
+  --yk-glass-edge: rgba(255,255,255,.56);
+  --yk-glass-shadow: 0 6px 18px rgba(17,18,20,.09);
+  /* GlassSurface's frost value is a material strength, not a white overlay. */
+  background-color: rgba(var(--yk-glass-rgb),calc(.12 + var(--yk-glass-frost) * .42));
+  background-image: none;
+  box-shadow: inset 0 1px 0 var(--yk-glass-edge), var(--yk-glass-shadow);
+}
+
+#app .yk-glass-surface.yk-glass-svg,
+#app #tabbar.yk-glass-surface.yk-glass-svg {
+  -webkit-backdrop-filter: var(--yk-glass-filter) saturate(var(--yk-glass-saturation));
+  backdrop-filter: var(--yk-glass-filter) saturate(var(--yk-glass-saturation));
+}
+
+#app .yk-glass-surface.yk-glass-frosted,
+#app #tabbar.yk-glass-surface.yk-glass-frosted {
+  -webkit-backdrop-filter: blur(18px) saturate(var(--yk-glass-saturation));
+  backdrop-filter: blur(18px) saturate(var(--yk-glass-saturation));
+}
+
+/* Navigation retains GlassSurface's transparent tint and inner optical depth. */
+#app #tabbar.yk-glass-surface {
+  --yk-glass-shadow: 0 6px 18px rgba(17,18,20,.08), 0 16px 36px rgba(17,18,20,.04);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72), inset 0 -1px 0 rgba(17,18,20,.08), inset 0 0 10px 4px rgba(17,18,20,.04), var(--yk-glass-shadow);
+}
+#app #tabbar.yk-glass-surface.yk-glass-svg {
+  background-color: rgba(var(--yk-glass-rgb),var(--yk-glass-frost));
+}
+#app #tabbar.yk-glass-surface.yk-glass-frosted {
+  background-color: rgba(var(--yk-glass-rgb),.42);
+  -webkit-backdrop-filter: blur(16px) saturate(var(--yk-glass-saturation));
+  backdrop-filter: blur(16px) saturate(var(--yk-glass-saturation));
+}
+
+#app .yk-glass-surface.yk-glass-menu {
+  border-radius: 12px;
+  background-color: rgba(255,255,255,.68);
+  background-image: none;
+  -webkit-backdrop-filter: blur(18px) saturate(1.04);
+  backdrop-filter: blur(18px) saturate(1.04);
+  box-shadow: 0 10px 24px rgba(17,18,20,.10), inset 0 1px 0 rgba(255,255,255,.48);
+}
+
+#app .yk-glass-surface.yk-glass-dark,
+body.cam-on #app #tabbar.yk-glass-surface {
+  --yk-glass-rgb: 17,18,20;
+  --yk-glass-edge: rgba(255,255,255,.26);
+  --yk-glass-shadow: 0 6px 18px rgba(0,0,0,.18);
+  background-color: rgba(var(--yk-glass-rgb),calc(.34 + var(--yk-glass-frost) * .28));
+  color: #fff;
+}
+
+body.cam-on #app #tabbar.yk-glass-surface.yk-glass-svg {
+  background-color: rgba(var(--yk-glass-rgb),.24);
+}
+
+#app .yk-glass-surface.yk-glass-solid,
+#app #tabbar.yk-glass-surface.yk-glass-solid {
+  background: var(--ui-bg-content,#fff);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+#app .yk-glass-surface.yk-glass-dark.yk-glass-solid,
+body.cam-on #app #tabbar.yk-glass-surface.yk-glass-solid {
+  background: #34363b;
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  #app .yk-glass-surface,
+  #app #tabbar.yk-glass-surface {
+    background: var(--ui-bg-content,#fff);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  #app .yk-glass-surface.yk-glass-dark,
+  body.cam-on #app #tabbar.yk-glass-surface {
+    background: #34363b;
+  }
+}

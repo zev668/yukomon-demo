@@ -1,0 +1,57 @@
+/* Collection geometry from the saved app.css baseline. */
+.dex-page .tray {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 10px;
+  align-items: start;
+}
+
+.dex-page .tray > .cell {
+  min-width: 0;
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
+}
+
+.dex-page .set-cards { padding: 0; }
+
+/* Spare vertical space belongs above the record rail, never inside the card. */
+.card-detail-page > .page-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: calc(16px + var(--safe-b));
+}
+
+.card-detail-page .card-detail-hero {
+  flex: none;
+  padding-top: calc(var(--head-h) + 34px);
+}
+
+.card-detail-page .card-detail-transition { flex: none; }
+
+.card-detail-page .entry-list {
+  flex: none;
+  align-items: flex-end;
+  min-height: 104px;
+  margin-top: auto;
+  padding-bottom: 4px;
+}
+
+.card-detail-page .entry.record-tile { align-self: flex-end; }
+
+.card-detail-page .record-more {
+  flex: none;
+  padding-bottom: 0;
+}
+
+@media (max-height: 650px) {
+  .card-detail-page .card-detail-hero {
+    padding-top: calc(var(--head-h) + 28px);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .card-detail-page .card-detail-hero {
+    padding-top: calc(var(--head-h) + 22px);
+  }
+}

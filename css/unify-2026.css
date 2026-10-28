@@ -1,0 +1,191 @@
+/* ==========================================================================
+ * unify-2026 · 统一设计语言（放在历史样式之后、map-v2 之前集中覆盖）
+ * 方向：浅灰画布 + 黑色金属主控件 + 玻璃浮层 + 像素数字 + 极少量镀膜炫彩
+ * 卡片（ReflectiveCard / 小卡 / 320:500 / 24px）不在本文件约束之内。
+ * ========================================================================== */
+:root {
+  /* 字号阶梯 */
+  --t-title: 600 17px/24px var(--ui-font-body);
+  --t-group: 600 13px/18px var(--ui-font-body);
+  --t-body: 400 16px/24px var(--ui-font-body);
+  --t-callout: 400 15px/22px var(--ui-font-body);
+  --t-caption: 400 12px/16px var(--ui-font-body);
+  /* 圆角 */
+  --r-inner: 12px; --r-card: 20px; --r-sheet: 28px; --r-pill: 999px;
+  /* 材质：黑色金属 / 深色玻璃 */
+  --metal-fill: linear-gradient(180deg, #2c2e34 0%, #16171a 52%, #0d0e10 100%);
+  --metal-edge: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 0 rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.18), 0 8px 18px -10px rgba(0,0,0,.55);
+  --glass-dark: linear-gradient(180deg, rgba(38,40,46,.84), rgba(14,15,18,.9));
+  --glass-dark-edge: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.06), 0 12px 32px -12px rgba(0,0,0,.6);
+  --shadow-card: 0 1px 2px rgba(17,18,20,.04), 0 6px 18px -10px rgba(17,18,20,.14);
+  /* 镀膜炫彩：只用于 UR / AI 扫描 / 地图数量角标 */
+  --iris: conic-gradient(from 200deg, #7ef3ff, #b18cff, #ff8fd0, #ffe58a, #7ef3ff);
+  /* 危险色收敛为一套 */
+  --ui-danger: #c2413a; --ui-danger-bg: rgba(194,65,58,.1);
+  /* 动效 */
+  --motion-instant: 80ms; --ease-in: cubic-bezier(.4,0,1,1);
+}
+
+/* ---------- 标题层级 ---------- */
+#app :is(.page-head h2, .sub-head h2, .sheet-head h3, .sheet .sheet-head h2) { font: var(--t-title); letter-spacing: -.01em; }
+#app .settings-group > .eyebrow, #app .catch-section-head h3, #app .section-h h3 { font: var(--t-group); color: var(--ui-text-secondary); letter-spacing: .02em; }
+/* 像素点缀：分组标题前一枚 4px 方块 */
+#app .settings-group > .eyebrow::before, #app .catch-section-head h3::before { content: ''; display: inline-block; width: 4px; height: 4px; margin: 0 6px 2px 0; vertical-align: middle; background: currentColor; }
+#app .head-act { font-weight: 600 !important; }
+
+/* ---------- 按钮：主按钮黑色金属胶囊 52px，次级 44px 胶囊 ---------- */
+#app :is(.btn.primary, .btn.block, .cta, .confirm-btn) { min-height: 52px; height: 52px; border-radius: var(--r-pill) !important; font: 600 17px/1 var(--ui-font-body); }
+#app :is(.btn.primary, .btn.accent:not(.unlock .btn), .cta, .confirm-btn.primary) { background: var(--metal-fill); color: #fff; box-shadow: var(--metal-edge); }
+#app :is(.btn.primary, .cta):hover { background: var(--metal-fill); filter: brightness(1.12); }
+#app .btn:not(.block):not(.sm):not(.quiet) { border-radius: var(--r-pill); }
+#app .btn.sm { height: 36px; min-height: 36px; padding: 0 14px; border-radius: var(--r-pill); font-size: 14px; position: relative; }
+#app .btn.sm::after { content: ''; position: absolute; inset: -4px -2px; }
+#app .btn.block:not(.primary):not(.accent) { background: var(--ui-bg-content); color: var(--ui-text); box-shadow: inset 0 0 0 1px var(--ui-separator); }
+#app .btn.quiet.block { background: transparent; box-shadow: none; height: 44px; min-height: 44px; color: var(--ui-text-secondary); font-size: 15px; }
+#app .btn.danger { color: #fff; background: var(--ui-danger); }
+#app .btn.sm.danger { color: var(--ui-danger); background: var(--ui-danger-bg); }
+#app .cta .dot { background: rgba(255,255,255,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+
+/* 发布 CTA：缺项时弱化，齐全时金属实心 */
+#app .submit-bar .cta { transition: background 240ms var(--ease-out), color 240ms var(--ease-out), box-shadow 240ms var(--ease-out), filter 160ms; }
+#app .submit-bar .cta.is-incomplete, #app .view-catch .submit-bar .cta.is-incomplete { background: var(--ui-bg-inset) !important; color: var(--ui-text-secondary) !important; box-shadow: inset 0 0 0 1px var(--ui-separator) !important; filter: none; }
+#app .submit-bar .cta.is-incomplete .dot { background: rgba(17,18,20,.06); box-shadow: none; }
+#app .catch-recognition.need { border-radius: var(--r-card); animation: yk-need 1.4s var(--ease-out); }
+@keyframes yk-need { 0%, 60% { box-shadow: 0 0 0 2px var(--ui-danger); } 100% { box-shadow: 0 0 0 2px transparent; } }
+
+/* ---------- 统一按压反馈（elastic.js 负责 scale；这里补颜色与时长） ---------- */
+#app :is(.btn, .cta, .pill, .icon-btn, .head-act) { transition: background-color 160ms, color 160ms, box-shadow 160ms, filter 160ms; }
+#app :is(.btn.primary, .cta, .confirm-btn):active { filter: brightness(1.18); transition-duration: var(--motion-instant); }
+#app :is(.btn:not(.primary), .pill, .icon-btn):active { filter: brightness(.94); transition-duration: var(--motion-instant); }
+
+/* ---------- 图标按钮统一 44×44 ---------- */
+#app .card-detail-page > .sub-head > .icon-btn,
+#app .card-detail-page .detail-head-actions .icon-btn { width: 44px !important; min-width: 44px !important; height: 44px !important; background: var(--glass-dark) !important; box-shadow: var(--glass-dark-edge) !important; border: 0 !important; -webkit-backdrop-filter: blur(18px) saturate(1.3) !important; backdrop-filter: blur(18px) saturate(1.3) !important; }
+@media (max-width: 380px) { #app .card-detail-page > .sub-head { grid-template-columns: 44px minmax(0, 1fr) auto; } }
+#app .sheet .icon-btn { background: var(--ui-bg-inset); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* ---------- 胶囊：视觉 36，热区 44 ---------- */
+#app :is(.dex-filter, .dex-status, .rank-page .scope, .filter-row) .pill { position: relative; height: 36px; min-height: 36px; border-radius: var(--r-pill) !important; }
+#app :is(.dex-filter, .dex-status, .rank-page .scope, .filter-row) .pill::after { content: ''; position: absolute; inset: -4px 0; }
+#app :is(.dex-filter, .dex-status, .filter-row, .rank-page .scope) .pill.on { background: var(--metal-fill) !important; color: #fff !important; box-shadow: var(--metal-edge) !important; }
+#app .pill .filter-count, #app .num, #app .rank-row .n, #app .set-detail-progress b { font-family: var(--ui-font-data); }
+
+/* 图鉴筛选：第一行状态分段（全宽），第二行品级胶囊（可叠加） */
+#app .dex-status { display: flex; gap: 6px; margin: 0 0 8px; padding-top: 4px; }
+#app .dex-status[hidden] { display: none; }
+#app .dex-status .pill { flex: 1; justify-content: center; background: var(--ui-bg-content); color: var(--ui-text); box-shadow: inset 0 0 0 1px var(--ui-separator); font-size: 14px; font-weight: 600; }
+#app .dex-status .pill .filter-count { margin-left: 4px; font-size: 11px; opacity: .7; }
+#app .dex-filter.is-rarity { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow: visible; padding-top: 4px; }
+#app .dex-filter.is-rarity .pill { min-width: 0; justify-content: center; padding: 0; background: var(--ui-bg-content); box-shadow: inset 0 0 0 1px var(--ui-separator); }
+#app .dex-filter.is-rarity .pill.on { box-shadow: var(--metal-edge), 0 0 0 1.5px transparent !important; }
+#app .dex-filter.is-rarity .pill[data-f="UR"].on { background: #111214 !important; box-shadow: inset 0 0 0 1.5px transparent, var(--metal-edge) !important; outline: 1.5px solid transparent; }
+#app .dex-filter.is-rarity .pill[data-f="UR"].on::before { content: ''; position: absolute; inset: -1.5px; z-index: -1; border-radius: inherit; background: var(--iris); }
+#app .dex-filter.is-rarity .pill[data-f="UR"].on { isolation: isolate; }
+
+/* 套组分组头：名称 + 进度 + chevron，点击进入套组详情 */
+#app .set-group-head { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; margin: 6px 0 4px; padding: 14px 4px 8px; border: 0; background: none; color: var(--ui-text); font: var(--t-title); text-align: left; cursor: pointer; }
+#app .set-group:first-child .set-group-head { padding-top: 4px; }
+#app .set-group-head b { font-weight: 600; flex: none; }
+#app .set-group-head .num { font-size: 13px; color: var(--ui-text-secondary); font-weight: 400; }
+#app .set-group-head .set-group-bar { flex: 1; height: 4px; border-radius: 0; background: var(--ui-bg-inset); overflow: hidden; }
+#app .set-group-head .set-group-bar > i { display: block; height: 100%; background: var(--ui-text); }
+#app .set-group-head .chev { display: inline-grid; width: 20px; color: var(--ui-text-secondary); }
+#app .set-group-head .chev svg { width: 16px; height: 16px; }
+
+/* ---------- 输入框：16px 防 iOS 放大 ---------- */
+#app :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), textarea, select):not(.city-native) { font-size: 16px !important; }
+#app .account-form input:not([type=checkbox]), #app .location-sheet input, #app .settings-page .set-row input, #app .settings-page .set-row textarea { min-height: 48px; border-radius: var(--r-inner) !important; border: 1px solid var(--ui-separator) !important; background: var(--ui-bg-inset) !important; color: var(--ui-text) !important; font-weight: 400 !important; padding: 0 14px; }
+#app .settings-page .set-row textarea { padding: 12px 14px; }
+#app .account-form input:focus-visible { outline: none; border-color: var(--ui-text) !important; background: var(--ui-bg-content) !important; }
+
+/* ---------- 登录 ---------- */
+#app .account-form .account-check { min-height: 44px; align-items: center; }
+#app .account-check input { width: 22px; height: 22px; flex-basis: 22px; margin: 0; }
+#app .account-links button { min-height: 44px; padding: 0 4px; color: var(--ui-text-secondary); font-size: 15px; }
+#app .wechat-login[hidden] { display: none !important; }
+#app .wechat-later { margin: 4px 0 0; text-align: center; color: var(--ui-text-secondary); font-size: 13px; }
+
+/* ---------- toast：顶部黑色玻璃药丸 ---------- */
+#toast { top: calc(env(safe-area-inset-top, 0px) + 12px) !important; bottom: auto !important; max-width: calc(100% - 40px); min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 10px 20px !important; border-radius: 999px !important; background: rgba(18,19,22,.78) !important; color: #fff; font: 600 15px/22px var(--ui-font-body) !important; text-align: center; box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 10px 28px -8px rgba(0,0,0,.45) !important; -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4); z-index: 400 !important; }
+
+/* ---------- 容器圆角 ---------- */
+#app .settings-page .settings-group .box { border-radius: var(--r-card) !important; overflow: hidden; background: var(--ui-bg-content); }
+#app :is(.facts, .sp-row, .protect-link, .share-target) { border-radius: var(--r-card); }
+#app .facts { border-radius: var(--r-card) !important; }
+#app .settings-group.dev-options .box { background: transparent; box-shadow: inset 0 0 0 1px var(--ui-separator); }
+#app .settings-group.dev-options .set-row.col .sfx-row { padding-top: 8px; }
+
+/* ---------- 发布表单 ---------- */
+#app .view-catch .segmented button { font: 600 13px/18px var(--ui-font-body); border-radius: var(--r-pill); }
+#app .view-catch .segmented button.on { background: var(--metal-fill); color: #fff; box-shadow: var(--metal-edge); }
+#app .segmented { border-radius: var(--r-pill); }
+#app .cam-modes button { height: 44px; padding: 0 16px; font: 600 15px var(--ui-font-body); }
+#app .sample-btn { height: 44px; }
+
+/* AI 识别中：照片上扫过一条镀膜光带 */
+#app .mount .ai-scan { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; }
+#app .mount.is-scanning .ai-scan { opacity: 1; background: linear-gradient(180deg, transparent 0%, transparent 42%, rgba(126,243,255,.0) 44%, rgba(126,243,255,.28) 48%, rgba(255,143,208,.34) 50%, rgba(255,229,138,.26) 52%, transparent 56%, transparent 100%); background-size: 100% 260%; mix-blend-mode: screen; animation: yk-scan 2.2s cubic-bezier(.45,0,.55,1) infinite; }
+#app .mount.is-scanning::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 12px 12px; }
+@keyframes yk-scan { 0% { background-position: 0 100%; } 100% { background-position: 0 0%; } }
+@media (prefers-reduced-motion: reduce) { #app .mount.is-scanning .ai-scan { animation: none; opacity: .6; background-position: 0 50%; } }
+
+/* ---------- 卡片详情：记录标签 ≥11px；记录弹窗改深色玻璃 ---------- */
+#app .card-detail-page .record-tile-caption b { font: 400 15px/1 var(--ui-font-data); }
+#app .card-detail-page .record-tile-caption b small { font-size: 11px; }
+#app .card-detail-page .record-tile-caption small { font-size: 11px; line-height: 14px; color: rgba(255,255,255,.76); }
+#app .card-detail-page .record-tile > .like .num { font: 400 12px/1 var(--ui-font-data); }
+#app .card-detail-page .record-modal-panel { background: rgba(22,23,26,.9); color: #f2f3f5; border: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 0 0 1px rgba(255,255,255,.06), 0 28px 70px rgba(0,0,0,.55); -webkit-backdrop-filter: blur(28px) saturate(1.3); backdrop-filter: blur(28px) saturate(1.3); }
+#app .card-detail-page .record-modal-head .eyebrow { color: rgba(255,255,255,.56); }
+#app .card-detail-page .record-modal-head h3 { color: #fff; font: 600 22px/28px var(--ui-font-body); }
+#app .card-detail-page .record-modal-head .icon-btn { width: 44px; height: 44px; margin: -4px -4px 0 auto; background: rgba(255,255,255,.1); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.14); }
+#app .card-detail-page .record-modal-photo-wrap { background: #111214; border-radius: 16px; }
+#app .card-detail-page .record-modal-desc { color: rgba(255,255,255,.78); font-size: 15px; }
+#app .card-detail-page .record-modal-row { border-top-color: rgba(255,255,255,.08); font-size: 14px; }
+#app .card-detail-page .record-modal-row > span { color: rgba(255,255,255,.52); }
+#app .card-detail-page .record-modal-row > b { color: #fff; }
+
+/* ---------- 解锁：跳过热区、结束页主次 ---------- */
+#app .unlock .skip { min-width: 64px; top: max(14px, env(safe-area-inset-top)); font-size: 14px; font-weight: 600; }
+#app .unlock .skip::after { content: ''; position: absolute; inset: -6px; }
+#app .unlock .actions, #app .unlock.pixel-unlock .actions { display: grid !important; grid-template-columns: 1fr; gap: 4px; width: min(100%, 320px); margin-inline: auto; }
+#app .unlock .actions .unlock-primary, #app .unlock.pixel-unlock .actions .btn.unlock-primary { width: 100%; height: 52px; min-height: 52px; border-radius: 999px !important; font-size: 17px; font-weight: 600; background: linear-gradient(180deg, #ffffff, #dfe1e6) !important; color: #0b0b0d !important; border: 0 !important; box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgba(0,0,0,.12), 0 10px 26px -10px rgba(255,255,255,.35) !important; }
+#app .unlock .actions .unlock-secondary { display: flex; justify-content: center; gap: 4px; }
+#app .unlock .actions .unlock-secondary .btn, #app .unlock.pixel-unlock .actions .unlock-secondary .btn { height: 44px; min-height: 44px; padding: 0 16px; background: transparent !important; border: 0 !important; box-shadow: none !important; color: rgba(255,255,255,.72) !important; font-size: 15px; font-weight: 500; }
+#app .unlock .actions .unlock-secondary .btn + .btn::before { content: ''; position: absolute; left: -2px; top: 50%; width: 3px; height: 3px; margin-top: -1.5px; background: rgba(255,255,255,.4); }
+#app .unlock .actions .unlock-secondary .btn { position: relative; }
+#app .unlock .sub .unlock-points { display: inline-block; margin: 2px 0; font: 400 26px/1.1 var(--ui-font-data); color: #fff; }
+#app .unlock .sub .unlock-points small { font: 600 14px var(--ui-font-body); color: rgba(255,255,255,.72); }
+
+/* ---------- 锁定卡 sheet ---------- */
+#app .locked-sheet-actions { display: grid; gap: 4px; margin-top: 16px; }
+#app .locked-sheet-actions .btn svg { width: 18px; height: 18px; margin-right: 6px; }
+
+/* ---------- 排行：行高统一 72，“我”悬浮条深色玻璃 ---------- */
+#app .rank-page .board > .rank-row, #app .size-row { min-height: 72px; }
+#app .rank-float > .rank-row.rank-me, #app .rank-float > .size-row.rank-me { min-height: 72px; background: var(--glass-dark) !important; color: #fff !important; border: 0 !important; box-shadow: var(--glass-dark-edge) !important; -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4); }
+#app .rank-float > .rank-row.rank-me :is(b, .nm, .pts, span:not(.n)), #app .rank-float > .size-row.rank-me :is(b, .nm, span:not(.n)) { color: inherit !important; }
+#app .rank-float > .rank-row.rank-me :is(small, .muted), #app .rank-float > .size-row.rank-me :is(small, .muted) { color: rgba(255,255,255,.6) !important; }
+#app .rank-float .rank-me .n { background: #fff !important; color: #0b0b0d !important; }
+
+/* ---------- Tabbar 未选中色与正文统一 ---------- */
+#app #tabbar button:not(.on) { color: var(--ui-text); }
+
+/* ---------- 空状态 ---------- */
+#app .tray .empty, #app .species-empty { font: var(--t-callout); color: var(--ui-text-secondary); }
+
+@media (prefers-reduced-motion: reduce) {
+  #app :is(.btn, .cta, .pill, .icon-btn) { transition: background-color 120ms, color 120ms; }
+}
+
+/* 记录弹窗：自己的渔获可直接编辑 / 删除 */
+.record-modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.record-modal-actions .btn { height: 48px; border-radius: 999px; }
+
+
+/* ===== 美术小图（鱼图片/小图 → img/fish-thumb/NNN.webp）=====
+   用于：瀑布流小卡、排行榜项、巨物榜顶部、选鱼种弹窗。按容器等比收纳，不拉伸。 */
+img.fish-art { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; filter: none !important; image-rendering: auto; -webkit-user-drag: none; user-select: none; pointer-events: none; }
+.rank-row .best img.fish-art, .size-row .best img.fish-art { width: 100%; height: 100%; }
+.species-pick .fish img.fish-art, .sp-row .fish img.fish-art { width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)) !important; }
+.sp-banner .sp-fish img.fish-art { width: 72%; height: 100%; max-height: 118px; filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)) !important; }
+.yk-card.thumb .ly.fish img.fish-art { width: 86%; height: auto; aspect-ratio: 2 / 1; filter: drop-shadow(0 2.5cqw 2.5cqw rgba(0,0,0,.45)) !important; }

@@ -1,0 +1,312 @@
+/* 图鉴页顶部：段位徽章与个人收集概览。鱼卡瀑布流继续沿用原有结构。 */
+.dex-overview.dex-summary {
+  display: grid;
+  grid-template-columns: minmax(112px, 39%) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 286px;
+  padding: 14px;
+  color: var(--ink) !important;
+  background: rgba(255, 255, 255, .74) !important;
+  box-shadow: 0 1px 2px rgba(17, 17, 16, .05), 0 16px 30px -20px rgba(75, 69, 42, .4), inset 0 0 0 1px rgba(17, 17, 16, .05) !important;
+}
+
+.dex-overview .dex-rank-panel {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 8px 8px 10px;
+  border: 1px solid rgba(255, 255, 255, .68);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  background: rgba(255, 255, 255, .36);
+  box-shadow: 0 12px 26px -20px rgba(17, 17, 16, .38), inset 0 1px 0 rgba(255, 255, 255, .74), inset 0 -1px 0 rgba(17, 17, 16, .05);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.dex-overview .dex-rank-stars {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 22px;
+}
+
+.dex-overview .dex-rank-star {
+  color: rgba(17, 17, 16, .2);
+  font-size: 17px;
+  line-height: 1;
+  text-shadow: none;
+}
+
+.dex-overview .dex-rank-star.is-on { color: var(--ink); }
+
+.dex-overview .dex-rank-badge {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: min(100%, 142px);
+  margin: -2px 0 -5px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  filter: drop-shadow(0 8px 8px rgba(0, 0, 0, .3));
+}
+
+.dex-page .dex-view-switch .pill {
+  border-radius: var(--r-sm);
+}
+
+.dex-overview .dex-rank-badge:focus-visible {
+  outline: 3px solid rgba(17, 17, 16, .36);
+  outline-offset: 4px;
+}
+
+.dex-overview .rank-badge-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.dex-overview .dex-rank-name {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  overflow: hidden;
+  color: #111;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dex-overview .dex-rank-progress {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.dex-overview .dex-rank-progress .bar {
+  height: 6px;
+  margin: 7px 0 5px;
+  background: rgba(17, 17, 16, .14) !important;
+}
+
+.dex-overview .dex-rank-progress .bar i {
+  background: #111 !important;
+}
+
+.dex-overview .dex-rank-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  color: var(--taupe);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.dex-overview .dex-profile-overview {
+  display: grid;
+  min-width: 0;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 12px;
+  padding: 2px 2px 0 0;
+}
+
+.dex-overview .dex-profile-head { min-width: 0; }
+.dex-overview .collector-profile { gap: 10px; }
+.dex-overview .collector-profile .mono { width: 50px; height: 50px; font-size: 19px; background: #e6e6e2; }
+.dex-overview .collector h1,
+.dex-overview .dex-profile-head h1 { font-size: 18px; line-height: 1.15; }
+.dex-overview .collector .bio,
+.dex-overview .dex-profile-head .bio { margin-top: 3px; font-size: 12px; line-height: 1.3; color: var(--taupe); }
+
+.dex-overview .dex-unlock-overview { min-width: 0; }
+.dex-overview .dex-overview-label { display: block; margin-bottom: 2px; color: var(--taupe); font-size: 13px; line-height: 1.25; }
+.dex-overview .dex-overview-total { display: flex; align-items: baseline; gap: 3px; min-width: 0; white-space: nowrap; }
+.dex-overview .dex-overview-total b { font-family: var(--mono); font-size: 48px; font-weight: 500; line-height: .96; letter-spacing: 0; }
+.dex-overview .dex-overview-total span { color: var(--ink); font-size: 15px; font-weight: 700; }
+
+.dex-overview .dex-overview-rarity {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: end;
+  gap: 5px;
+  min-width: 0;
+}
+
+.dex-overview .dex-rarity-item { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 5px; }
+.dex-overview .dex-rarity-item yk-rarity { align-self: flex-start; font-size: 13px; line-height: 1; }
+.dex-overview .dex-rarity-item b { display: flex; align-items: baseline; gap: 1px; margin: 0; font-family: var(--mono); font-size: 16px; font-weight: 500; line-height: 1; }
+.dex-overview .dex-rarity-item b small { color: var(--taupe); font-family: inherit; font-size: 10px; font-weight: 400; }
+
+.dex-overview .dex-overview-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(17, 17, 16, .11);
+}
+
+.dex-overview .dex-overview-stats .stat { min-width: 0; padding: 0; }
+.dex-overview .dex-overview-stats .stat .eyebrow { display: block; overflow: hidden; color: var(--taupe); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.dex-overview .dex-overview-stats .stat b { display: flex; align-items: baseline; gap: 2px; margin-top: 6px; font-family: var(--mono); font-size: 18px; font-weight: 500; line-height: 1; letter-spacing: 0; }
+.dex-overview .dex-overview-stats .stat b small { margin: 0; color: var(--taupe); font-family: inherit; font-size: 10px; font-weight: 400; }
+
+@media (max-width: 340px) {
+  .dex-overview.dex-summary { grid-template-columns: 102px minmax(0, 1fr); gap: 10px; padding: 11px; }
+  .dex-overview .dex-rank-panel { padding-inline: 6px; }
+  .dex-overview .dex-rank-star { font-size: 15px; }
+  .dex-overview .dex-rank-name { font-size: 14px; }
+  .dex-overview .collector-profile .mono { width: 44px; height: 44px; font-size: 17px; }
+  .dex-overview .collector h1,
+  .dex-overview .dex-profile-head h1 { font-size: 16px; }
+  .dex-overview .dex-overview-total b { font-size: 42px; }
+  .dex-overview .dex-rarity-item yk-rarity { font-size: 12px; }
+  .dex-overview .dex-rarity-item b { font-size: 14px; }
+  .dex-overview .dex-overview-stats .stat b { font-size: 16px; }
+}
+
+/* Keep the overview readable at phone width: rank, identity and collection
+   counts each get a clear vertical band instead of competing for one row. */
+.dex-overview.dex-summary { grid-template-columns: 124px minmax(0, 1fr); gap: 14px; min-height: 260px; padding: 12px; }
+.dex-overview .dex-rank-panel { padding: 8px 7px 9px; }
+.dex-overview .dex-profile-overview { grid-template-rows: auto auto 1fr auto; gap: 10px; padding: 3px 2px 1px 0; }
+.dex-overview .dex-profile-head { padding-bottom: 8px; border-bottom: 1px solid rgba(17,17,16,.1); }
+.dex-overview .collector-profile .mono { width: 46px; height: 46px; font-size: 18px; }
+.dex-overview .dex-profile-head h1 { font-size: 17px; }
+.dex-overview .dex-unlock-overview { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.dex-overview .dex-overview-label { margin: 0; font-size: 11px; }
+.dex-overview .dex-overview-total b { font-size: 40px; }
+.dex-overview .dex-overview-total span { font-size: 13px; }
+.dex-overview .dex-overview-rarity { gap: 4px; padding-top: 2px; }
+.dex-overview .dex-rarity-item { gap: 4px; }
+.dex-overview .dex-rarity-item yk-rarity { font-size: 11px; }
+.dex-overview .dex-rarity-item b { font-size: 14px; }
+.dex-overview .dex-overview-stats { gap: 6px; padding-top: 8px; }
+.dex-overview .dex-overview-stats .stat .eyebrow { font-size: 10px; }
+.dex-overview .dex-overview-stats .stat b { margin-top: 4px; font-size: 16px; }
+
+@media (max-width: 340px) {
+  .dex-overview.dex-summary { grid-template-columns: 108px minmax(0, 1fr); gap: 10px; padding: 10px; }
+  .dex-overview .dex-profile-overview { gap: 8px; }
+  .dex-overview .collector-profile .mono { width: 42px; height: 42px; font-size: 16px; }
+  .dex-overview .dex-overview-total b { font-size: 35px; }
+  .dex-overview .dex-rarity-item yk-rarity { font-size: 10px; }
+  .dex-overview .dex-rarity-item b { font-size: 13px; }
+}
+
+/* Overview hierarchy pass: each information group gets its own rhythm so the
+   rank, collection progress and secondary counts read as separate bands. */
+.dex-overview.dex-summary {
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 252px;
+  padding: 12px;
+}
+.dex-overview .dex-rank-panel {
+  padding: 8px 6px 10px;
+  border-radius: var(--r-md);
+}
+.dex-overview .dex-rank-badge {
+  width: min(100%, 120px);
+  margin: 0 0 -2px;
+}
+.dex-overview .dex-rank-progress { padding-inline: 2px; }
+.dex-overview .dex-rank-progress-meta {
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--ink);
+}
+.dex-overview .dex-rank-progress-label {
+  color: var(--taupe);
+  font-family: var(--sans);
+  font-size: 10px;
+}
+.dex-overview .dex-profile-overview {
+  grid-template-rows: auto auto auto 1fr;
+  gap: 9px;
+  padding: 2px 1px 0 0;
+}
+.dex-overview .dex-profile-head {
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(17,17,16,.1);
+}
+.dex-overview .dex-unlock-overview {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 42px;
+}
+.dex-overview .dex-overview-label {
+  margin: 0 0 5px;
+  color: var(--taupe);
+  font-size: 11px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.dex-overview .dex-overview-total { gap: 2px; }
+.dex-overview .dex-overview-total b { font-size: 38px; line-height: .9; }
+.dex-overview .dex-overview-total span { font-size: 12px; }
+.dex-overview .dex-overview-rarity {
+  display: block;
+  padding-top: 8px;
+  border-top: 1px solid rgba(17,17,16,.1);
+}
+.dex-overview .dex-rarity-heading {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--taupe);
+  font-size: 10px;
+  line-height: 1;
+}
+.dex-overview .dex-rarity-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+  min-width: 0;
+}
+.dex-overview .dex-rarity-grid .dex-rarity-item {
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.dex-overview .dex-rarity-grid .dex-rarity-item yk-rarity { font-size: 10px; }
+.dex-overview .dex-rarity-grid .dex-rarity-item b { font-size: 13px; }
+.dex-overview .dex-overview-stats {
+  align-self: end;
+  gap: 4px;
+  padding-top: 8px;
+}
+.dex-overview .dex-overview-stats .stat .eyebrow { font-size: 10px; }
+.dex-overview .dex-overview-stats .stat b { margin-top: 4px; font-size: 15px; }
+
+@media (max-width: 340px) {
+  .dex-overview.dex-summary { grid-template-columns: 98px minmax(0, 1fr); gap: 9px; min-height: 244px; padding: 10px; }
+  .dex-overview .dex-rank-stars { gap: 1px; }
+  .dex-overview .dex-rank-star { font-size: 14px; }
+  .dex-overview .dex-rank-name { font-size: 14px; }
+  .dex-overview .dex-rank-progress-label { display: none; }
+  .dex-overview .dex-overview-total b { font-size: 34px; }
+  .dex-overview .dex-rarity-grid .dex-rarity-item yk-rarity { font-size: 9px; }
+  .dex-overview .dex-rarity-grid .dex-rarity-item b { font-size: 12px; }
+  .dex-overview .dex-overview-stats .stat b { font-size: 14px; }
+}

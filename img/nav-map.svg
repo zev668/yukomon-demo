@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" shape-rendering="crispEdges">
+  <title>Fishing spots</title>
+  <path d="M3 4H9V6H15V4H21V19H15V21H9V19H3Z" fill="none" stroke="currentColor" stroke-width="2"/>
+  <path d="M9 6H15V19H9Z" fill="currentColor" opacity=".18"/>
+  <path d="M16 8H18V10H16ZM14 10H16V12H14ZM12 12H14V14H12ZM10 14H12V16H10Z"/>
+</svg>

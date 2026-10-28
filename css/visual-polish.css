@@ -1,0 +1,179 @@
+/* ============================================================
+   VISUAL POLISH 覆盖层（最后加载；只覆盖视觉，不改结构与交互）
+   延续 ASCII STYLE 体系：黑 / 白 / 灰 + 信号红；无阴影、无渐变、
+   无玻璃；层次只靠底色差；装饰一律用等宽字符 / 点阵。
+   ============================================================ */
+
+/* ---------- 全局渲染质感 ---------- */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+#view, .sheet-scroll, .sheet-body, .page-body { overscroll-behavior-y: contain; }
+
+/* ============================================================
+   1) 排行榜：补页头标题 + 空态焕新
+   ============================================================ */
+
+/* 页头标题：双色 editorial 节奏 —— 灰 eyebrow + 黑主标 */
+.rank-page::before {
+  content: "排行榜";
+  display: block;
+  margin: 2px 2px 14px;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+/* 榜单空态：ASCII 鱼 + 主文案 + 灰副文案，替代一句悬空的灰字 */
+.rank-page .board .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex: 1;
+  min-height: 280px;
+  padding: 48px 24px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--g800);
+}
+.rank-page .board .empty::before {
+  content: "\00B0   o   O\A ><(((('>";
+  white-space: pre;
+  display: block;
+  margin-bottom: 22px;
+  font-family: var(--mono);
+  font-size: 22px;
+  line-height: 1.7;
+  letter-spacing: 0.12em;
+  color: var(--g300);
+}
+.rank-page .board .empty::after {
+  content: "第一名还空着，记录一条现场渔获就能上榜";
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--g500);
+}
+
+/* ============================================================
+   2) 钓点：并入 ASCII 画布 + 空态焕新（点阵水面）
+   ============================================================ */
+
+/* 灰绿旧底色换成主题画布灰，和整 App 统一。
+   #view.view-map 带 !important 且延伸到导航栏后，必须同级覆盖。 */
+#view.view-map { background: var(--canvas) !important; }
+.map-page { background: var(--canvas) !important; }
+.map-canvas { background: var(--canvas) !important; }
+
+/* 空态水面：极淡点阵 + 字符鱼，保持扁平 */
+.map-fallback {
+  background-image:
+    radial-gradient(circle, var(--g200) 1.2px, transparent 1.6px);
+  background-size: 26px 26px;
+  background-position: center;
+}
+.map-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0 32px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--g800);
+}
+.map-empty::before {
+  content: "\00B0    o\A      O\A ><(((('>";
+  white-space: pre;
+  display: block;
+  margin-bottom: 20px;
+  font-family: var(--mono);
+  font-size: 20px;
+  line-height: 1.8;
+  letter-spacing: 0.12em;
+  color: var(--g300);
+}
+.map-empty::after {
+  content: "公开钓点会随渔获记录出现";
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--g500);
+}
+
+.map-fallback.map-list-fallback { padding: 78px 16px 24px; overflow-y: auto; background-image: none; background-color: var(--canvas); }
+.map-service-state { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; margin-bottom: 12px; }
+.map-service-state p { margin: 0; color: var(--g600); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.map-service-state .btn { flex: none; }
+.map-list-fallback .map-cell-list { gap: 0; }
+.map-list-fallback .map-cell-row { min-width: 0; padding: 16px 0; border-bottom: 1px solid var(--g200); border-radius: 0; background: transparent; box-shadow: none; }
+.map-list-fallback .map-cell-row .grow { min-width: 0; }
+.map-list-fallback .map-cell-row b, .map-list-fallback .map-cell-row small { overflow-wrap: anywhere; }
+.map-list-empty { margin: 32px 0; font-size: 14px; color: var(--g600); text-align: center; line-height: 1.7; }
+.map-locate:disabled { opacity: .4; cursor: default; }
+.location-manual { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+.location-manual label { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 12px; color: var(--g600); }
+.location-manual .location-place { grid-column: 1 / -1; }
+.location-manual input { min-width: 0; width: 100%; min-height: 44px; border: 1px solid var(--g200); border-radius: 6px; padding: 10px 12px; font: inherit; font-size: 14px; background: var(--canvas); color: var(--ink); }
+
+/* ============================================================
+   3) 图鉴：筛选条渐隐 + 剪影可见度
+   ============================================================ */
+
+/* 筛选条右端渐隐，暗示可横向滑动（取代生硬的截断） */
+.dex-filter {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent);
+}
+
+/* 未解锁剪影：略提升可见度，仍保持“未解锁”的灰感 */
+.cell .slot .fish-svg { opacity: 0.2; }
+
+/* 切换筛选时卡片流会重建，content-visibility 的占位尺寸(148px)与真实高度
+   (约 177px)不符且缓存失效，导致瀑布流大小跳变 —— 改为常规渲染。 */
+.tray .cell,
+.set-cards .cell { content-visibility: visible !important; contain-intrinsic-size: auto !important; }
+
+/* 套组模式多出的 2px 内边距会让列宽变窄、卡片比品级模式矮 2px，
+   两种模式互切时表现为卡片大小跳变 —— 对齐成一致。 */
+.set-cards { padding: 0 !important; }
+
+/* ============================================================
+   4) 发布：相机不可用状态的排版与装饰
+   ============================================================ */
+
+.cam-msg { gap: 6px; }
+.cam-msg::before {
+  content: "[ ><(((('> ]";
+  display: block;
+  margin-bottom: 14px;
+  font-family: var(--mono);
+  font-size: 20px;
+  letter-spacing: 0.1em;
+  color: var(--g500);
+}
+.cam-msg b { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+.cam-msg span { max-width: 30em; }
+.cam-msg .btn { margin-top: 14px; }
+
+/* ============================================================
+   5) 通用空态统一节奏（tray / 积分事件等小块空态）
+   ============================================================ */
+
+.tray .empty, .sheet .empty {
+  padding: 36px 20px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--g500);
+}

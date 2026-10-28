@@ -1,0 +1,66 @@
+/* Preserve radius sizes; only change the contour of rectangular UI surfaces. */
+@supports (corner-shape: squircle) {
+  #phone, #app, #toast { corner-shape: squircle; }
+
+  #app :is(
+    .tile, .entry, .entry .ph, .facts, .hero-photo, .met-row,
+    .dex-summary, .dex-rank-panel, .yk-lanyard-fallback,
+    .rank-row, .size-row, .sp-banner, .sp-stats > div,
+    .rank-summary, .rank-hero, .rank-event-strip, .rank-rule-total,
+    .rank-event-row, .rank-event-mark, .map-cell-row, .map-catch-row,
+    .map-privacy-note, .set-member-list, .set-member-row, .set-member-icon,
+    .btn, .set-control, .set-input, .link-box, .city-trigger,
+    .city-menu, .city-option, .search-bar, .settings-group .box,
+    .ai-panel, .ai-candidate, .callout, .score-preview,
+    .publish-media, .mount, .mount > img, .album-btn img, .album-btn svg,
+    .segmented, .segmented button, .sp-list, .sp-row, .protect-link, .protect ol,
+    .sheet, .record-tile, .record-tile .ph, .record-bubble,
+    .record-modal-panel, .record-modal-photo-wrap,
+    .yk-card, .card-tilt, .card-flip, .card-face, .card-clip, .card-back,
+    .frame, .reflective-card, .reflective-card__body, .reflective-card__rim,
+    .reflective-card__tile, .card-back .fact, .cd-badge, .cd-name em,
+    .cd-bottom, .cd-tag, .ur-plate, .shareback img, .shareback .sb-photo,
+    .yukomon-fish-card__inner, .yukomon-fish-card__inner-rim,
+    .gallery-card .face, .gallery-card .clip, .gallery-card .frame-line,
+    .gallery-card .b-info, .gallery-card .b-info dl div,
+    .cell .slot, .cell .slot .grade,
+    .pixel-unlock .skip,
+    input:not([type="checkbox"]):not([type="radio"]), textarea
+  ):not(
+    .card-detail-page .card-stage, .card-detail-page .card-stage *,
+    .share-view .card-host, .share-view .card-host *
+  ) {
+    corner-shape: squircle !important;
+  }
+
+  /* The old circular clip would otherwise cut off the smoothed thumbnail. */
+  #app .yk-card.thumb,
+  #app .yk-card.thumb > .card-tilt,
+  #app .yk-card.thumb > .card-tilt > .card-flip,
+  #app .yk-card.thumb .card-face,
+  #app .yk-card.thumb .card-clip {
+    clip-path: none;
+  }
+
+  /* Capsules keep semicircular ends rather than becoming stretched squircles. */
+  #app :is(.cta, .map-filters .set-control) { corner-shape: round !important; }
+}
+
+/* The rank scope is a control row, so it should float on the page surface
+   without a second panel behind the pills. */
+.rank-page .rank-scope,
+.rank-page .rank-scope .scope {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.rank-page .rank-scope::before,
+.rank-page .rank-scope::after,
+.rank-page .rank-scope .scope::before,
+.rank-page .rank-scope .scope::after {
+  content: none !important;
+  display: none !important;
+}

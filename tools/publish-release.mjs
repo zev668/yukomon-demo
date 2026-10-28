@@ -34,6 +34,10 @@ for (const directory of ['css', 'js', 'img', 'vendor', 'fonts', 'fishcard', 'mar
 add(join(site, 'index.html'), 'index.html');
 for (const path of ['package.json', 'package-lock.json', 'Dockerfile', 'compose.yaml', '.dockerignore', 'README.md',
   'server/app.mjs', 'server/index.mjs', 'server/database.mjs', 'server/catalog.mjs', 'server/backup.mjs', 'server/.env.example', 'server/README.md', 'server/test/api.test.mjs',
+  'server/distribution.mjs', 'server/map-grid.mjs', 'server/providers.mjs', 'server/auth/passwords.mjs',
+  ...readdirSync(join(root, 'server/test')).filter(n => n.endsWith('.test.mjs')).map(n => 'server/test/' + n),
+  'docs/鱼种图鉴总表.md',
+  'tools/gen-species.mjs', 'tools/test-map-client.mjs', 'tools/check-map-v2.mjs', 'tools/test-v2.mjs', 'tools/check-fish-thumbs.mjs',
   'clients/wechat/api.js', 'ReflectiveCard.jsx', 'ReflectiveCard.css', 'YukomonFishCard.jsx', 'YukomonFishCard.css',
   'reflective-card-preview/package.json', 'reflective-card-preview/package-lock.json', 'reflective-card-preview/vite.config.js', 'reflective-card-preview/vite.app.config.js', 'reflective-card-preview/index.html',
   'reflective-card-preview/src/main.jsx', 'reflective-card-preview/src/MaterialLab.jsx', 'reflective-card-preview/src/material-settings.js',
@@ -42,6 +46,7 @@ for (const path of ['package.json', 'package-lock.json', 'Dockerfile', 'compose.
   'reflective-card-preview/public/assets/reflective-card-reference.png', 'reflective-card-preview/public/videos/slow-ripples.mp4',
   'tools/test-connected.mjs', 'tools/check-card-motion.mjs', 'tools/check-tuned-card.mjs', 'tools/check-card-material.mjs', 'tools/check-card-watermark.mjs', 'tools/build-ripple-video.mjs',
   'tools/publish-release.mjs', 'docs/RELEASE-0.2.0.md']) add(path);
+add('data/species.csv', 'catalog/species.csv'); add('data/species.json', 'catalog/species.json');
 add(existsSync(join(root, '.release.gitignore')) ? '.release.gitignore' : '.gitignore', '.gitignore');
 for (const file of files.values()) if (/\.(env|sqlite|keystore|pem|key)$|(^|\/)node_modules\/|(^|\/)data\//.test(file.path)) throw new Error(`Private path in manifest: ${file.path}`);
 const branch = api(repo).default_branch;

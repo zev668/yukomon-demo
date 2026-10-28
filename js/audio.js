@@ -34,11 +34,47 @@
     const pulse = (t, f, vol = .045) => tone(ctx, target, t, f, .055, vol, 'square', track);
     if (name.startsWith('unlock_')) {
       const rank = Math.max(0, ['N', 'R', 'SR', 'SSR', 'UR'].indexOf(name.slice(7)));
-      const n = rank + 2;
-      for (let i = 0; i < n; i++) pulse(at + i * .075, notes[Math.min(i, 4)] / 2);
-      const reveal = [.35, .48, .64, .8, 1][rank];
-      glass(at + reveal + .18, notes[rank]); glass(at + reveal + .26, notes[rank] * 1.5, .08);
-    } else if (name === 'ui_flip') {
+      // Cue fires on the reveal label. Layers escalate per tier:
+      // N: chime; R: + rising 3-note arpeggio; SR: + major chord bloom;
+      // SSR: + low impact + sparkle tail; UR: + sub boom, noise burst, 5-note run, long shimmer.
+      const root = [523.25, 587.33, 659.25, 698.46, 783.99][rank];
+      const chord = [1, 1.25, 1.5, 2];
+      const noise = (t, dur, vol) => {
+        const len = Math.max(1, Math.floor(ctx.sampleRate * dur)), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+        const src = ctx.createBufferSource(), g = ctx.createGain(), hp = ctx.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = 1800; src.buffer = buf; g.gain.value = vol;
+        src.connect(hp).connect(g).connect(target); src.start(t); src.stop(t + dur + .02);
+        if (track) active.add(src);
+        src.onended = () => { src.disconnect(); active.delete(src); };
+      };
+      const boom = (t, f0, dur, vol) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * .35, t + dur);
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+        o.connect(g).connect(target); o.start(t); o.stop(t + dur + .02);
+        if (track) active.add(o);
+        o.onended = () => { o.disconnect(); g.disconnect(); active.delete(o); };
+      };
+      // Base chime (all tiers).
+      glass(at, root * 2, .1 + rank * .01);
+      if (rank === 0) { glass(at + .09, root * 3, .05); return; }
+      // Rising arpeggio, longer for higher tiers.
+      const run = [1, 1.25, 1.5, 2, 2.5].slice(0, Math.min(5, rank + 2));
+      run.forEach((m, i) => pulse(at + .02 + i * (.07 - rank * .006), root * m, .03 + rank * .004));
+      const top = at + .02 + run.length * (.07 - rank * .006);
+      glass(top, root * 2 * run[run.length - 1] / 2, .09 + rank * .01);
+      if (rank >= 2) chord.forEach((m, i) => tone(ctx, target, top + i * .012, root * m, .7 + rank * .18, .04 + rank * .006, 'triangle', track));
+      if (rank >= 3) {
+        boom(at, 140, .45, .22 + (rank - 3) * .08);
+        for (let i = 0; i < 6 + rank * 2; i++) glass(top + .12 + i * .07, root * 4 * [1, 1.25, 1.5, 2][i % 4], .03 - i * .001);
+      }
+      if (rank >= 4) {
+        boom(at - .005, 70, .9, .3);
+        noise(at, .5, .12);
+        chord.forEach((m, i) => tone(ctx, target, top + .3, root * m / 2, 1.4, .05, 'sawtooth', track));
+        [1, 1.5, 2, 3, 4].forEach((m, i) => tone(ctx, target, top + .6 + i * .11, root * m * 2, 1.1, .025, 'sine', track));
+      }    } else if (name === 'ui_flip') {
       pulse(at, 440, .025); glass(at + .045, 1760, .035);
     } else if (name === 'star' || name === 'ui_rank_up') {
       notes.slice(0, 3).forEach((f, i) => { pulse(at + i * .06, f); glass(at + i * .06, f * 2, .06); });
@@ -61,7 +97,7 @@
   const VIB = { light: 12, medium: 24, heavy: 36, long: 48 };
   function haptic(kind) {
     if (!settings.haptics || document.hidden) return;
-    try { navigator.vibrate?.(VIB[kind] || 12); } catch {}
+    try { if (!window.YK_NATIVE) navigator.vibrate?.(VIB[kind] || 12); } catch {}
     document.dispatchEvent(new CustomEvent('yk-haptic', { detail: kind }));
   }
   function scheduleHaptics(list, offset = 0) {

@@ -16,6 +16,11 @@ export function openDatabase(path) {
     CREATE TABLE IF NOT EXISTS sessions (
       token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS auth_credentials (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      username TEXT UNIQUE NOT NULL COLLATE NOCASE,
+      password_hash TEXT NOT NULL, recovery_hash TEXT NOT NULL, updated_at INTEGER NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS media (
       id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       mime TEXT NOT NULL, size INTEGER NOT NULL, hash TEXT NOT NULL, filename TEXT NOT NULL,
@@ -46,7 +51,33 @@ export function openDatabase(path) {
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, created_at INTEGER NOT NULL
     );
     CREATE INDEX IF NOT EXISTS submission_time ON submissions(user_id, created_at);
-    PRAGMA user_version=1;
+    CREATE TABLE IF NOT EXISTS rank_events (
+      id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      catch_id TEXT REFERENCES catches(id) ON DELETE CASCADE, event_type TEXT NOT NULL,
+      set_id TEXT, base_score REAL NOT NULL DEFAULT 0, size_multiplier REAL NOT NULL DEFAULT 0,
+      repeat_multiplier REAL NOT NULL DEFAULT 1, bonus_score INTEGER NOT NULL DEFAULT 0,
+      total_score INTEGER NOT NULL DEFAULT 0, score_version TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'active', created_at INTEGER NOT NULL, revoked_at INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS rank_event_user_time ON rank_events(user_id, created_at DESC);
+    CREATE TABLE IF NOT EXISTS user_ranks (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      points INTEGER NOT NULL DEFAULT 0, tier TEXT NOT NULL DEFAULT '初见', stars INTEGER NOT NULL DEFAULT 0,
+      peak_points INTEGER NOT NULL DEFAULT 0, peak_tier TEXT NOT NULL DEFAULT '初见',
+      verified_catch_count INTEGER NOT NULL DEFAULT 0, unique_species_count INTEGER NOT NULL DEFAULT 0,
+      set_completed_count INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS user_map_settings (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      enabled INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS recognition_requests (
+      id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      media_id TEXT NOT NULL REFERENCES media(id) ON DELETE CASCADE, config_key TEXT NOT NULL,
+      response TEXT, created_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS recognition_user_time ON recognition_requests(user_id, created_at);
+    PRAGMA user_version=3;
   `);
   return db;
 }

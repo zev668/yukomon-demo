@@ -1,0 +1,28 @@
+.sheet.account-sheet { max-height: min(90dvh, 800px); overflow-y: auto; }
+.account-form { display: grid; gap: 16px; min-width: 0; }
+.account-form label { display: grid; gap: 8px; font-size: 14px; font-weight: 600; }
+.account-form input:not([type=checkbox]) { width: 100%; min-width: 0; padding: 12px; border: 1px solid #c8c8c8; border-radius: 6px; font: inherit; background: #fff; color: #171717; }
+.account-form p { margin: 0; color: #555; font-size: 14px; line-height: 1.65; }
+.account-form .account-check { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; font-weight: 400; line-height: 1.6; }
+.account-check input { flex: 0 0 18px; width: 18px; height: 18px; margin: 2px 0 0; accent-color: #111; }
+.account-check a, .account-settings a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.account-links { display: flex; justify-content: space-between; gap: 12px; }
+.account-links button { background: none; border: 0; padding: 8px 0; color: #555; font: inherit; font-size: 14px; cursor: pointer; }
+.account-form .account-error { color: #c02929; }
+.recovery-code { display: block; padding: 16px; border: 1px solid #bbb; border-radius: 6px; background: #f2f2f2; color: #111; font-family: monospace; font-size: 18px; overflow-wrap: anywhere; user-select: text; }
+.account-form .btn { min-height: 44px; white-space: normal; }
+.native-offline { position: fixed; inset: env(safe-area-inset-top, 0px) 0 auto; z-index: 15000; background: #8f2828; color: #fff; padding: 8px 16px; text-align: center; font-size: 13px; }
+html.native-app #device { padding: 0; }
+html.native-app #phone { width: 100%; max-width: none; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; }
+html.native-app #app { padding-top: env(safe-area-inset-top, 0px); }
+/* 微信一键登录：品牌绿主按钮 + 分隔线，账号密码作为次要方式 */
+.wechat-login { display: grid; gap: 12px; }
+.account-form .wechat-btn { height: 52px; gap: 10px; border-radius: 999px; background: #07c160; color: #fff; font-size: 16px; font-weight: 600; box-shadow: none; }
+.account-form .wechat-btn:hover { background: #06ad56; }
+.account-form .wechat-btn svg { width: 22px; height: 22px; }
+.account-form .wechat-btn.is-unavailable { background: #9fdcbc; }
+.account-form .wechat-btn[aria-busy=true] { opacity: .7; }
+.wechat-login .account-check { justify-content: center; text-align: left; }
+.account-form .wechat-hint { margin: 0; color: #6b6f76; font-size: 13px; text-align: center; }
+.account-divider { display: flex; align-items: center; gap: 12px; margin: 6px 0 2px; color: #9a9ca3; font-size: 12px; }
+.account-divider::before, .account-divider::after { content: ''; flex: 1; height: 1px; background: #e3e3e6; }

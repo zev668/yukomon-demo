@@ -1,0 +1,84 @@
+/* The interactive挂牌 owns the visual weight of the dex header. */
+.dex-lanyard-section {
+  position: relative;
+  display: grid;
+  gap: 0;
+  margin: -24px -16px 0;
+  padding: 0;
+}
+
+.dex-lanyard-host {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+}
+
+.dex-lanyard-host .yk-app-lanyard,
+.dex-lanyard-host .lanyard,
+.dex-lanyard-host canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.dex-lanyard-host .yk-app-lanyard,
+.dex-lanyard-host .lanyard { position: absolute; inset: 0; overflow: visible; }
+
+.dex-lanyard-host[data-lanyard-fallback="true"] .yk-lanyard-fallback { display: grid; }
+
+.dex-lanyard-tools {
+  position: absolute;
+  z-index: 4;
+  top: 2px;
+  right: 12px;
+}
+
+.dex-lanyard-settings {
+  width: 40px;
+  height: 40px;
+}
+
+.yk-lanyard-fallback {
+  display: none;
+  position: absolute;
+  inset: 12px;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  border: 1px solid rgba(17, 17, 16, .1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .76);
+  color: var(--ink);
+  text-align: center;
+}
+
+.yk-lanyard-fallback b { font-size: 16px; }
+.yk-lanyard-fallback span { color: var(--taupe); font-size: 12px; }
+
+.dex-filter .pill {
+  height: 38px;
+  min-height: 38px;
+}
+
+.dex-page > .dex-lanyard-section + .section-h {
+  margin-top: 0;
+}
+
+@media (max-width: 360px) {
+  .dex-lanyard-section { margin-top: -24px; }
+  .dex-lanyard-host { height: 300px; min-height: 300px; }
+}
+
+/* The Lanyard camera is width-bound on 390px phones and leaves a small
+   optical inset around the face. Expand only the render surface so the card
+   reaches the same 16px content rails without changing its vertical framing. */
+@media (min-width: 381px) and (max-width: 420px) {
+  .dex-lanyard-host canvas { transform: scaleX(1.056); transform-origin: 50% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dex-lanyard-host { background: transparent; }
+}

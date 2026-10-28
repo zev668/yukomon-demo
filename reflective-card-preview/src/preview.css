@@ -1,4 +1,4 @@
-:root { font-family: Arial, 'Microsoft YaHei', sans-serif; color: #252629; background: #f7f8f9; font-synthesis: none; }
+:root { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", "Microsoft YaHei UI", system-ui, sans-serif; color: #252629; background: #f7f8f9; font-synthesis: none; }
 * { box-sizing: border-box; }
 html, body, #root { min-width: 280px; min-height: 100%; margin: 0; }
 button, select, input, textarea { font: inherit; }
@@ -17,7 +17,8 @@ button:disabled, input:disabled { cursor: default; }
 .tool-icon:hover, .tool-icon[aria-pressed='true'] { background: #e7ebed; }
 .tool-tip { position: absolute; top: calc(100% + 7px); right: 0; z-index: 8; color: #fff; background: #272a2d; padding: 6px 9px; font-size: 11px; line-height: 1.5; white-space: nowrap; border-radius: 4px; pointer-events: none; opacity: 0; transform: translateY(-3px); transition: opacity .15s, transform .15s; }
 .tool-icon:hover .tool-tip, .tool-icon:focus-visible .tool-tip { opacity: 1; transform: none; }
-.lab-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 352px; min-height: 0; }
+.lab-workspace { display: grid; grid-template-columns: 352px minmax(0, 1fr); min-height: 0; }
+.lab-stage { grid-column: 2; grid-row: 1; }
 .lab-stage { min-width: 0; min-height: 0; display: grid; grid-template-rows: 64px minmax(0, 1fr) 32px; color: #bbbcc1; background: #121015; }
 .stage-toolbar { display: flex; gap: 14px; align-items: center; padding: 0 24px; }
 .segments { display: flex; padding: 3px; border: 1px solid #ffffff20; border-radius: 6px; flex-shrink: 0; }
@@ -26,9 +27,11 @@ button:disabled, input:disabled { cursor: default; }
 .backdrop-picker { display: flex; margin-left: auto; gap: 2px; }
 .backdrop-picker .tool-icon:hover, .backdrop-picker .tool-icon[aria-pressed='true'] { background: #ffffff16; }
 .card-viewport { min-width: 0; min-height: 0; display: grid; place-items: center; overflow: hidden; }
+.lanyard-mode .card-viewport { display: block; }
+.lab-lanyard { width: 100%; height: 100%; }
 .card-footprint { position: relative; flex: none; }
 .card-scale { transform-origin: top left; }
-.card-scale .reflective-card { font-family: Arial, 'Microsoft YaHei', sans-serif; }
+.card-scale .reflective-card { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", "Microsoft YaHei UI", system-ui, sans-serif; }
 .card-scale .reflective-card__name, .card-scale .reflective-card__value { letter-spacing: 0; }
 .card-scale .reflective-card__name, .card-scale .reflective-card__role { overflow-wrap: anywhere; }
 .card-scale .yukomon-fish-card__number, .card-scale .yukomon-fish-card__identity h3, .card-scale .yukomon-fish-card__identity p { letter-spacing: 0; }
@@ -79,6 +82,11 @@ input[type='range']::-moz-range-thumb { width: 10px; height: 10px; border-radius
 .toggle-row input:focus-visible + .toggle-track { outline: 2px solid #26876a; outline-offset: 3px; }
 .toggle-row input:disabled + .toggle-track { opacity: .4; }
 .content-fields { display: grid; gap: 12px; }
+.rarity-inputs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.rarity-inputs .text-field { gap: 5px; text-align: center; }
+.rarity-inputs input { width: 100%; min-width: 0; height: 28px; border: 1px solid #dce1e5; border-radius: 4px; background: #fff; padding: 0 4px; text-align: center; font: 11px ui-monospace, monospace; color: #303a41; }
+.rarity-totals { margin-top: 8px; }
+.rarity-totals .text-field { color: #9098a0; font-size: 10px; }
 .text-field { display: grid; gap: 6px; font-size: 11px; color: #747d85; }
 .text-field input { width: 100%; min-width: 0; height: 30px; border: 1px solid #dce1e5; border-radius: 4px; background: #fff; padding: 0 8px; font-size: 12px; color: #303a41; }
 .video-field { margin-top: 14px; }
@@ -97,12 +105,15 @@ dialog::backdrop { background: #0009; }
   .lab-title h1 { font-size: 14px; }
   .save-state, .lab-tag { display: none; }
   .lab-workspace { grid-template-columns: minmax(0, 1fr); }
+  .lab-stage { grid-column: 1; grid-row: 1; }
+  .lab-controls { grid-column: 1; grid-row: 2; }
   .lab-stage { grid-template-rows: 56px minmax(0, 1fr) 28px; }
   .stage-toolbar { padding: 0 12px; gap: 8px; }
   .segments button { min-width: 43px; padding: 0 8px; height: 26px; }
   .backdrop-picker { gap: 0; }
   .backdrop-picker .tool-icon { width: 26px; }
   .card-viewport { height: calc((100vw - 64px) * var(--card-aspect) + 48px); max-height: 740px; }
+  .lanyard-mode .card-viewport { height: max(360px, calc((100vw - 32px) * var(--card-aspect) + 160px)); }
   .lab-controls { overflow: visible; border: 0; padding: 20px 24px 28px; }
   .lab-controls > * { max-width: 520px; margin-left: auto; margin-right: auto; }
   .param-grid { gap: 18px 22px; }

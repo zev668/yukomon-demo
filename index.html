@@ -3,21 +3,37 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f2f2f2" />
+  <meta name="theme-color" content="#f4f5f6" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Yukomon · 淡水鱼采集图鉴 Demo</title>
+  <title>鱼可梦 Yukomon</title>
   <link rel="icon" type="image/svg+xml" href="img/logo.svg" />
   <link rel="stylesheet" href="css/app.css?v=rarities-5" />
   <link rel="stylesheet" href="css/card.css" />
-  <link rel="stylesheet" href="css/publish.css?v=size-rank-sticky-1" />
-  <link rel="stylesheet" href="css/ascii.css?v=review-polish-1" />
+  <link rel="stylesheet" href="css/publish.css?v=fb-20261027" />
+  <!-- ASCII STYLE 换皮层已停用（改走 iOS 26 Liquid Glass），需要时恢复本行即可 -->
+  <!-- <link rel="stylesheet" href="css/ascii.css?v=review-polish-1" /> -->
   <link rel="stylesheet" href="css/gallery-card.css?v=marble-back-2" />
-  <link rel="stylesheet" href="css/nav-glass.css?v=5" />
-  <link rel="stylesheet" href="vendor/reflective-card/reflective-card.css?v=small-labels-2">
+  <link rel="stylesheet" href="vendor/reflective-card/reflective-card.css?v=v060-1">
   <link rel="stylesheet" href="css/connected.css?v=rarity-share-1">
   <link rel="stylesheet" href="css/rarity.css?v=small-labels-2">
-  <link rel="stylesheet" href="css/small-card.css?v=small-labels-2">
-  <link rel="stylesheet" href="css/card-scenes.css?v=detail-spacing-2">
+  <link rel="stylesheet" href="css/small-card.css?v=dark-logo-thumbnails-20261023">
+  <link rel="stylesheet" href="css/card-scenes.css?v=card-ur-restored-1">
+  <link rel="stylesheet" href="css/dex-overview.css?v=overview-layout-5">
+  <link rel="stylesheet" href="css/lanyard-profile.css?v=lanyard-20261025-r11">
+  <link rel="stylesheet" href="css/card-presentation.css?v=unlock-r2-20261028">
+  <link rel="stylesheet" href="css/visual-polish.css?v=2">
+  <link rel="stylesheet" href="css/ui-tokens.css?v=mono-20261023">
+  <link rel="stylesheet" href="css/ios26.css?v=corner-step-20261026-r1">
+  <link rel="stylesheet" href="css/nav-glass.css?v=nav-black-unselected-20261026-r2">
+  <link rel="stylesheet" href="css/account.css?v=fb-20261027">
+  <link rel="stylesheet" href="css/glass-surface.css?v=nav-black-unselected-20261026-r2">
+  <link rel="stylesheet" href="css/layout-update.css?v=pikachu-20261023">
+  <link rel="stylesheet" href="css/unlock-motion.css?v=unlock-r2-20261028">
+  <link rel="stylesheet" href="css/continuous-corners.css?v=continuous-20261026-r1">
+  <link rel="stylesheet" href="css/catch-editor.css?v=corner-step-20261026-r1">
+  <link rel="stylesheet" href="css/fixes-20261027.css?v=alias-20261028">
+<link rel="stylesheet" href="css/unify-2026.css?v=thumbs-1">
+<link rel="stylesheet" href="css/map-v2.css?v=060">
 </head>
 <body>
   <div id="stage">
@@ -26,15 +42,15 @@
       <p class="sub">淡水鱼采集图鉴 · 可交互原型</p>
       <dl>
         <dt>记录渔获</dt>
-        <dd>拍照、自己选鱼种、写一句描述，登记后直接解锁鱼卡。</dd>
+        <dd>拍照后由 AI 给出候选鱼种，确认后写一句描述，现场记录会结算段位积分。</dd>
         <dt>看鱼卡</dt>
         <dd>电脑上移动鼠标，手机上晃动机身，卡片会有多层视差。点击可翻面。</dd>
         <dt>看别人的图鉴</dt>
         <dd>排行榜里点任意一位钓手，进入他的图鉴页，可以给他的渔获点赞。</dd>
         <dt>分享链接</dt>
-        <dd>鱼卡详情里点"分享链接"。打开后是一张视差鱼卡，背面是渔获照片、地点、时间和描述。</dd>
-        <dt>巨物卡</dt>
-        <dd>现场拍摄且尺寸达到这种鱼的巨物线，收入囊中后直接解锁 UR 巨物卡。</dd>
+        <dd>鱼卡按鱼种只解锁一张，重复渔获保留记录并按规则获得积分。</dd>
+        <dt>段位积分</dt>
+        <dd>现场渔获会根据稀有度、尺寸和重复次数获得长期积分，可查看全国和城市天梯。</dd>
       </dl>
       <p class="foot">鱼体为程序生成的占位图，正式版替换为写实插画。</p>
     </aside>
@@ -54,6 +70,10 @@
             <svg class="ti" viewBox="0 0 200 200" aria-hidden="true"><path d="M77.6632 34.5551C87.2146 31.2424 98.4563 33.4774 109.405 38.8455C120.358 44.2156 131.047 52.7349 139.513 62.0417C147.787 71.1375 153.954 81.004 156.16 89.4382C158.1 84.8692 163.205 80.3105 168.672 77.6512C171.52 76.2658 174.483 75.3874 177.169 75.2952C179.856 75.2031 182.282 75.8987 184.024 77.6796C185.072 78.7516 185.672 79.8175 185.903 80.9124C186.135 82.007 185.995 83.1123 185.597 84.2565C184.805 86.531 182.969 89.0105 180.908 91.9396C176.771 97.8166 171.631 105.621 171.631 117.614C171.631 121.832 173.111 125.664 175.16 129.168C177.21 132.674 179.82 135.835 182.075 138.722C184.319 141.594 186.228 144.214 186.814 146.606C187.109 147.812 187.071 148.969 186.569 150.073C186.067 151.175 185.112 152.205 183.608 153.174C180.581 155.126 177.062 155.276 173.497 154.331C169.934 153.387 166.308 151.345 163.041 148.885C159.773 146.423 156.854 143.536 154.702 140.891C153.626 139.568 152.74 138.302 152.097 137.179C151.591 136.293 151.231 135.484 151.053 134.8C151.027 134.838 151 134.877 150.972 134.916C150.802 135.15 150.577 135.428 150.306 135.741C149.763 136.369 149.026 137.148 148.149 138.026C146.395 139.782 144.075 141.938 141.619 144.069C139.162 146.2 136.566 148.309 134.259 149.97C133.106 150.8 132.022 151.52 131.063 152.075C130.176 152.588 129.386 152.966 128.74 153.157C128.81 154.085 129.56 154.866 130.72 155.609C131.932 156.385 133.509 157.069 135.019 157.817C136.512 158.557 137.942 159.362 138.788 160.371C139.215 160.88 139.5 161.449 139.565 162.093C139.63 162.737 139.473 163.437 139.052 164.204C138.619 164.993 137.818 165.643 136.766 166.168C135.712 166.694 134.391 167.103 132.892 167.4C129.893 167.993 126.159 168.142 122.377 167.866C118.594 167.59 114.753 166.888 111.541 165.772C108.395 164.679 105.821 163.178 104.517 161.261C77.6195 166.393 56.8373 159.884 42.8685 151.72C35.8746 147.632 30.5882 143.13 27.0965 139.467C25.351 137.636 24.0512 136.012 23.2107 134.752C22.7909 134.123 22.4827 133.58 22.291 133.145C22.1952 132.927 22.1265 132.732 22.0882 132.564C22.0509 132.399 22.0384 132.241 22.074 132.107C22.1692 131.751 22.4192 131.515 22.7495 131.367C23.0734 131.222 23.4857 131.154 23.9404 131.126C24.8475 131.071 26.0093 131.175 27.1369 131.227C28.2799 131.279 29.3944 131.279 30.2593 131.034C30.6889 130.912 31.0458 130.733 31.3125 130.479C31.5766 130.228 31.7617 129.895 31.8365 129.446C31.9631 128.687 31.5861 128.043 30.7361 127.338C29.8834 126.63 28.6093 125.904 27.0449 124.978C23.9281 123.133 19.7398 120.537 15.7926 115.823L15.7776 115.806L15.7675 115.785C13.1992 110.555 13.6066 104.564 15.8528 98.5643C18.0991 92.5642 22.1905 86.5342 27.0243 81.2009C31.8589 75.8667 37.4442 71.2206 42.6882 67.9903C45.3102 66.3752 47.8502 65.1119 50.1714 64.2942C52.4185 63.5025 54.472 63.1243 56.2003 63.2574C60.3375 46.6739 68.1299 37.8616 77.6632 34.5551ZM44.2819 91.7819C39.311 91.7819 35.2813 95.8084 35.2813 100.775C35.2813 105.742 39.311 109.769 44.2819 109.769C49.2528 109.769 53.2825 105.742 53.2825 100.775C53.2825 95.8084 49.2528 91.7819 44.2819 91.7819Z" fill="currentColor"/></svg>
             <span>图鉴</span>
           </button>
+          <button data-tab="map" aria-label="钓点">
+            <svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><use href="img/pixel-icons.svg?v=1#pin"/></svg>
+            <span>钓点</span>
+          </button>
         </nav>
         <div id="layers"></div>
         <div id="toast" role="status"></div>
@@ -61,24 +81,30 @@
       </div>
     </div>
   </div>
+  <script src="api/runtime.js"></script>
   <script src="vendor/gsap.min.js"></script>
   <script src="vendor/CustomEase.min.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/rarity.js?v=1"></script>
+  <script src="js/data.js?v=118"></script>
+  <script src="js/rarity.js?v=card-ur-restored-1"></script>
   <script src="js/card-number.js?v=card-surfaces-2"></script>
-  <script src="js/fish.js?v=fine-silhouette-1"></script>
-  <script src="js/audio.js?v=0.2.0"></script>
-  <script src="js/card.js?v=card-surfaces-2"></script>
-  <script src="js/store.js?v=demo-data-2"></script>
-  <script src="js/motion.js?v=0.2.0"></script>
+  <script src="js/fish-thumbs.js?v=1"></script>
+  <script src="js/fish.js?v=thumbs-1"></script>
+  <script src="js/audio.js?v=unlock-r2-20261028"></script>
+  <script src="js/card.js?v=thumbs-1"></script>
+  <script src="js/store.js?v=card-ur-restored-1"></script>
+  <script src="js/motion.js?v=unify-20261028"></script>
+  <script src="js/list-entrance.js?v=list-enter-20261024"></script>
   <script src="js/media.js?v=0.2.0"></script>
-  <script src="js/ascii.js?v=light-canvas-1"></script>
-  <script src="vendor/reflective-card/reflective-card.js?v=card-surfaces-2"></script>
-  <script src="js/api.js?v=demo-data-2"></script>
-  <script src="js/app.js?v=card-surfaces-2"></script>
+  <script src="js/map-provider.js?v=060"></script>
+  <script src="vendor/reflective-card/reflective-card.js?v=v060-1"></script>
+<script src="vendor/lanyard/lanyard.js?v=crisp-20261027-r1"></script>
+  <script src="js/api.js?v=unify-20261028"></script>
+  <script src="js/account.js?v=unify-20261028"></script>
+  <script src="js/app.js?v=thumbs-1"></script>
   <script src="js/summary-water.js?v=1"></script>
   <script src="js/card-marble.js?v=2"></script>
-  <script src="js/elastic.js"></script>
-  <script src="js/nav-glass.js?v=5"></script>
+  <script src="js/elastic.js?v=mono-20261023"></script>
+  <script src="js/ios26.js?v=mono-20261025-r7"></script>
+  <script src="js/glass-surface.js?v=nav-black-unselected-20261026-r2"></script>
 </body>
 </html>

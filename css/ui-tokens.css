@@ -1,0 +1,45 @@
+/* UI tokens are separate from authored collectible-card materials. */
+@font-face {
+  font-family: 'YK UI Data';
+  src: url('../fonts/yk-pixel-num.woff') format('woff');
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+:root {
+  --ui-neutral-0: #ffffff;
+  --ui-neutral-50: #f4f5f6;
+  --ui-neutral-100: #e9ebee;
+  --ui-neutral-200: #dde0e4;
+  --ui-neutral-500: #8a8e95;
+  --ui-neutral-600: #62666d;
+  --ui-neutral-900: #1c1d20;
+  --ui-bg-page: var(--ui-neutral-50);
+  --ui-bg-content: var(--ui-neutral-0);
+  --ui-bg-inset: var(--ui-neutral-100);
+  --ui-text: var(--ui-neutral-900);
+  --ui-text-secondary: var(--ui-neutral-600);
+  --ui-text-disabled: var(--ui-neutral-500);
+  --ui-separator: var(--ui-neutral-200);
+  --ui-control-border: #7c8189;
+  --ui-action: var(--ui-neutral-900);
+  --ui-action-on: var(--ui-neutral-0);
+  --ui-action-hover: #292b30;
+  --ui-action-pressed: #34363b;
+  --ui-success: #3f6657;
+  --ui-success-bg: #edf3ef;
+  --ui-warning: #795e34;
+  --ui-warning-bg: #f4f0e7;
+  --ui-danger: #9b4b4b;
+  --ui-danger-bg: #f7eeee;
+  --ui-info: #4f657b;
+  --ui-info-bg: #eef2f6;
+  --ui-focus: var(--ui-neutral-600);
+  --ui-scrim: rgba(17,18,20,.28);
+  --ui-font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei UI', system-ui, sans-serif;
+  --ui-font-data: 'YK UI Data', var(--ui-font-body);
+  --ui-radius-control: 8px;
+  --ui-control-height: 48px;
+  --ui-shadow-touch: inset 0 1px 0 rgba(255,255,255,.8), 0 1px 2px rgba(17,18,20,.06);
+  --motion-fast: 160ms;
+  --motion-normal: 240ms;
+}

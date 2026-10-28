@@ -8,7 +8,7 @@
 .reflective-shell .reflective-card { width: 100%; height: 100%; --rc-radius: 24px; --rc-base: #25272c; --rc-ink: #fff; }
 .reflective-shell .reflective-card__body { transform: translate3d(0, var(--rc-lift, 0px), 0); box-shadow: inset 0 1px 0 #ffffff38, 0 16px 30px -14px #0009; }
 .reflective-shell .reflective-card__content { padding: 3.2cqw; }
-.reflective-shell .yukomon-fish-card__inner { height: calc(100% - 13cqw); border-radius: 18px; --rc-pointer-x: inherit; --rc-pointer-y: inherit; }
+.reflective-shell .yukomon-fish-card__inner { height: calc(100% - 13cqw); border-radius: calc(var(--card-radius) - 3.2cqw); --rc-pointer-x: inherit; --rc-pointer-y: inherit; }
 .reflective-shell .yukomon-fish-card__laser { mask-image: var(--yk-logo); -webkit-mask-image: var(--yk-logo); mask-size: 140cqw auto; -webkit-mask-size: 140cqw auto; opacity: calc(var(--rc-holo, .8) * (.75 + .5 * var(--rc-active, 0))); filter: brightness(calc(.95 - .1 * var(--rc-active, 0))) contrast(calc(1.2 + .3 * var(--rc-active, 0))) saturate(calc(.85 - .35 * var(--rc-active, 0))); }
 .reflective-shell .yukomon-fish-card__laser-glow { opacity: calc((.22 + .78 * var(--rc-active, 0)) * var(--rc-holo-detail, 1)); }
 .reflective-shell .yukomon-fish-card__laser-shift { opacity: calc((.28 + .72 * var(--rc-active, 0)) * var(--rc-holo-detail, 1)); }
@@ -29,6 +29,9 @@
 .reflective-back-content h2 { font: 600 8cqw/1.3 var(--sans); margin: 0; }
 .reflective-back-content .no { font: 3.5cqw var(--mono); }
 .reflective-back-content .latin { font: italic 4cqw/1.4 var(--sans); color: #e1e5eb; margin-top: 2cqw; }
+.reflective-back-content .b-alias { margin-top: 3cqw; font: 3.8cqw/1.55 var(--sans); color: #e9edf2; overflow-wrap: anywhere; }
+.reflective-back-content .b-alias span { display: inline-block; margin-right: 2cqw; padding: 0 2cqw; border-radius: 99px; background: #ffffff24; box-shadow: inset 0 0 0 1px #ffffff3d; font-size: 3.2cqw; line-height: 5.4cqw; color: #fff; vertical-align: 0.2cqw; }
+.reflective-back-content .b-alias + p { margin-top: 6cqw; }
 .reflective-back-content p { font: 4.6cqw/1.7 var(--sans); margin: 8cqw 0; }
 .reflective-back-content dl { margin: 0; display: grid; gap: 4cqw; font: 4cqw/1.5 var(--sans); }
 .reflective-back-content dl > div { display: grid; grid-template-columns: 13cqw 1fr; gap: 3cqw; }

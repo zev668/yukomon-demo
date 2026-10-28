@@ -11,7 +11,7 @@
     "dev": "node --watch --env-file-if-exists=server/.env server/index.mjs",
     "test": "node --test server/test/*.test.mjs",
     "build:cards": "npm --prefix reflective-card-preview run build:app",
-    "test:e2e": "node tools/test-connected.mjs",
+    "test:e2e": "node tools/test-v2.mjs",
     "backup": "node --env-file-if-exists=server/.env server/backup.mjs"
   },
   "dependencies": {

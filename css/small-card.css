@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'YK Thumbnail Num';
+  src: url('../fonts/yk-pixel-num.woff') format('woff');
+  unicode-range: U+0020, U+0025, U+002B-002F, U+0030-003A, U+00D7;
+  font-display: block;
+}
+
 yk-card-number {
   display: inline-flex;
   align-items: center;
@@ -8,8 +15,9 @@ yk-card-number {
   white-space: nowrap;
   color: #737373;
 }
+.cell yk-card-number { font-family: 'YK Thumbnail Num', var(--mono); }
 .cell .slot > yk-card-number { position: absolute; top: 10px; left: 10px; }
-.yk-card.thumb .cd-top { align-items: center; }
+.yk-card.thumb .cd-top { top: 10px; left: 10px; right: 10px; align-items: center; }
 .cell :is(.yk-card.thumb, .slot) yk-rarity.small-card-rarity {
   display: inline-flex;
   align-items: center;
@@ -17,11 +25,37 @@ yk-card-number {
   line-height: 1 !important;
 }
 .yk-card.thumb .cd-top yk-card-number { color: #d2d2d6; }
-.yk-card.thumb .cd-name { top: calc(10px + 14px + 6px) !important; color: #f4f4f6; letter-spacing: 0 !important; }
+.yk-card.thumb .cd-name { left: 10px; top: calc(10px + 14px + 6px) !important; color: #f4f4f6; letter-spacing: 0 !important; text-shadow: none; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; }
 .yk-card.thumb .card-face.card-front,
 .yk-card.thumb .card-clip { background: #171719 !important; }
 .yk-card.thumb .card-face.card-front > .frame { display: none; border: 0 !important; }
 .yk-card.thumb .card-clip { filter: none !important; }
+
+/* The approved dark thumbnails previously relied on these rules in ascii.css.
+   Keep their static fish and logo separate from the large card's scene layers. */
+.yk-card.thumb,
+.yk-card.thumb > .card-tilt,
+.yk-card.thumb > .card-tilt > .card-flip,
+.yk-card.thumb .card-face,
+.yk-card.thumb .card-clip {
+  border-radius: 14px !important;
+  overflow: hidden;
+  clip-path: inset(0 round 14px);
+  box-shadow: none !important;
+}
+.yk-card.thumb .card-face.card-front { isolation: isolate; }
+.yk-card.thumb .card-clip > .ly:not(.fish),
+.yk-card.thumb :is(.fish-break, .holo, .particles, .glare, .sheen, .caustics, .vignette) {
+  display: none !important;
+}
+.yk-card.thumb .card-clip::after { display: none !important; content: none !important; }
+.yk-card.thumb .card-clip > .ly.fish {
+  display: flex !important;
+  filter: grayscale(1) contrast(1.15);
+}
+.yk-card.thumb .cd-bottom,
+.yk-card.thumb .cd-name em { display: none; }
+
 .yk-card.thumb .small-card-foil-area {
   position: absolute;
   inset: 60% 0 0;
@@ -45,4 +79,22 @@ yk-card-number {
 }
 .yk-card.thumb .small-card-foil .yukomon-fish-card__laser-glow { opacity: .35; }
 .yk-card.thumb .small-card-foil .yukomon-fish-card__laser-shift { opacity: .4; }
-.cell .yk-card.thumb .corner { background: #ededf0 !important; color: #202024; }
+.cell .yk-card.thumb .corner {
+  background: #ededf0 !important;
+  color: #202024;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  font-family: 'YK Thumbnail Num', 'Segoe UI', 'Microsoft YaHei UI', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+}
+.cell .yk-card.thumb .corner b { font-size: 11px; font-weight: 500; }
+.cell .slot { background: #fff; }
+.cell .slot .fish-svg { filter: grayscale(1) contrast(1.8); image-rendering: pixelated; }
+.cell .slot .q,
+.cell .slot .corner.locked { color: #6b6b6b; }
+.cell .slot .corner.locked {
+  background: rgba(255, 255, 255, .92);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}

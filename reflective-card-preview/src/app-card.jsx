@@ -23,8 +23,9 @@ function create(sp, o = {}) {
   shell.style.setProperty('--yk-fish', `url("${imageUrl}")`);
   shell.style.setProperty('--rc-holo', material.values.holo);
   shell.style.setProperty('--card-radius', `${material.values.radius}px`);
-  const description = o.variant === 'ur' && o.giantInfo ? `巨物 · ${o.giantInfo.lengthCm} cm · ${o.giantInfo.city || ''}` : `${'★'.repeat(card.stars || 1)} · ${window.YK_CARD?.HAB[sp.habitat]?.name || sp.region}`;
-  const defaultBack = `<section class="b-info"><div class="b-title"><h2>${esc(sp.name)}</h2><span class="no">YK-${sp.no}</span></div><div class="latin">${esc(sp.latin)}</div><p>${esc(sp.fact)}</p><dl><div><dt>分布</dt><dd>${esc(sp.region)}</dd></div><div><dt>习性</dt><dd>${esc(sp.method)}</dd></div><div><dt>体长</dt><dd>${sp.commonCm} cm</dd></div><div><dt>巨物线</dt><dd>${sp.giantThresholdCm} cm</dd></div></dl></section>`;
+  const description = o.variant === 'ur' && o.giantInfo ? `巨物 · ${o.giantInfo.lengthCm} cm · ${o.giantInfo.city || ''}` : `${window.YK_CARD?.HAB[sp.habitat]?.name || sp.region} · 记录 ${card.catchCount || 1} 次`;
+  const aliasLine = (sp.alias || []).filter(Boolean).slice(0, 6).join(' · ');
+  const defaultBack = `<section class="b-info"><div class="b-title"><h2>${esc(sp.name)}</h2><span class="no">YK-${sp.no}</span></div><div class="latin">${esc(sp.latin)}</div>${aliasLine ? `<div class="b-alias"><span>别称</span>${esc(aliasLine)}</div>` : ''}<p>${esc(sp.fact)}</p><dl><div><dt>分布</dt><dd>${esc(sp.region)}</dd></div><div><dt>习性</dt><dd>${esc(sp.method)}</dd></div><div><dt>体长</dt><dd>${sp.commonCm} cm</dd></div><div><dt>巨物线</dt><dd>${sp.giantThresholdCm} cm</dd></div></dl></section>`;
   shell.innerHTML = `<div class="card-tilt"><div class="card-flip"><div class="card-face card-front"><div class="reflective-mount"></div></div><div class="card-face card-back"><div class="yukomon-fish-card__laser reflective-back-foil" aria-hidden="true"><span class="yukomon-fish-card__laser-glow"></span><span class="yukomon-fish-card__laser-shift"></span></div><div class="reflective-back-content">${o.back || defaultBack}</div></div></div></div>`;
   const host = shell.querySelector('.reflective-mount');
   if (o.thumb) {
@@ -39,7 +40,7 @@ function create(sp, o = {}) {
   if (o.interactive) {
     shell.setAttribute('role', 'button'); shell.tabIndex = 0;
     shell.setAttribute('aria-label', `${sp.name} ${rarity}鱼卡，点击翻面`);
-    shell.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); window.YK_CARD.flip(shell); window.YK_AUDIO.play('ui_flip'); } });
+    shell.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); if (shell.getAttribute('aria-disabled') === 'true') return; window.YK_CARD.flip(shell); window.YK_AUDIO.play('ui_flip'); } });
     let pointerStart, dragged = false;
     shell.addEventListener('pointerdown', e => { pointerStart = { x: e.clientX, y: e.clientY }; dragged = false; });
     shell.addEventListener('pointermove', e => { if (pointerStart && Math.hypot(e.clientX - pointerStart.x, e.clientY - pointerStart.y) > 10) dragged = true; });

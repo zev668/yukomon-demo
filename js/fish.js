@@ -9,11 +9,16 @@
     甲鲶科: 'pleco', 狗鱼科: 'pike', 雀鳝科: 'pike', 鲑科: 'salmon',
     鳜科: 'perch', 鲈科: 'perch', 花鲈科: 'perch', 棘臀鱼科: 'perch', 丽鱼科: 'deep',
     鳢科: 'snakehead', 沙塘鳢科: 'goby', 塘鳢科: 'goby', 虾虎鱼科: 'goby', 鲻科: 'mullet',
+    鲷科: 'deep', 笛鲷科: 'perch', 石鲷科: 'deep', 鱾科: 'deep', 脂鲤科: 'deep', 石首鱼科: 'perch',
+    鲉科: 'perch', 六线鱼科: 'goby', 鲬科: 'goby', 鲆科: 'deep', 舌鳎科: 'eel', 鳗鲇科: 'catfish',
+    海鲶科: 'catfish', 匙吻鲟科: 'pike', 鱚科: 'slim', 鲱科: 'carp', 鲹科: 'mullet',
   };
   const TYPE_BY_SLUG = {
     bianyu: 'deep', wuchangyu: 'deep', pangpi: 'deep', taiyangyu: 'deep', ououbian: 'deep',
     ganyu: 'slim', qiaozui: 'slim', hongweibo: 'slim', qingshao: 'slim', baitiao: 'slim',
     yinpiaoyu: 'slim', sheju: 'slim', niuweiba: 'catfish', huaitounian: 'catfish',
+    sanjiaofang: 'deep', fangyu: 'deep', daqiyu: 'deep', gaotipangpi: 'deep', sibian: 'slim',
+    beishitiao: 'slim', heiweijinhongbo: 'slim', tutiaoyu: 'goby',
   };
 
   // [背, 侧, 腹, 鳍]
@@ -64,6 +69,22 @@
     shatangli: { pal: ['#3a3020', '#86704a', '#d9c7a0', '#5b4a30'], pattern: 'blotch' },
     jiazhoulu: { pal: ['#33452e', '#89a070', '#e8ecd4', '#5f7448'], stripe: '#2c3a28' },
     hailu: { pal: ['#3e4c58', '#a9b7c0', '#f1f4f5', '#7d8b95'], pattern: 'spots' },
+    heidiao: { pal: ['#262a2e', '#5a6168', '#b9bec2', '#33383d'], pattern: 'bands' },
+    huangqidiao: { pal: ['#3d4650', '#9aa6ae', '#e8ecee', '#e2b23a'] },
+    zhendiao: { pal: ['#8a3a3e', '#e48a8c', '#fbe3df', '#c0525a'], pattern: 'spots' },
+    pingdiao: { pal: ['#4a5560', '#adbac2', '#f0f2ec', '#d8b14a'], stripe: '#d9b34c' },
+    zundiao: { pal: ['#2a2c2c', '#c9c6b8', '#efece0', '#3a3c3c'], pattern: 'bands' },
+    ziludidiao: { pal: ['#6a2a2e', '#b4555a', '#efc9c4', '#8a3438'] },
+    hechangyou: { pal: ['#4a3426', '#9a6d4c', '#e2c6a4', '#6e4a32'], pattern: 'blotch' },
+    xushipingyou: { pal: ['#22252a', '#4f565c', '#a8adb0', '#2f3338'], pattern: 'blotch' },
+    daluliuxianyu: { pal: ['#5a4a26', '#a78e52', '#e8d9a8', '#7c6634'], pattern: 'blotch' },
+    yaping: { pal: ['#4a4632', '#8f8a66', '#e4e0c8', '#5e5a40'], pattern: 'spots' },
+    huangguyu: { pal: ['#6a5a32', '#c9a75a', '#f2e2b0', '#d68a2e'] },
+    gaotipangpi: { pal: ['#4a4f6a', '#b9b8d2', '#f6e9ef', '#e05a6a'], stripe: '#5a8fd0' },
+    danshuibaichang: { pal: ['#3e4448', '#a8b0b4', '#eef0f0', '#d0503a'] },
+    shiwenxun: { pal: ['#3a4048', '#7d8890', '#d8dde0', '#4a535a'] },
+    banji: { pal: ['#2e4a5e', '#8fb0c2', '#eef3f5', '#5a7a8e'], pattern: 'spots' },
+    tutiaoyu: { pal: ['#4a4436', '#8f8670', '#d9d2bc', '#5a8fb0'], pattern: 'spots' },
   };
 
   function hash(s) {
@@ -265,5 +286,13 @@
 </svg>`;
   }
 
-  window.YK_FISH = { fishSVG, hash, rng };
+  // 小图（瀑布流小卡 / 排行榜 / 巨物榜顶部 / 选鱼种）：有美术小图用 PNG→WebP，否则回落矢量鱼。
+  const THUMBS = new Set(window.YK_FISH_THUMBS || []);
+  function hasThumb(sp) { return !!sp && THUMBS.has(sp.no); }
+  function fishArt(sp, opt = {}) {
+    if (!hasThumb(sp) || opt.silhouette) return fishSVG(sp, opt);
+    return `<img class="fish-svg fish-art" src="img/fish-thumb/${sp.no}.webp?v=1" alt="" width="204" height="102" decoding="async" draggable="false">`;
+  }
+
+  window.YK_FISH = { fishSVG, fishArt, hasThumb, hash, rng };
 })();

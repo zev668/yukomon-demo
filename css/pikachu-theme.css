@@ -1,0 +1,112 @@
+/* Pikachu yellow is an action colour; rarity and card materials keep their own palette. */
+:root {
+  --accent: #ffcb05;
+  --accent-on: #242521;
+  --accent-pressed: #e9b900;
+  --accent-wash: #fff4b8;
+  --accent-ink: #584500;
+  --ios-tint: var(--accent);
+  --ios-tint-pressed: var(--accent-pressed);
+  --yellow: var(--accent);
+  --ios-bg: #f5f6f7;
+  --ios-label: #242521;
+  --ios-secondary: #646660;
+  --ios-line: #e3e5e3;
+  --ios-fill: #e9ebe8;
+  --ios-glass: rgba(255,255,255,.64);
+  --ios-glass-shadow: 0 6px 22px -10px rgba(30,34,27,.22), inset 0 1px 0 rgba(255,255,255,.88), inset 0 -1px 0 rgba(40,44,34,.06);
+  --motion-fast: 160ms;
+  --motion-normal: 240ms;
+}
+::selection { background: var(--accent); color: var(--ink); }
+#app :focus-visible { outline-color: var(--accent-ink); }
+.btn.primary, .btn.accent, .cta, .icon-btn.yellow {
+  color: var(--accent-on);
+  background: var(--accent);
+}
+.btn.primary:hover, .btn.accent:hover, .cta:hover, .icon-btn.yellow:hover { background: var(--accent-pressed); }
+.btn.quiet { color: var(--accent-ink); }
+.cta .dot { background: rgba(36,37,33,.08); }
+.pill.on, .city-option.on, .city-option.on:hover {
+  background: var(--accent-wash);
+  color: var(--accent-ink);
+}
+.dex-page .dex-view-switch .pill.on, .board-switch button.on { color: var(--ink); }
+.dex-view-switch::before, .board-switch .ind { background: #fff; }
+.dex-overview .collector-profile .mono { background: var(--accent); color: var(--ink); }
+.dex-overview .dex-rank-star.is-on { color: var(--accent-ink); }
+.dex-overview .dex-rank-progress .bar i { background: var(--accent) !important; }
+.sp-row.picked, .rank-row.is-me, .size-row.is-me { background: #fff7cd; }
+.sp-row.picked .al, .sp-row.picked .tagno { color: var(--accent-ink); }
+.rank-float .rank-me .n { color: var(--ink); background: var(--accent); }
+.rank-row .mono.sm { background: #f0f1ed; color: #52564b; }
+.switch.on { background: var(--accent); box-shadow: inset 0 0 0 1px #8a7000; }
+.switch.on::after { box-shadow: 0 0 0 1px #8a7000, 0 2px 4px rgba(60,48,0,.18); }
+.dex-overview .dex-rank-progress .bar i, .set-detail-progress i, .rank-progress span { box-shadow: inset 0 0 0 1px #8a7000; }
+.sheet:has(.sp-list) .search-bar .icon-btn,
+.sheet:has(.sp-list) .sp-picked-mark { color: var(--accent-ink); }
+.view-catch .ai-panel.pending { background: #fff8d8; }
+.view-catch .ai-spinner { border-color: #e8dda4; border-top-color: var(--accent-ink); }
+.view-catch .ai-status-icon { background: var(--accent-wash); color: var(--accent-ink); }
+.view-catch .ai-panel.confirmed .ai-status-icon { background: #d7ebdd; color: #24633a; }
+.view-catch .ai-panel.failed .ai-status-icon { background: #f9ded1; color: #973b17; }
+.view-catch .score-preview, .rank-rule-sheet .rank-rule-total {
+  color: var(--accent-ink);
+  background: #fff6c6;
+}
+.view-catch .score-preview b, .rank-rule-sheet .rank-rule-total b { color: #4d3e00; }
+.view-catch .score-preview small, .rank-rule-sheet .rank-rule-total :is(.eyebrow,small) { color: #695713; }
+.view-catch .score-preview.muted { color: var(--ios-secondary); background: var(--ios-fill); }
+.view-catch .score-preview.muted b { color: var(--ios-label); }
+.view-catch .score-preview.muted small { color: var(--ios-secondary); }
+.sheet:has(.sp-list) .protect-link { color: #3d493b; background: #eaf0e7; }
+.sheet:has(.sp-list) .protect-link :is(.muted,.chev) { color: #52634e; }
+.map-marker { color: var(--ink); background: var(--accent); box-shadow: 0 4px 12px rgba(73,62,8,.18); }
+.map-marker:hover { background: #ffda42; }
+.catch-edit .edit-release input { accent-color: #866b00; }
+
+#tabbar button.on { color: #413500; }
+#tabbar .tab-ind { background: rgba(255,203,5,.74); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); }
+body.cam-on #tabbar button.on { color: #242521; }
+body.cam-on #tabbar .tab-ind { background: rgba(255,203,5,.92); }
+
+/* Keep dimensions stable while colour and focus states settle. elastic.js owns press scale. */
+#app :is(.btn,.pill,.head-act,.icon-btn,.set-control,.city-option,.sp-row,.rank-row,.set-member-row,.map-catch-row,.ai-candidate,.record-tile) {
+  transition: color var(--motion-fast), background-color var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-normal);
+}
+#app :is(input,textarea) { transition: background-color var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast); }
+.switch::after { transition: transform var(--motion-normal) var(--ease-out), box-shadow var(--motion-normal); }
+.view-catch .callout { transition: background-color var(--motion-normal), outline-color var(--motion-normal); }
+.cam-modes button { transition: color var(--motion-fast), background-color var(--motion-fast); }
+.cam-modes button.on { color: var(--accent); }
+.cam-modes .on::after { background: var(--accent); }
+.city-trigger[aria-expanded="true"] { box-shadow: 0 0 0 2px rgba(88,69,0,.25); }
+.map-select .city-trigger svg { transition: transform var(--motion-normal) var(--ease-out); }
+.map-select.open .city-trigger svg { transform: rotate(-90deg); }
+.city-menu { animation: none; }
+.bar i, .set-detail-progress i, .rank-progress span { transition: background-color var(--motion-normal); }
+.like.on, .entry > .like.on { background: #ffe8ef; color: #bb2855; }
+.confirm-sheet.is-danger .confirm-accept { background: #d83b30; color: #fff; }
+.confirm-sheet.is-danger .confirm-accept:hover { background: #ba2e25; }
+.unlock.pixel-unlock.liquid-unlock .actions .btn.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+.unlock.pixel-unlock.liquid-unlock .actions .btn.accent:hover { background: var(--accent-pressed); border-color: var(--accent-pressed); }
+
+/* Progressive continuous corners. Circular controls and authored fish-card masks are excluded. */
+@supports (corner-shape: superellipse(1.4)) {
+  #app :is(.btn,.cta,.tile,.board,.entry:not(.record-tile),.sp-list,.met-row,.set-group-head,.set-control,.link-box,.set-input,.set-member-list,.map-catch-list,.rank-event-list,.ai-panel,.callout,.score-preview,.settings-group,.service-settings,.publish-media,.record-modal,.rank-rule-total),
+  #app :is(input,textarea):not([type="checkbox"]):not([type="radio"]),
+  #toast { corner-shape: superellipse(1.4); }
+  .sheet { corner-shape: superellipse(1.3) superellipse(1.3) round round; }
+  .city-menu { corner-shape: superellipse(1.4); }
+}
+.sp-row:hover, .rank-row:hover, .set-member-row:hover, button.map-catch-row:hover, .view-catch .ai-candidate:hover { background: #f4f5ef; }
+.city-option.on:hover, .sp-row.picked:hover { background: var(--accent-wash); }
+.rank-row.is-me:hover, .size-row.is-me:hover { background: #fff7cd; }
+@media (prefers-reduced-motion: reduce) {
+  #app :is(.btn,.pill,.head-act,.icon-btn,.set-control,.city-option,.sp-row,.rank-row,.set-member-row,.map-catch-row,.ai-candidate,.record-tile,input,textarea,.city-trigger svg,.bar i,.set-detail-progress i,.rank-progress span) { transition-duration: .01ms; }
+  .switch::after { transition: none; }
+}
+@media (prefers-contrast: more) {
+  #tabbar .tab-ind { background: var(--accent); }
+  .pill.on, .city-option.on { outline: 1px solid var(--accent-ink); outline-offset: -1px; }
+}

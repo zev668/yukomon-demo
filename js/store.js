@@ -1,12 +1,39 @@
-/* Yukomon demo —— 本地数据层（模拟云函数：catch.create / remove、card.dex、rank.query、user.profile）
- * 业务规则与《开发文档》5.3–5.7、《产品设计文档》5 节一致；数据存 localStorage */
+/* Yukomon demo - local product state.
+ * The demo mirrors the server contracts from the PRD: species cards, lifetime
+ * rank points, set progress and privacy-aware map cells. It intentionally uses
+ * deterministic local data until the production API is connected.
+ */
 (function () {
-  const SPECIES = window.YK_SPECIES;
+  const SOURCE_SPECIES = window.YK_SPECIES;
+  const SPECIES = SOURCE_SPECIES.map((s) => ({
+    ...s,
+    rankSizeCapCm: Number(s.rankSizeCapCm || s.commonCm * 2),
+    giantThresholdCm: Number(s.giantThresholdCm || s.rankSizeCapCm || s.commonCm * 2),
+  }));
   const PROTECTED = window.YK_PROTECTED;
   const byId = Object.fromEntries(SPECIES.map((s) => [s.no, s]));
-  const KEY = 'yukomon-demo-v1';
-  const STAR_STEPS = [1, 3, 7, 15, 30];
-  const SCORE = { N: 1, R: 2, SR: 4, SSR: 8 }; // 仅用于按稀有度排序，不再对外展示积分
+  const KEY = 'yukomon-demo-v2';
+  const SCORE = { N: 10, R: 20, SR: 40, SSR: 80 };
+  const STAR_STEPS = [100, 200, 300, 400, 500];
+  const TIERS = [
+    { name: '初见', min: 0, color: '#87919a' },
+    { name: '浅滩', min: 500, color: '#4eaa93' },
+    { name: '溪流', min: 1000, color: '#4c8ed9' },
+    { name: '江河', min: 1500, color: '#6b66c2' },
+    { name: '深潭', min: 2000, color: '#d39c3b' },
+    { name: '巨物', min: 2500, color: '#d96855' },
+    { name: '传奇', min: 3000, color: '#b05bb8' },
+    { name: '钓圣', min: 3500, color: '#c28c35' },
+  ];
+  const SETS = [
+    { id: 'lake', name: '湖库静水', description: '湖泊、水库与开阔静水', habitats: ['lake', 'reservoir'], rewardScore: 50, sort: 1 },
+    { id: 'pond', name: '池塘近岸', description: '池塘、沟渠和近岸静水', habitats: ['pond'], rewardScore: 50, sort: 2 },
+    { id: 'river', name: '江河流域', description: '江河中下游和大江大湖', habitats: ['river'], rewardScore: 100, sort: 3 },
+    { id: 'stream', name: '山溪急流', description: '溪流、浅滩与石缝水域', habitats: ['stream'], rewardScore: 50, sort: 4 },
+    { id: 'estuary', name: '河口洄游', description: '河口与咸淡水交界', habitats: ['estuary'], rewardScore: 100, sort: 5 },
+    { id: 'cold', name: '冷水冰钓', description: '冷水河流、高原与冰钓', habitats: ['cold'], rewardScore: 100, sort: 6 },
+  ];
+  const SET_BY_ID = Object.fromEntries(SETS.map((set) => [set.id, set]));
   const { rng, hash } = window.YK_FISH;
 
   const CITIES = {
@@ -19,486 +46,172 @@
     哈尔滨: { lat: 45.8, lng: 126.53, districts: ['道里区', '松北区', '呼兰区'], places: ['松花江', '呼兰河', '西泉眼水库'] },
     乌鲁木齐: { lat: 43.83, lng: 87.62, districts: ['天山区', '米东区'], places: ['乌伦古湖', '额尔齐斯河', '柴窝堡湖'] },
   };
+  const MAP_SEEDS = [
+    ['杭州', '西溪湿地', '001', 'u14', 18], ['杭州', '千岛湖', '031', 'u38', 9],
+    ['杭州', '富春江', '047', 'u71', 7], ['武汉', '梁子湖', '073', 'u9', 12],
+    ['武汉', '东湖', '020', 'u42', 15], ['成都', '岷江', '060', 'u65', 8],
+    ['哈尔滨', '松花江', '078', 'u22', 10], ['北京', '怀柔水库', '002', 'u51', 6],
+  ];
 
-  function uuid() {
-    return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  function uuid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
+  function dateKey(value) { const d = new Date(value); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
+  function setIdFor(sp) { return SETS.find((set) => set.habitats.includes(sp.habitat))?.id || 'lake'; }
+  function setForSpecies(speciesId) { return SET_BY_ID[setIdFor(byId[speciesId])] || SETS[0]; }
+  function tierFor(points) {
+    let current = TIERS[0];
+    TIERS.forEach((tier) => { if (points >= tier.min) current = tier; });
+    const index = TIERS.indexOf(current);
+    const next = TIERS[index + 1] || null;
+    const within = points - current.min;
+    return { ...current, index, stars: Math.min(5, Math.floor(within / 100)), next, toNext: next ? next.min - points : null };
   }
-
-  // ---------- 持久化 ----------
-  let db;
-  function load() {
-    try {
-      db = JSON.parse(localStorage.getItem(KEY));
-    } catch (e) {
-      db = null;
+  function sizeMultiplier(sp, length) {
+    const n = Number(length);
+    if (!Number.isFinite(n) || n <= 0) return 0.5;
+    if (n <= sp.commonCm) return 0.8;
+    if (n < sp.commonCm * 1.5) return 1;
+    if (n < sp.rankSizeCapCm) return 1.3;
+    return 1.6;
+  }
+  function repeatMultiplier(n) { return n <= 3 ? 1 : n <= 6 ? 0.7 : 0.3; }
+  function activeCatch(c) { return c.status === 'confirmed' && c.speciesId && c.source === 'camera'; }
+  function updateGiant(card, c) {
+    card.giant ||= { status: 'none', catchId: null, lengthCm: null, approvedAt: null };
+    if (activeCatch(c) && c.lengthCm >= byId[c.speciesId].giantThresholdCm && c.lengthCm > (card.giant.lengthCm || 0)) {
+      card.giant = { status: 'approved', catchId: c.id, lengthCm: c.lengthCm, approvedAt: c.createdAt };
     }
-    if (!db || db.v !== 1) db = seed();
-    migrate();
-    return db;
-  }
-  function migrate() {
-    db.me.bio = db.me.bio == null ? '周末钓鱼，工作日想钓鱼' : db.me.bio;
-    db.gear = { rod: '', reel: '', line: '', bait: '', ...db.gear };
-    db.gearHistory = { rod: [], reel: [], line: [], bait: [], ...db.gearHistory };
-    const fix = (c) => {
-      if (c.desc == null) c.desc = [c.title, c.subtitle].filter(Boolean).join('，');
-      delete c.title;
-      delete c.subtitle;
-      c.gear = { reel: '', ...(c.gear || {}) };
-    };
-    db.catches.forEach(fix);
-    if (db.draft) fix(db.draft);
-    db.likes = db.likes || {};
-    // 旧数据里"审核中"的巨物：概念已取消，按现有渔获重算巨物卡
-    Object.keys(db.cards).forEach((no) => {
-      const gi = db.cards[no].giant || {};
-      if (gi.status === 'pending' || 'pendingCatchId' in gi) rebuildCard(no);
-    });
-  }
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(db)); }
-    catch (e) { throw new Error('本机存储空间不足，请先导出记录或连接服务器'); }
-    document.dispatchEvent(new CustomEvent('yk-store-save'));
-  }
-  function reset() {
-    localStorage.removeItem(KEY);
-    db = seed();
-    save();
-  }
-  // 注销账号：删除全部数据，不再预置演示数据
-  function wipe() {
-    localStorage.removeItem(KEY);
-    db = emptyDB();
-    save();
   }
 
   function emptyDB() {
     return {
-      v: 1,
+      v: 2,
       me: { id: 'me', nickname: '大鱼', city: '杭州', bio: '周末钓鱼，工作日想钓鱼' },
       settings: { sfx: true, haptics: true },
-      catches: [],
-      cards: {},
-      gear: { rod: '', reel: '', line: '', bait: '' },
-      gearHistory: { rod: [], reel: [], line: [], bait: [] },
-      draft: null,
-      lastRank: null,
+      catches: [], cards: {}, rank: { points: 0, tier: '初见', stars: 0, peakPoints: 0, peakTier: '初见', verifiedCatchCount: 0, uniqueSpeciesCount: 0, setCompletedCount: 0 },
+      rankEvents: [], setProgress: {}, mapSettings: { enabled: false },
+      gear: { rod: '', reel: '', line: '', bait: '' }, gearHistory: { rod: [], reel: [], line: [], bait: [] },
+      draft: null, likes: {}, daily: null,
     };
   }
 
-  // 演示用：预置几条历史渔获，让图鉴/排行榜不是空的
+  let db;
+  function load() {
+    let stored = null;
+    try { stored = JSON.parse(localStorage.getItem(KEY)); } catch (e) { stored = null; }
+    if (!stored) {
+      // First-run demo data keeps the prototype immediately explorable. A user
+      // can still clear it from settings via the existing reset/wipe actions.
+      db = window.YK_RUNTIME?.production ? emptyDB() : seed();
+      save();
+      return db;
+    }
+    db = stored;
+    if (db.v !== 2) db = migrateLegacy(db);
+    migrate(); rebuildDerived(); return db;
+  }
+  function migrateLegacy(old) {
+    const next = emptyDB(); if (!old) return next;
+    next.me = { ...next.me, ...(old.me || {}) }; next.settings = { ...next.settings, ...(old.settings || {}) };
+    next.gear = { ...next.gear, ...(old.gear || {}) }; next.gearHistory = { ...next.gearHistory, ...(old.gearHistory || {}) }; next.draft = old.draft || null;
+    next.catches = (old.catches || []).map((c) => ({ ...c, mapVisibility: c.source === 'album' ? 'private' : 'private', recognitionStatus: c.recognitionStatus || (c.speciesId ? 'manual' : 'idle') }));
+    return next;
+  }
+  function migrate() {
+    db.v = 2; db.me = { ...emptyDB().me, ...(db.me || {}) }; db.settings = { ...emptyDB().settings, ...(db.settings || {}) };
+    db.catches = Array.isArray(db.catches) ? db.catches : []; db.catches.forEach((c) => { c.mapVisibility = c.source === 'album' ? 'private' : (c.mapVisibility || 'private'); c.recognitionStatus = c.recognitionStatus || (c.speciesId ? 'manual' : 'idle'); delete c.bestLengthCm; delete c.bestCatchId; delete c.giant; delete c.stars; delete c.verifiedCount; delete c.verifiedUnlocked; });
+    db.draft = db.draft || null; db.mapSettings = { enabled: false, ...(db.mapSettings || {}) }; db.likes = db.likes || {};
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { throw new Error('本机存储空间不足，请先导出记录或连接服务器'); } document.dispatchEvent(new CustomEvent('yk-store-save')); }
+  function reset() { localStorage.removeItem(KEY); db = seed(); save(); }
+  function wipe() { localStorage.removeItem(KEY); db = emptyDB(); save(); }
+
   function seed() {
-    db = emptyDB();
-    fillDemo(false);
-    db.gear = { rod: '路亚竿 2.1m ML', reel: '纺车轮 2500型', line: 'PE 1.0号', bait: '米诺 9cm' };
-    db.gearHistory = {
-      rod: ['路亚竿 2.1m ML', '台钓竿 4.5m', '溪流竿 1.8m UL', '雷强竿 2.1m H'],
-      reel: ['纺车轮 2500型', '水滴轮 7.2速比', '纺车轮 1000型'],
-      line: ['PE 1.0号', '尼龙 1.5号', 'PE 0.4号'],
-      bait: ['米诺 9cm', '商品饵', '亮片 2g', '蚯蚓', '雷蛙'],
-    };
-    return db;
-  }
-
-  function fillDemo(persist = true) {
-    if (db.remoteAccount) throw new Error('请先切回本机演示');
-    const now = Date.now();
-    const day = 86400000;
+    db = emptyDB(); const now = Date.now(), day = 86400000;
     const plan = [
-      ['001', 26, 22, '杭州', true, '周末第一竿，西溪边上的板鲫', { rod: '台钓竿 4.5m', line: '尼龙 1.5号', bait: '商品饵' }],
-      ['008', 24, 14, '杭州', true, '白条闹窝，一下午全是它', { rod: '台钓竿 3.6m', line: '尼龙 0.8号', bait: '拉饵' }],
-      ['001', 20, 28, '杭州', true, '又是鲫鱼，红虫比商品饵好使', { rod: '台钓竿 4.5m', line: '尼龙 1.5号', bait: '红虫' }],
-      ['031', 15, 52, '杭州', true, '千岛湖第一条翘嘴，清晨五点米诺远投，搏鱼三分钟', { rod: '路亚竿 2.1m ML', reel: '纺车轮 2500型', line: 'PE 1.0号', bait: '米诺 9cm' }],
-      ['020', 12, 21, '武汉', true, '夜钓黄辣丁，嘎嘎叫，还被扎了一下', { rod: '台钓竿 5.4m', line: '尼龙 2.0号', bait: '蚯蚓' }],
-      ['036', 9, 58, '武汉', true, '草洞炸水，雷蛙一抛就中', { rod: '雷强竿 2.1m H', reel: '水滴轮 7.2速比', line: 'PE 6.0号', bait: '雷蛙' }],
-      ['001', 7, 24, '杭州', true, '', { rod: '台钓竿 4.5m', line: '尼龙 1.5号', bait: '商品饵' }],
-      ['047', 5, 19, '杭州', true, '婚姻色的马口，溪流里的彩虹', { rod: '溪流竿 1.8m UL', reel: '纺车轮 1000型', line: 'PE 0.4号', bait: '亮片 2g' }],
-      ['002', 3, 64, '杭州', false, '相册补录：去年的鲤鱼', { rod: '台钓竿 5.4m', line: '尼龙 3.0号', bait: '玉米' }],
-      // 尺寸 ≥ 鲇的巨物线 80cm → 直接解锁巨物卡（UR）
-      ['022', 1, 86, '杭州', true, '夜钓巨鲶，量鱼板都放不下了', { rod: '路亚竿 2.4m MH', reel: '纺车轮 4000型', line: 'PE 3.0号', bait: '软虫 12cm' }],
-      ['058', 18, 84, '武汉', true, '江边缓流钓到南方鲇，量完尺寸拍照留念', { rod: '路亚竿 2.4m MH', reel: '纺车轮 4000型', line: 'PE 3.0号', bait: '软饵 10cm' }],
-      ['060', 11, 17, '杭州', true, '山溪里的光唇鱼，浅滩石缝有惊喜', { rod: '溪流竿 1.8m UL', reel: '纺车轮 1000型', line: 'PE 0.4号', bait: '亮片 2g' }],
-      ['073', 6, 96, '杭州', true, '水库守到一条青鱼，遛了很久才靠岸', { rod: '台钓竿 7.2m', reel: '', line: '尼龙 6.0号', bait: '螺蛳' }],
-      ['078', 2, 72, '哈尔滨', true, '北方水库的黑斑狗鱼，斑纹比想象中漂亮', { rod: '路亚竿 2.4m H', reel: '水滴轮 7.2速比', line: 'PE 3.0号', bait: '米诺 13cm' }],
+      ['001', 26, 22, '杭州', true, '周末第一竿，西溪边上的板鲫'], ['008', 24, 14, '杭州', true, '白条闹窝，一下午全是它'], ['001', 20, 28, '杭州', true, '又是鲫鱼，红虫比商品饵好使'], ['031', 15, 52, '杭州', true, '千岛湖第一条翘嘴，清晨五点米诺远投'], ['020', 12, 21, '武汉', true, '夜钓黄辣丁，嘎嘎叫，还被扎了一下'], ['036', 9, 58, '武汉', true, '草洞炸水，雷蛙一抛就中'], ['001', 7, 24, '杭州', true, '又一条板鲫'], ['047', 5, 19, '杭州', true, '婚姻色的马口，溪流里的彩虹'], ['002', 3, 64, '杭州', false, '相册补录：去年的鲤鱼'], ['022', 1, 86, '杭州', true, '夜钓鲇鱼，量鱼板都放不下了'], ['058', 18, 84, '武汉', true, '江边缓流钓到南方鲇'], ['060', 11, 17, '杭州', true, '山溪里的光唇鱼'], ['073', 6, 96, '杭州', true, '水库守到一条青鱼'], ['078', 2, 72, '哈尔滨', true, '北方水库的黑斑狗鱼'],
     ];
-    const changed = new Set();
-    plan.forEach(([no, ago, len, city, verified, desc, gear], i) => {
-      const id = `demo-catch-${i + 1}`;
-      // Recognize the previous release's samples as well as the stable new IDs.
-      if (db.catches.some(c => c.id === id || (!c.photo && c.speciesId === no && c.lengthCm === len && c.desc === desc && c.verified === verified))) return;
-      const c = CITIES[city];
-      const r = rng(i * 97 + 3);
-      const catchObj = {
-        id,
-        status: 'confirmed',
-        speciesId: no,
-        photo: null,
-        source: verified ? 'camera' : 'album',
-        verified,
-        location: {
-          lat: c.lat + (r() - 0.5) * 0.3, lng: c.lng + (r() - 0.5) * 0.3,
-          city, district: c.districts[i % c.districts.length], place: c.places[i % c.places.length],
-        },
-        desc,
-        gear: { reel: '', ...gear },
-        lengthCm: len,
-        released: i % 3 === 0,
-        createdAt: now - ago * day - i * 3600000,
-      };
-      settle(catchObj);
-      changed.add(no);
+    plan.forEach(([no, ago, len, city, camera, desc], i) => { const c = CITIES[city], r = rng(i * 97 + 3); db.catches.push({ id: `demo-catch-${i + 1}`, status: 'confirmed', speciesId: no, photo: null, source: camera ? 'camera' : 'album', verified: camera, location: { lat: c.lat + (r() - 0.5) * 0.08, lng: c.lng + (r() - 0.5) * 0.08, city, district: c.districts[i % c.districts.length], place: c.places[i % c.places.length] }, desc, gear: {}, lengthCm: len, released: i % 3 === 0, mapVisibility: camera && i % 3 !== 1 ? 'grid' : 'private', recognitionStatus: 'confirmed', recognitionProvider: 'client_stub', recognitionConfidence: 0.9, createdAt: now - ago * day - i * 3600000, likesBase: i * 3 }); });
+    rebuildDerived(); db.gear = { rod: '路亚竿 2.1m ML', reel: '纺车轮 2500型', line: 'PE 1.0号', bait: '米诺 9cm' }; db.gearHistory = { rod: ['路亚竿 2.1m ML', '台钓竿 4.5m', '溪流竿 1.8m UL'], reel: ['纺车轮 2500型', '水滴轮 7.2速比'], line: ['PE 1.0号', '尼龙 1.5号'], bait: ['米诺 9cm', '商品饵', '亮片 2g'] }; return db;
+  }
+  function fillDemo(persist = true) { db = seed(); if (persist) save(); return db; }
+
+  function rebuildDerived() {
+    const cards = {}, events = [], owned = new Set(), completed = new Set(), ordered = db.catches.filter((c) => c.status === 'confirmed' && c.speciesId).slice().sort((a, b) => a.createdAt - b.createdAt); let points = 0;
+    ordered.forEach((c) => {
+      const sp = byId[c.speciesId]; if (!sp) return; const card = cards[sp.no] || (cards[sp.no] = { speciesId: sp.no, catchCount: 0, firstCatchId: c.id, firstUnlockedAt: c.createdAt, lastCatchAt: c.createdAt }); card.catchCount += 1; card.lastCatchAt = Math.max(card.lastCatchAt, c.createdAt); updateGiant(card, c); const isFirst = !owned.has(sp.no);
+      if (activeCatch(c)) { const prior = ordered.filter((x) => activeCatch(x) && x.speciesId === sp.no && x.createdAt < c.createdAt && dateKey(x.createdAt) === dateKey(c.createdAt)).length; const firstBonus = isFirst ? 20 : 0; const baseScore = SCORE[sp.rarity] || SCORE.N; const size = sizeMultiplier(sp, c.lengthCm); const repeat = repeatMultiplier(prior + 1); const total = Math.floor(baseScore * size * repeat) + firstBonus; points += total; events.push({ id: `event-${c.id}`, catchId: c.id, eventType: 'catch', baseScore, sizeMultiplier: size, repeatMultiplier: repeat, bonusScore: firstBonus, totalScore: total, status: 'active', createdAt: c.createdAt, scoreVersion: 'rank-v1' }); }
+      owned.add(sp.no);
+      SETS.forEach((set) => { const members = SPECIES.filter((x) => set.habitats.includes(x.habitat)); if (!completed.has(set.id) && members.length && members.every((x) => owned.has(x.no))) { completed.add(set.id); points += set.rewardScore; events.push({ id: `set-${set.id}`, eventType: 'set_complete', setId: set.id, bonusScore: set.rewardScore, totalScore: set.rewardScore, status: 'active', createdAt: c.createdAt, scoreVersion: 'rank-v1' }); } });
     });
-    changed.forEach(rebuildCard);
-    db.catches.sort((a, b) => b.createdAt - a.createdAt);
-    if (persist) save();
+    const tier = tierFor(points), peak = Math.max(db.rank?.peakPoints || 0, points); db.cards = cards; db.rankEvents = events.sort((a, b) => b.createdAt - a.createdAt); db.rank = { points, tier: tier.name, stars: tier.stars, peakPoints: peak, peakTier: tierFor(peak).name, verifiedCatchCount: ordered.filter(activeCatch).length, uniqueSpeciesCount: [...owned].length, setCompletedCount: completed.size }; db.setProgress = {};
+    SETS.forEach((set) => { const members = SPECIES.filter((x) => set.habitats.includes(x.habitat)), unlockedCount = members.filter((x) => owned.has(x.no)).length; db.setProgress[set.id] = { unlockedCount, totalCount: members.length, completedAt: completed.has(set.id) ? Date.now() : null, rewardClaimedAt: completed.has(set.id) ? Date.now() : null }; });
   }
-
-  // ---------- 易混淆提示（用户自选鱼种时提醒保护物种近似种） ----------
-  const CONFUSE_TIP = {
-    onychostoma: '白甲鱼 vs 多鳞白甲鱼（国家二级保护）：多鳞白甲鱼侧线鳞更多（46–51 枚），分布于秦岭/华北山溪',
-    schizothorax: '齐口裂腹鱼 vs 重口裂腹鱼（国家二级保护）：重口裂腹鱼下唇肥厚、分左右两叶',
-    anguilla: '日本鳗鲡 vs 花鳗鲡（国家二级保护）：花鳗鲡体表有黄绿色大理石花纹',
-    songjianglu: '花鲈 vs 松江鲈（国家二级保护）：松江鲈体小（<15cm）、头大而扁、无鳞',
-    ochetobius: '赤眼鳟 vs 鳤（国家二级保护）：鳤体更细长、吻尖、眼上无红斑',
-    luciobrama: '鳡 vs 鯮（国家二级保护）：鯮的吻部延长呈管状',
-    salmonid: '虹鳟/褐鳟 vs 哲罗鲑、细鳞鲑（国家二级保护）：注意体侧斑点形态与分布地区',
-  };
-  function confusableTip(sp) {
-    return CONFUSE_TIP[sp.confusableGroup] || '';
-  }
-
-  // ---------- 结算（开发文档 5.4） ----------
-  function starsFor(n) {
-    let s = 1;
-    STAR_STEPS.forEach((step, i) => { if (n >= step) s = i + 1; });
-    return s;
-  }
-
+  function scorePreview(form) { const sp = byId[form.speciesId]; if (!sp || form.source !== 'camera') return { points: 0, baseScore: 0, sizeMultiplier: 0, repeatMultiplier: 1, firstBonus: 0 }; const prior = db.catches.filter((c) => activeCatch(c) && c.speciesId === sp.no && dateKey(c.createdAt) === dateKey(Date.now())).length, firstBonus = db.cards[sp.no] ? 0 : 20, size = sizeMultiplier(sp, form.lengthCm), repeat = repeatMultiplier(prior + 1); return { points: Math.floor((SCORE[sp.rarity] || SCORE.N) * size * repeat) + firstBonus, baseScore: SCORE[sp.rarity] || SCORE.N, sizeMultiplier: size, repeatMultiplier: repeat, firstBonus }; }
   function settle(c) {
-    db.catches.unshift(c);
-    if (c.status !== 'confirmed') return { events: [c.status], catchObj: c };
-    const sp = byId[c.speciesId];
-    const key = sp.no;
-    let card = db.cards[key];
-    const events = [];
-    if (!card) {
-      card = db.cards[key] = {
-        speciesId: key, catchCount: 0, verifiedCount: 0, stars: 1, verifiedUnlocked: false,
-        firstCatchId: c.id, bestCatchId: null, bestLengthCm: null, unlockedAt: c.createdAt,
-        giant: { status: 'none', catchId: null, lengthCm: null, approvedAt: null },
-      };
-      events.push('new');
-    }
-    card.catchCount += 1;
-    if (c.verified) {
-      card.verifiedCount += 1;
-      const ns = starsFor(card.verifiedCount);
-      if (ns > card.stars) { card.stars = ns; events.push('star_up'); }
-      if (!card.verifiedUnlocked) card.verifiedUnlocked = true;
-    }
-    if (c.lengthCm && (!card.bestLengthCm || c.lengthCm > card.bestLengthCm)) {
-      if (card.bestLengthCm && !events.includes('new')) events.push('record');
-      card.bestLengthCm = c.lengthCm;
-      card.bestCatchId = c.id;
-    }
-    if (c.verified && c.lengthCm && c.lengthCm >= sp.giantThresholdCm) {
-      // 巨物：现场拍摄 + 达到巨物线，直接解锁巨物卡（没有审核环节）；更大的一条刷新巨物纪录
-      if (card.giant.status !== 'approved') {
-        card.giant = { status: 'approved', catchId: c.id, lengthCm: c.lengthCm, approvedAt: c.createdAt };
-        events.push('giant');
-      } else if (c.lengthCm > (card.giant.lengthCm || 0)) {
-        card.giant = { ...card.giant, catchId: c.id, lengthCm: c.lengthCm, approvedAt: c.createdAt };
-        events.push('giant_record');
-      }
-    }
-    return { events, card, catchObj: c, species: sp };
+    const previous = db.cards[c.speciesId], before = db.rank?.points || 0;
+    const priorEvents = new Set(db.rankEvents.map(e => e.id));
+    db.catches.unshift(c); rebuildDerived();
+    const card = db.cards[c.speciesId], points = Math.max(0, db.rank.points - before);
+    const events = [...(!previous ? ['new'] : []), ...(points ? ['score'] : [])];
+    if (card.giant.status === 'approved' && card.giant.catchId === c.id) events.push(previous?.giant?.status === 'approved' ? 'giant_record' : 'giant');
+    return { events, catchObj: c, card, species: byId[c.speciesId], points, scoreEvents: db.rankEvents.filter(e => !priorEvents.has(e.id)), rank: db.rank, dex: dexProgress() };
   }
-
-  /** 记录渔获：用户自选鱼种，提交即结算（没有 AI 识别与上传环节） */
   function checkin(form, speciesId) {
-    const c = {
-      id: uuid(),
-      status: 'confirmed',
-      speciesId,
-      photoHash: form.photo ? hash(form.photo) : null,
-      photo: form.photo,
-      videoId: form.videoId || null, duration: form.duration || 0,
-      source: form.source,
-      verified: form.source === 'camera',
-      location: form.location,
-      desc: form.desc,
-      gear: { ...form.gear },
-      lengthCm: form.lengthCm || null,
-      released: form.released,
-      createdAt: Date.now(),
-      likesBase: 0,
-    };
-    // 装备记忆
+    const source = form.sample ? 'sample' : form.source;
+    const c = { id: uuid(), status: 'confirmed', speciesId, photoHash: form.photo ? hash(form.photo) : null, photo: form.photo, videoId: form.videoId || null, duration: form.duration || 0, source, verified: source === 'camera', location: form.location, desc: form.desc, gear: { ...form.gear }, lengthCm: form.lengthCm || null, released: form.released, mapVisibility: source !== 'camera' ? 'private' : (form.mapVisibility || 'private'), recognitionStatus: form.recognitionStatus || 'manual', recognitionProvider: form.recognitionProvider || 'client_stub', recognitionModel: form.recognitionModel || 'demo-fish-v0', recognitionConfidence: form.recognitionConfidence || null, createdAt: Date.now(), likesBase: 0 };
     db.gear = { ...form.gear };
-    ['rod', 'reel', 'line', 'bait'].forEach((k) => {
-      const v = (form.gear[k] || '').trim();
-      if (!v) return;
-      db.gearHistory[k] = [v, ...db.gearHistory[k].filter((x) => x !== v)].slice(0, 5);
-    });
-    db.draft = null;
-    const before = rankOf('nation').me;
-    const res = settle(c);
-    commitQuota(c.createdAt);
-    const after = rankOf('nation').me;
-    res.rankDelta = before && after ? before.rank - after.rank : 0;
-    res.dex = dexProgress();
-    save();
-    return res;
+    ['rod', 'reel', 'line', 'bait'].forEach(k => { const v = (form.gear[k] || '').trim(); if (v) db.gearHistory[k] = [v, ...db.gearHistory[k].filter(x => x !== v)].slice(0, 5); });
+    db.draft = null; const beforeRank = rankOf('nation').me, res = settle(c); commitQuota(c.createdAt); const afterRank = rankOf('nation').me;
+    res.rankDelta = beforeRank && afterRank ? beforeRank.rank - afterRank.rank : 0; save(); return res;
   }
+  function encounter(form, p) { const c = { id: uuid(), status: 'protected', speciesId: null, protectedName: p.name, protectedLatin: p.latin, protectedLevel: p.level, videoId: form.videoId || null, duration: form.duration || 0, photoHash: form.photo ? hash(form.photo) : null, photo: form.photo, source: form.source, verified: false, location: form.location, desc: form.desc || `遇见${p.name}，已放归`, gear: { ...form.gear }, lengthCm: null, released: true, mapVisibility: 'private', recognitionStatus: 'confirmed', createdAt: Date.now() }; db.catches.unshift(c); db.draft = null; commitQuota(c.createdAt); save(); return c; }
+  function commitQuota(now) { const today = new Date(now).toDateString(); if (!db.daily || db.daily.date !== today) db.daily = { date: today, count: 0, recent: [] }; db.daily.count++; db.daily.recent = [...(db.daily.recent || []).filter((t) => now - t < 60000), now]; }
+  function precheck(form) { const today = new Date().toDateString(); if (!db.daily || db.daily.date !== today) db.daily = { date: today, count: 0, recent: [] }; if (db.daily.count >= 30) return '今天记录的渔获已到上限（每日 30 条）'; const now = Date.now(); db.daily.recent = (db.daily.recent || []).filter((t) => now - t < 60000); if (db.daily.recent.length >= 3) return '操作太频繁了，请 1 分钟后再试'; if (form.photo && db.catches.some((c) => c.photoHash === hash(form.photo))) return '这张照片已经记录过了'; return null; }
 
-  /** 保护鱼类：不发卡、不计数，只记一条「遇见」 */
-  function encounter(form, p) {
-    const c = {
-      id: uuid(), status: 'protected', speciesId: null,
-      protectedName: p.name, protectedLatin: p.latin, protectedLevel: p.level,
-      videoId: form.videoId || null, duration: form.duration || 0,
-      photoHash: form.photo ? hash(form.photo) : null, photo: form.photo, source: form.source, verified: false,
-      location: form.location, desc: form.desc || `遇见${p.name}，已放归`,
-      gear: { ...form.gear }, lengthCm: null, released: true, createdAt: Date.now(),
-    };
-    db.catches.unshift(c);
-    db.draft = null;
-    commitQuota(c.createdAt);
-    save();
-    return c;
-  }
+  function likesOf(c) { const liked = !!db.likes[c.id]; return { count: (c.likesBase != null ? c.likesBase : Math.floor(rng(hash(String(c.id)))() * 40)) + (liked ? 1 : 0), liked }; }
+  function toggleLike(c) { if (db.likes[c.id]) delete db.likes[c.id]; else db.likes[c.id] = Date.now(); save(); return likesOf(c); }
+  function removeCatch(id) { if (!db.catches.some((x) => x.id === id)) return; db.catches = db.catches.filter((x) => x.id !== id); rebuildDerived(); save(); }
+  function updateCatch(id, patch) { const c = db.catches.find((x) => x.id === id); if (!c) return; ['desc', 'released', 'mapVisibility'].forEach((k) => { if (k in patch) c[k] = patch[k]; }); if (patch.gear) c.gear = { ...c.gear, ...patch.gear }; save(); }
+  function dexProgress() { const cards = Object.values(db.cards), by = { N: 0, R: 0, SR: 0, SSR: 0 }, totalBy = { N: 0, R: 0, SR: 0, SSR: 0 }; SPECIES.forEach((s) => { totalBy[s.rarity]++; if (db.cards[s.no]) by[s.rarity]++; }); return { unlocked: cards.length, total: SPECIES.length, by, totalBy }; }
 
-  // 提交前校验：每日渔获上限、频率、重复照片
-  function commitQuota(now) {
-    const today = new Date(now).toDateString();
-    if (!db.daily || db.daily.date !== today) db.daily = { date: today, count: 0, recent: [] };
-    db.daily.count++;
-    db.daily.recent = [...(db.daily.recent || []).filter(t => now - t < 60000), now];
-  }
-  function precheck(form) {
-    const today = new Date().toDateString();
-    if (!db.daily || db.daily.date !== today) db.daily = { date: today, count: 0, recent: [] };
-    if (db.daily.count >= 30) return '今天记录的渔获已到上限（每日 30 条）';
-    const now = Date.now();
-    db.daily.recent = (db.daily.recent || []).filter((t) => now - t < 60000);
-    if (db.daily.recent.length >= 3) return '操作太频繁了，请 1 分钟后再试';
-    if (form.photo) {
-      const h = hash(form.photo);
-      if (db.catches.some((c) => c.photoHash === h)) return '这张照片已经记录过了';
-    }
-    return null;
-  }
-
-  // ---------- 点赞（演示：本机记录"我赞过哪些渔获"，他人渔获的基础赞数由种子生成） ----------
-  function baseLikes(c) {
-    if (c.likesBase != null) return c.likesBase;
-    return Math.floor(rng(hash(String(c.id)))() * 40);
-  }
-  function likesOf(c) {
-    const liked = !!(db.likes && db.likes[c.id]);
-    return { count: baseLikes(c) + (liked ? 1 : 0), liked };
-  }
-  function toggleLike(c) {
-    db.likes = db.likes || {};
-    if (db.likes[c.id]) delete db.likes[c.id];
-    else db.likes[c.id] = Date.now();
-    save();
-    return likesOf(c);
-  }
-
-  // ---------- 删除 / 编辑（开发文档 5.7） ----------
-  function removeCatch(id) {
-    const c = db.catches.find((x) => x.id === id);
-    if (!c) return;
-    db.catches = db.catches.filter((x) => x.id !== id);
-    if (c.status === 'confirmed') rebuildCard(c.speciesId);
-    save();
-  }
-  function rebuildCard(speciesId) {
-    const rest = db.catches.filter((x) => x.status === 'confirmed' && x.speciesId === speciesId).sort((a, b) => a.createdAt - b.createdAt);
-    const old = db.cards[speciesId];
-    if (!rest.length) {
-      delete db.cards[speciesId];
-      return;
-    }
-    const verified = rest.filter((x) => x.verified);
-    const best = rest.filter((x) => x.lengthCm).sort((a, b) => b.lengthCm - a.lengthCm)[0];
-    // 巨物卡跟着剩下的渔获重算：最大的一条达到巨物线就保留
-    const sp = byId[speciesId];
-    const g = verified.filter((x) => x.lengthCm && x.lengthCm >= sp.giantThresholdCm).sort((a, b) => b.lengthCm - a.lengthCm)[0];
-    const giant = g ? { status: 'approved', catchId: g.id, lengthCm: g.lengthCm, approvedAt: g.createdAt } : { status: 'none', catchId: null, lengthCm: null, approvedAt: null };
-    db.cards[speciesId] = {
-      ...old,
-      catchCount: rest.length,
-      verifiedCount: verified.length,
-      stars: verified.length ? starsFor(verified.length) : 1,
-      verifiedUnlocked: verified.length > 0,
-      firstCatchId: rest[0].id,
-      unlockedAt: rest[0].createdAt,
-      bestCatchId: best ? best.id : null,
-      bestLengthCm: best ? best.lengthCm : null,
-      giant,
-    };
-  }
-  function updateCatch(id, patch) {
-    const c = db.catches.find((x) => x.id === id);
-    if (!c) return;
-    ['desc', 'released'].forEach((k) => { if (k in patch) c[k] = patch[k]; });
-    if (patch.gear) c.gear = { ...c.gear, ...patch.gear };
-    save();
-  }
-
-  // ---------- 图鉴 ----------
-  function dexProgress() {
-    const cards = Object.values(db.cards);
-    const by = { N: 0, R: 0, SR: 0, SSR: 0, UR: 0 };
-    cards.forEach((c) => {
-      by[byId[c.speciesId].rarity]++;
-      if (c.giant.status === 'approved') by.UR++;
-    });
-    const total = { N: 0, R: 0, SR: 0, SSR: 0, UR: SPECIES.length };
-    SPECIES.forEach((s) => total[s.rarity]++);
-    return { unlocked: cards.length, total: SPECIES.length, by, totalBy: total };
-  }
-
-  // ---------- 排行榜（开发文档 5.6） ----------
-  const NAMES = ['钓神老李', '江湖客', '阿强', '路亚少年', '翘嘴猎人', '野钓王', '溪流飞蝇', '鱼痴', '小鱼儿', '老王', '黑坑之王', '夜钓达人',
-    '东北狗鱼控', '马口收藏家', '千岛湖老张', '鳜鱼杀手', '台钓萌新', '钓鱼佬永不空军', '水库巡逻员', '江南钓翁', '饵料大师', '渔获满满',
-    '浮漂看我', '巨物追逐者', '岷江钓客', '冰钓爱好者', '新疆白斑', '梁子湖人', '流溪河鱼', '怀柔钓友', '松花江畔', '空军司令'];
-  const BIOS = ['只钓野河，不进黑坑', '路亚三年，还在找第一条鳜鱼', '钓鱼不为吃，为了那一下顿口', '凌晨四点的水库最安静', '溪流马口收集中', '拍照、量长、放流', '家门口那条河就是全世界', '每年冬天去一次查干湖', '', '空军是常态，爆护是意外'];
+  const NAMES = ['钓神老李', '江湖客', '阿强', '路亚少年', '翘嘴猎人', '野钓王', '溪流飞蝇', '鱼痴', '小鱼儿', '老王', '夜钓达人', '东北狗鱼控', '马口收藏家', '千岛湖老张', '鳜鱼杀手', '台钓萌新'];
+  const BIOS = ['只钓野河，不进黑坑', '路亚三年，还在找第一条鳜鱼', '钓鱼不为吃，为了那一下顿口', '凌晨四点的水库最安静', '溪流马口收集中', '拍照、量长、放流'];
   let mockUsers = null;
-  function mocks() {
-    if (mockUsers) return mockUsers;
-    const r = rng(20260818);
-    const cityNames = Object.keys(CITIES);
-    mockUsers = [];
-    for (let i = 0; i < 160; i++) {
-      const skill = Math.pow(r(), 1.6);
-      const count = Math.max(1, Math.round(skill * 64 + r() * 4));
-      const pool = SPECIES.slice().sort((a, b) => (SCORE[a.rarity] - SCORE[b.rarity]) + (r() - 0.5) * 6 * (1 - skill));
-      const owned = pool.slice(0, count);
-      const urs = Math.floor(r() * r() * count * 0.15);
-      const best = owned.slice().sort((a, b) => SCORE[b.rarity] - SCORE[a.rarity])[0];
-      mockUsers.push({
-        id: 'u' + i,
-        nickname: NAMES[i % NAMES.length] + (i >= NAMES.length ? Math.floor(i / NAMES.length) + 1 : ''),
-        bio: BIOS[Math.floor(r() * BIOS.length)],
-        city: cityNames[Math.floor(r() * cityNames.length)],
-        count, urs,
-        reachedAt: Date.now() - Math.floor(r() * 90) * 86400000,
-        best: best.no,
-        top3: owned.slice().sort((a, b) => SCORE[b.rarity] - SCORE[a.rarity]).slice(0, 3).map((s) => s.no),
-        byRarity: owned.reduce((m, s) => ((m[s.rarity] = (m[s.rarity] || 0) + 1), m), {}),
-        owned: owned.map((s) => s.no),
-        seed: 1000 + i * 131,
-        joinedDays: 30 + Math.floor(r() * 700),
-      });
-    }
-    return mockUsers;
-  }
-
-  // 他人主页：按用户种子确定性地生成公开渔获（只含公开字段：鱼种、城市级地点、日期、描述、尺寸）
-  const DESCS = ['清晨第一口，浮漂一顿就黑了', '收竿前的惊喜', '跟了三个周末，总算上鱼', '老钓点又开口了', '顶流水作钓，小饵慢收贴底才咬', '冷锋前的爆护', '午后草边，拍完照就放了', '同行的钓友帮忙抄的网', '风有点大，好在浮漂还看得清', '终于见到你'];
-  const profileCache = {};
-  function profileOf(userId) {
-    if (userId === 'me') return null;
-    if (profileCache[userId]) return profileCache[userId];
-    const u = mocks().find((x) => x.id === userId);
-    if (!u) return null;
-    const r = rng(u.seed);
-    const homes = [u.city, ...Object.keys(CITIES).filter((c) => c !== u.city)];
-    const catches = [];
-    u.owned.forEach((no, idx) => {
-      const sp = byId[no];
-      const times = 1 + Math.floor(r() * r() * 5);
-      for (let k = 0; k < times; k++) {
-        const city = r() < 0.7 ? homes[0] : homes[1 + Math.floor(r() * (homes.length - 1))];
-        const c = CITIES[city];
-        const len = Math.round(sp.commonCm * (0.7 + r() * 0.7));
-        catches.push({
-          id: `${u.id}-${idx}-${k}`,
-          speciesId: no,
-          verified: true,
-          status: 'confirmed',
-          lengthCm: len,
-          desc: DESCS[Math.floor(r() * DESCS.length)],
-          location: {
-            city, place: c.places[Math.floor(r() * c.places.length)],
-            lat: c.lat + (r() - 0.5) * 0.5, lng: c.lng + (r() - 0.5) * 0.5,
-          },
-          createdAt: Date.now() - Math.floor(r() * u.joinedDays) * 86400000 - Math.floor(r() * 86400000),
-          released: r() < 0.6,
-        });
-      }
-    });
-    catches.sort((a, b) => b.createdAt - a.createdAt);
-    const cards = {};
-    catches.forEach((c) => {
-      const card = cards[c.speciesId] || (cards[c.speciesId] = { speciesId: c.speciesId, catchCount: 0, verifiedCount: 0, bestLengthCm: 0, unlockedAt: c.createdAt, giant: { status: 'none' } });
-      card.catchCount++;
-      card.verifiedCount++;
-      card.bestLengthCm = Math.max(card.bestLengthCm, c.lengthCm);
-      card.unlockedAt = Math.min(card.unlockedAt, c.createdAt);
-    });
-    Object.values(cards).forEach((card) => { card.stars = starsFor(card.verifiedCount); });
-    // UR 巨物：从高稀有度里挑 u.urs 张
-    Object.values(cards).sort((a, b) => SCORE[byId[b.speciesId].rarity] - SCORE[byId[a.speciesId].rarity]).slice(0, u.urs).forEach((card) => {
-      const sp = byId[card.speciesId];
-      card.giant = { status: 'approved', lengthCm: sp.giantThresholdCm + Math.round(r() * 12), approvedAt: card.unlockedAt };
-    });
-    return (profileCache[userId] = { user: u, catches, cards });
-  }
-  function meEntry() {
-    const cards = Object.values(db.cards).filter((c) => c.verifiedUnlocked);
-    const urs = Object.values(db.cards).filter((c) => c.giant.status === 'approved').length;
-    if (!cards.length) return null;
-    const sorted = cards.slice().sort((a, b) => SCORE[byId[b.speciesId].rarity] - SCORE[byId[a.speciesId].rarity]);
-    const times = db.catches.filter((c) => c.verified && c.status === 'confirmed').map((c) => c.createdAt).sort();
-    return {
-      id: 'me', nickname: db.me.nickname, bio: db.me.bio, city: db.me.city, me: true,
-      count: cards.length,
-      urs,
-      reachedAt: times[times.length - 1] || Date.now(),
-      best: sorted[0].speciesId,
-      top3: sorted.slice(0, 3).map((c) => c.speciesId),
-      byRarity: cards.reduce((m, c) => ((m[byId[c.speciesId].rarity] = (m[byId[c.speciesId].rarity] || 0) + 1), m), {}),
-    };
-  }
+  function mocks() { if (mockUsers) return mockUsers; const r = rng(20260818), cities = Object.keys(CITIES); mockUsers = []; for (let i = 0; i < 90; i++) { const skill = Math.pow(r(), 1.55), owned = SPECIES.slice().sort((a, b) => (SCORE[a.rarity] - SCORE[b.rarity]) + (r() - 0.5) * 8 * (1 - skill)).slice(0, Math.max(1, Math.round(skill * 56 + r() * 4))), points = Math.round(owned.reduce((sum, s) => sum + (SCORE[s.rarity] || 10) * (0.7 + r() * 0.8), 0) + skill * 300); mockUsers.push({ id: `u${i}`, nickname: NAMES[i % NAMES.length] + (i >= NAMES.length ? Math.floor(i / NAMES.length) + 1 : ''), bio: BIOS[i % BIOS.length], city: cities[Math.floor(r() * cities.length)], points, uniqueSpeciesCount: owned.length, setCompletedCount: Math.floor(r() * 3), reachedAt: Date.now() - Math.floor(r() * 90) * 86400000, owned: owned.map((s) => s.no), seed: 1000 + i * 131, joinedDays: 30 + Math.floor(r() * 700) }); } return mockUsers; }
+  function meEntry() { const r = db.rank; if (!r.verifiedCatchCount) return null; const tier = tierFor(r.points); return { id: 'me', nickname: db.me.nickname, bio: db.me.bio, city: db.me.city, me: true, points: r.points, tier: tier.name, stars: tier.stars, uniqueSpeciesCount: r.uniqueSpeciesCount, setCompletedCount: r.setCompletedCount, reachedAt: Date.now(), owned: Object.keys(db.cards) }; }
   function rankOf(scope) {
-    let list = mocks().slice();
-    const me = meEntry();
-    if (me) list.push(me);
-    if (scope === 'city') list = list.filter((u) => u.city === db.me.city);
-    list.sort((a, b) => b.count - a.count || b.urs - a.urs || a.reachedAt - b.reachedAt);
-    list.forEach((u, i) => (u.rank = i + 1));
-    return { top: list.slice(0, 100), me: list.find((u) => u.me) || null, total: list.length, generatedAt: Date.now() };
+    const entry = (u, catches) => {
+      const first = new Map();
+      catches.filter(activeCatch).forEach((c) => first.set(c.speciesId, Math.min(first.get(c.speciesId) ?? Infinity, c.createdAt)));
+      const owned = [...first.keys()].sort((a, b) => SCORE[byId[b].rarity] - SCORE[byId[a].rarity] || a.localeCompare(b));
+      return { ...u, count: owned.length, best: owned[0], reachedAt: Math.max(0, ...first.values()) };
+    };
+    const list = mocks().map((u) => entry(u, profileOf(u.id).catches));
+    list.push(entry({ ...db.me, id: 'me', me: true }, db.catches));
+    const ranked = list.filter((u) => u.count && (scope !== 'city' || u.city === db.me.city));
+    ranked.sort((a, b) => b.count - a.count || a.reachedAt - b.reachedAt || a.id.localeCompare(b.id));
+    ranked.forEach((u, i) => (u.rank = i + 1));
+    return { top: ranked.slice(0, 100), me: ranked.find((u) => u.me) || null, total: ranked.length, generatedAt: Date.now() };
   }
-
-  // 巨物榜：某鱼种全部钓手的最大尺寸排行（每人只取一条最大现场记录，相册记录不上榜）
+  function ladderRankOf(scope) { let list = mocks().map((u) => { const tier = tierFor(u.points); return { ...u, tier: tier.name, stars: tier.stars }; }), me = meEntry(); if (me) list.push(me); if (scope === 'city') list = list.filter((u) => u.city === db.me.city); list.sort((a, b) => b.points - a.points || b.uniqueSpeciesCount - a.uniqueSpeciesCount || b.setCompletedCount - a.setCompletedCount || a.reachedAt - b.reachedAt || a.id.localeCompare(b.id)); list.forEach((u, i) => (u.rank = i + 1)); return { top: list.slice(0, 100), me: list.find((u) => u.me) || null, total: list.length, generatedAt: Date.now() }; }
   function sizeRankOf(speciesId, scope) {
-    const rows = [];
-    mocks().forEach((u) => {
-      if (!u.owned.includes(speciesId)) return;
-      const p = profileOf(u.id);
-      const best = p.catches.filter((c) => c.speciesId === speciesId && c.lengthCm).sort((a, b) => b.lengthCm - a.lengthCm || a.createdAt - b.createdAt)[0];
-      const g = p.cards[speciesId] && p.cards[speciesId].giant;
-      const len = Math.max(best ? best.lengthCm : 0, g && g.lengthCm ? g.lengthCm : 0);
-      if (len) rows.push({ id: u.id, nickname: u.nickname, city: u.city, place: best ? best.location.city : u.city, lengthCm: len, at: best ? best.createdAt : Date.now() });
-    });
-    const mine = db.catches.filter((c) => c.speciesId === speciesId && c.status === 'confirmed' && c.verified && c.lengthCm).sort((a, b) => b.lengthCm - a.lengthCm || a.createdAt - b.createdAt)[0];
-    if (mine) rows.push({ id: 'me', me: true, nickname: db.me.nickname, city: db.me.city, place: (mine.location && mine.location.city) || db.me.city, lengthCm: mine.lengthCm, at: mine.createdAt });
-    let list = scope === 'city' ? rows.filter((x) => x.city === db.me.city) : rows;
-    list.sort((a, b) => b.lengthCm - a.lengthCm || a.at - b.at);
-    list.forEach((x, i) => (x.rank = i + 1));
-    return { top: list.slice(0, 100), me: list.find((x) => x.me) || null, total: list.length };
+    const row = (u, catches) => {
+      const best = catches.filter((c) => activeCatch(c) && c.speciesId === speciesId && Number(c.lengthCm) > 0)
+        .sort((a, b) => b.lengthCm - a.lengthCm || a.createdAt - b.createdAt || a.id.localeCompare(b.id))[0];
+      return best ? [{ id: u.id, me: !!u.me, nickname: u.nickname, city: u.city, place: best.location?.city || u.city, lengthCm: Number(best.lengthCm), at: best.createdAt }] : [];
+    };
+    let list = mocks().flatMap((u) => row(u, profileOf(u.id).catches));
+    list.push(...row({ ...db.me, id: 'me', me: true }, db.catches));
+    if (scope === 'city') list = list.filter((u) => u.city === db.me.city);
+    list.sort((a, b) => b.lengthCm - a.lengthCm || a.at - b.at || a.id.localeCompare(b.id));
+    list.forEach((u, i) => (u.rank = i + 1));
+    return { top: list.slice(0, 100), me: list.find((u) => u.me) || null, total: list.length };
   }
+  function profileOf(userId) { if (userId === 'me') return { user: meEntry(), catches: db.catches, cards: db.cards }; const u = mocks().find((x) => x.id === userId); if (!u) return null; const r = rng(u.seed), catches = []; u.owned.forEach((no, idx) => { const sp = byId[no], times = 1 + Math.floor(r() * r() * 4); for (let k = 0; k < times; k++) { const c = CITIES[u.city]; catches.push({ id: `${u.id}-${idx}-${k}`, speciesId: no, verified: true, status: 'confirmed', source: 'camera', lengthCm: Math.round(sp.commonCm * (0.7 + r() * 0.7)), desc: BIOS[Math.floor(r() * BIOS.length)], location: { city: u.city, place: c.places[Math.floor(r() * c.places.length)], lat: c.lat, lng: c.lng }, createdAt: Date.now() - Math.floor(r() * u.joinedDays) * 86400000, released: r() < 0.6, mapVisibility: r() < 0.7 ? 'grid' : 'private' }); } }); const cards = {}; catches.forEach((c) => { const card = cards[c.speciesId] || (cards[c.speciesId] = { speciesId: c.speciesId, catchCount: 0, firstCatchId: c.id, firstUnlockedAt: c.createdAt }); card.catchCount++; }); return { user: u, catches: catches.sort((a, b) => b.createdAt - a.createdAt), cards }; }
 
-  window.YK_STORE = {
-    load, save, reset, wipe, fillDemo, get db() { return db; },
-    replace(next) { db = next; save(); },
-    SPECIES, PROTECTED, byId, CITIES, STAR_STEPS, SCORE,
-    confusableTip, checkin, encounter, removeCatch, updateCatch, precheck,
-    likesOf, toggleLike,
-    dexProgress, rankOf, sizeRankOf, profileOf, uuid, starsFor,
-  };
+  function mapCells(filters = {}) { const rows = []; db.catches.filter((c) => c.status === 'confirmed' && c.source === 'camera' && c.mapVisibility === 'grid').forEach((c) => rows.push({ ...c, nickname: db.me.nickname })); MAP_SEEDS.forEach(([city, place, speciesId, userId, count], i) => { const u = mocks().find((x) => x.id === userId) || mocks()[i]; const c = CITIES[city]; for (let j = 0; j < count; j++) rows.push({ id: `map-${i}-${j}`, speciesId, nickname: u.nickname, status: 'confirmed', source: 'camera', mapVisibility: 'grid', lengthCm: Math.round(byId[speciesId].commonCm * (0.8 + ((j * 13) % 40) / 100)), desc: '公开钓友渔获', createdAt: Date.now() - (j + i) * 86400000, location: { city, district: c.districts[i % c.districts.length], place } }); }); const filtered = rows.filter((row) => { const sp = byId[row.speciesId]; if (!sp) return false; if (filters.speciesId && filters.speciesId !== 'all' && row.speciesId !== filters.speciesId) return false; if (filters.setId && filters.setId !== 'all' && setIdFor(sp) !== filters.setId) return false; if (filters.rarity && filters.rarity !== 'all' && sp.rarity !== filters.rarity) return false; if (filters.city && filters.city !== 'all' && row.location.city !== filters.city) return false; if (filters.days && filters.days !== 'all' && Date.now() - row.createdAt > Number(filters.days) * 86400000) return false; return true; }); const groups = new Map(); filtered.forEach((row) => { const key = `${row.location.city}-${row.location.place}`; const cell = groups.get(key) || { id: `cell-${hash(key)}`, city: row.location.city, district: row.location.district, place: row.location.place, lat: CITIES[row.location.city].lat, lng: CITIES[row.location.city].lng, records: [], publicUserCount: new Set(), species: new Set(), latestAt: row.createdAt }; cell.records.push(row); cell.publicUserCount.add(row.nickname); cell.species.add(row.speciesId); cell.latestAt = Math.max(cell.latestAt, row.createdAt); groups.set(key, cell); }); return [...groups.values()].map((cell) => ({ ...cell, publicUserCount: cell.publicUserCount.size, speciesCount: cell.species.size, catchCount: cell.records.length, records: cell.records.sort((a, b) => b.createdAt - a.createdAt).slice(0, 12) })).sort((a, b) => b.latestAt - a.latestAt); }
+
+  function confusableTip(sp) { const tips = { onychostoma: '白甲鱼 vs 多鳞白甲鱼（国家二级保护）：多鳞白甲鱼侧线鳞更多', schizothorax: '齐口裂腹鱼 vs 重口裂腹鱼（国家二级保护）：重口裂腹鱼下唇肥厚', anguilla: '日本鳗鲡 vs 花鳗鲡（国家二级保护）：花鳗鲡体表有大理石花纹', salmonid: '虹鳟/褐鳟 vs 哲罗鲑、细鳞鲑：注意体侧斑点与分布地区' }; return tips[sp.confusableGroup] || ''; }
+
+  window.YK_STORE = { load, save, reset, wipe, fillDemo, get db() { return db; }, replace(next) { db = next; save(); }, SPECIES, PROTECTED, byId, CITIES, SETS, SCORE, TIERS, STAR_STEPS, setIdFor, setForSpecies, tierFor, sizeMultiplier, repeatMultiplier, confusableTip, checkin, encounter, removeCatch, updateCatch, precheck, scorePreview, likesOf, toggleLike, dexProgress, rankOf, ladderRankOf, sizeRankOf, profileOf, mapCells, uuid, starsFor(n) { return Math.min(5, Math.max(0, Math.floor(n))); } };
 })();

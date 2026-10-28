@@ -1,0 +1,735 @@
+/* Final presentation layer for collectible cards and the unlock ceremony.
+   Ordinary product surfaces stay flat; these are the intentional reward-stage exceptions. */
+:root {
+  --card-radius: 24px;
+  --card-thumb-radius: 18px;
+  --card-smoothing: .6;
+  --pixel-ink: #f4f4f4;
+  --pixel-dim: rgba(244, 244, 244, .58);
+}
+
+/* Figma/iOS-style 60% corner smoothing. The fallback keeps the geometry stable
+   on browsers that do not expose corner-shape yet. */
+:is(.yk-card, .yk-card .card-face, .yk-card .card-clip, .yk-card .card-back,
+  .reflective-shell .reflective-card, .reflective-shell .reflective-card__body,
+  .reflective-shell .yukomon-fish-card__inner, .gallery-card .face,
+  .gallery-card .clip, .cell .slot, .card-stage, .card-detail-hero .card-stage,
+  .share-view .card-host) {
+  border-radius: var(--card-radius) !important;
+}
+
+.yk-card .card-face,
+.yk-card .card-clip,
+.gallery-card .face,
+.gallery-card .clip,
+.cell .slot {
+  overflow: hidden;
+}
+
+/* ReflectiveCard has an inset content plate. Keep its 18px radius so the
+   24px outer frame remains visibly parallel instead of collapsing into one
+   oversized corner. */
+.reflective-shell .card-front { overflow: visible; }
+/* Concentric: inner plate radius = outer radius - content inset (3.2cqw). */
+.reflective-shell .yukomon-fish-card__inner { border-radius: calc(var(--card-radius) - 3.2cqw) !important; }
+
+/* Waterfall thumbnails and locked slots keep the pre-redesign 14px geometry. */
+:is(.cell .slot, .yk-card.thumb, .yk-card.thumb .card-face, .yk-card.thumb .card-clip,
+  .yk-card.thumb .frame, .reflective-shell.thumb, .reflective-shell.thumb .card-face,
+  .reflective-shell.thumb .reflective-card, .reflective-shell.thumb .reflective-card__body) {
+  border-radius: 14px !important;
+}
+.reflective-shell.thumb .yukomon-fish-card__inner { border-radius: 12px !important; }
+
+@supports (corner-shape: superellipse(.6)) {
+  :is(.yk-card, .yk-card .card-face, .yk-card .card-clip, .yk-card .card-back,
+    .reflective-shell .reflective-card, .reflective-shell .reflective-card__body,
+    .reflective-shell .yukomon-fish-card__inner, .gallery-card .face,
+    .gallery-card .clip, .cell .slot, .card-stage, .card-detail-hero .card-stage,
+    .share-view .card-host) {
+    corner-shape: superellipse(.6);
+  }
+  :is(.yk-card.thumb, .yk-card.thumb .card-face, .yk-card.thumb .card-clip,
+    .reflective-shell.thumb .reflective-card, .reflective-shell.thumb .reflective-card__body,
+    .reflective-shell.thumb .yukomon-fish-card__inner) {
+    corner-shape: round;
+  }
+}
+
+:is(.cell .slot, .yk-card.thumb, .yk-card.thumb .card-face, .yk-card.thumb .card-clip,
+  .yk-card.thumb .frame, .reflective-shell.thumb, .reflective-shell.thumb .card-face,
+  .reflective-shell.thumb .reflective-card, .reflective-shell.thumb .reflective-card__body,
+  .reflective-shell.thumb .yukomon-fish-card__inner) {
+  corner-shape: round !important;
+}
+
+/* The large card is a staged object. Keep its dark gradient even though ordinary
+   application modules use a flat monochrome treatment. */
+.card-detail-page.card-scene,
+.share-view.card-scene {
+  background:
+    radial-gradient(90% 42% at 50% 12%, rgba(255,255,255,.11), transparent 72%),
+    linear-gradient(180deg, #111216 0%, #050506 62%, #000 100%) !important;
+}
+
+.card-detail-page > .page-body,
+.share-view .share-stage,
+.share-view .share-foot {
+  background-color: transparent !important;
+}
+
+.card-detail-hero {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(70% 55% at 50% 18%, rgba(255,255,255,.13), transparent 68%),
+    linear-gradient(160deg, #24262b 0%, #0c0d10 54%, #020203 100%) !important;
+}
+
+.card-detail-hero::before,
+.share-view .share-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .22;
+  background-image:
+    linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+  background-size: 12px 12px;
+  mask-image: linear-gradient(to bottom, #000, transparent 82%);
+}
+
+.card-detail-transition.card-gradient,
+.share-view .share-stage {
+  background-image:
+    linear-gradient(180deg, #f2f2f2 0%, #f2f2f2 0%, transparent 1%),
+    linear-gradient(180deg, rgba(17,18,22,.12), rgba(0,0,0,.84)),
+    linear-gradient(145deg, #4d535b 0%, #20242a 38%, #08090b 76%, #000 100%) !important;
+}
+
+.share-view .share-stage {
+  position: relative;
+  isolation: isolate;
+}
+
+/* The user's row is a floating surface. The wrapper owns the shadow so a
+   smooth-corner clip on the row cannot cut it away. */
+.rank-float {
+  position: sticky !important;
+  bottom: 4px !important;
+  z-index: 20 !important;
+  margin: 10px 0 16px !important;
+  filter: drop-shadow(0 16px 18px rgba(0,0,0,.22)) drop-shadow(0 4px 6px rgba(0,0,0,.12)) !important;
+}
+.rank-float > .rank-row.rank-me,
+.rank-float > .size-row.rank-me {
+  position: relative !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  border: 1px solid rgba(0,0,0,.12) !important;
+  box-shadow: none !important;
+}
+.rank-float > .rank-row.rank-me .n,
+.rank-float > .size-row.rank-me .n {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+}
+
+/* Pixel unlock stage. Rareity colour is supplied by --rc; the surface itself
+   remains a restrained black/graphite field. */
+.unlock.pixel-unlock {
+  background:
+    radial-gradient(80% 52% at 50% 42%, color-mix(in srgb, var(--rc) 24%, transparent), transparent 72%),
+    linear-gradient(180deg, #0d0e11 0%, #030304 72%, #000 100%) !important;
+  background-color: #000 !important;
+  image-rendering: pixelated;
+}
+.unlock.pixel-unlock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .22;
+  background-image:
+    linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+  background-size: 8px 8px;
+  mask-image: radial-gradient(circle at 50% 44%, #000 0 42%, transparent 84%);
+}
+.unlock .pixel-grid,
+.unlock .pixel-noise,
+.unlock .pixel-badge {
+  position: absolute;
+  pointer-events: none;
+}
+.unlock .pixel-grid {
+  left: 50%;
+  top: 44%;
+  width: min(84vw, 360px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  background-image:
+    linear-gradient(var(--rc) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rc) 1px, transparent 1px);
+  background-size: 12px 12px;
+  mask-image: radial-gradient(circle, #000 0 38%, transparent 75%);
+  mix-blend-mode: screen;
+}
+.unlock .pixel-noise {
+  left: 50%;
+  top: 44%;
+  width: min(76vw, 320px);
+  height: min(76vw, 320px);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 6px, var(--rc) 6px 8px, transparent 8px 14px),
+    repeating-linear-gradient(90deg, transparent 0 9px, rgba(255,255,255,.8) 9px 11px, transparent 11px 18px);
+  background-size: 100% 140%, 140% 100%;
+  mix-blend-mode: screen;
+  mask-image: radial-gradient(circle, #000 0 36%, transparent 74%);
+}
+.unlock .pixel-badge {
+  left: 50%;
+  top: calc(44% - min(40vw, 160px));
+  transform: translate(-50%, -50%);
+  min-width: 48px;
+  height: 26px;
+  padding: 0 10px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--rc) 70%, white);
+  color: var(--pixel-ink);
+  background: #090a0c;
+  font: 400 12px/1 var(--mono);
+  letter-spacing: .14em;
+  opacity: 0;
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--rc) 42%, transparent);
+}
+.unlock.pixel-unlock .glow,
+.unlock.pixel-unlock .rays,
+.unlock.pixel-unlock .pillar,
+.unlock.pixel-unlock .ring {
+  opacity: 0 !important;
+}
+.unlock.pixel-unlock .burst i {
+  width: 8px;
+  height: 8px;
+  margin: -4px;
+  border-radius: 0;
+  background: var(--pixel-color, var(--rc));
+  box-shadow: 0 0 0 1px rgba(255,255,255,.28);
+}
+.unlock.pixel-unlock .headline {
+  text-shadow: 3px 3px 0 rgba(0,0,0,.8);
+}
+.unlock.pixel-unlock .sub { color: var(--pixel-dim); }
+.unlock.pixel-unlock .actions .btn,
+.unlock.pixel-unlock .skip {
+  border-radius: 12px !important;
+  background: #17181b;
+  border: 1px solid #3a3c42;
+}
+.unlock.pixel-unlock .actions .btn.accent {
+  background: var(--pixel-ink);
+  color: #090a0c;
+  border-color: var(--pixel-ink);
+}
+.unlock.pixel-unlock .flash { background: var(--pixel-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .unlock.pixel-unlock::before { opacity: .12; }
+  .unlock .pixel-grid, .unlock .pixel-noise { opacity: .18; }
+}
+
+/* Detail-page finish: one continuous scene, a clear share action, and a
+   single clipped shell for the large card. Keeping the clip on the
+   ReflectiveCard body prevents several nested antialiasing passes from
+   producing a rough edge at the same corner. */
+.card-detail-page {
+  background:
+    radial-gradient(90% 42% at 50% 10%, rgba(255,255,255,.12), transparent 72%),
+    linear-gradient(180deg, #111216 0%, #050506 62%, #000 100%) !important;
+  color: #f4f5f7;
+  color-scheme: dark;
+}
+.card-detail-page > .page-body {
+  background: transparent !important;
+  padding-top: 0;
+}
+.card-detail-page > .sub-head,
+.card-detail-page > .sub-head.card-scene {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.card-detail-page .card-detail-hero,
+.card-detail-page .card-detail-transition,
+.card-detail-page .card-detail-transition.card-gradient {
+  background: transparent !important;
+  background-image: none !important;
+}
+.card-detail-page .card-detail-hero {
+  isolation: isolate;
+  padding-top: calc(var(--head-h) + 22px);
+}
+.card-detail-page .card-detail-hero::before {
+  opacity: .16;
+}
+.card-detail-page .card-detail-transition {
+  padding-top: 14px;
+  padding-bottom: 18px;
+}
+.card-detail-page .card-detail-share {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 10px 0 calc(16px + var(--safe-b));
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+.card-detail-page .card-detail-share .btn {
+  width: min(100%, 320px);
+}
+
+/* Large-card geometry: the outer shell is the only clipping surface. */
+.card-detail-page .yk-card,
+.card-detail-page .yk-card .card-tilt,
+.card-detail-page .yk-card .card-flip,
+.card-detail-page .yk-card .card-face,
+.card-detail-page .yk-card .card-front,
+.card-detail-page .yk-card .card-back,
+.card-detail-page .reflective-shell .reflective-card {
+  border-radius: 24px !important;
+  corner-shape: round !important;
+}
+.card-detail-page .yk-card .card-tilt,
+.card-detail-page .yk-card .card-flip,
+.card-detail-page .yk-card .card-face,
+.card-detail-page .yk-card .card-front {
+  overflow: visible !important;
+}
+.card-detail-page .yk-card .card-back {
+  overflow: hidden !important;
+}
+.card-detail-page .reflective-shell .reflective-card__body {
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  isolation: isolate;
+  contain: paint;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+.card-detail-page .reflective-shell .yukomon-fish-card__inner {
+  border-radius: calc(var(--card-radius) - 3.2cqw) !important;
+  overflow: hidden !important;
+  corner-shape: round !important;
+}
+.card-detail-page .reflective-shell .reflective-card__rim,
+.card-detail-page .reflective-shell .yukomon-fish-card__inner-rim {
+  border-radius: inherit !important;
+}
+
+/* Card records become square photo tiles; details open in the full-screen
+   overlay defined below. */
+.card-detail-page .entry-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  overflow: visible;
+  padding-bottom: 8px;
+}
+.card-detail-page .entry.record-tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  overflow: visible;
+  border-radius: 16px !important;
+  background: #171719;
+  isolation: isolate;
+}
+.card-detail-page .record-tile .ph {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 16px !important;
+  background: #2c2c30;
+}
+.card-detail-page .record-tile > .like {
+  position: absolute !important;
+  right: 8px !important;
+  top: 8px !important;
+  bottom: auto !important;
+  height: auto !important;
+  min-width: 0;
+  padding: 0 !important;
+  gap: 4px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #fff;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  text-shadow: 0 1px 3px rgba(0,0,0,.8);
+}
+.card-detail-page .record-tile > .like svg { width: 15px; height: 15px; }
+.card-detail-page .record-tile > .like .num { font: 500 12px/1 var(--mono); }
+.card-detail-page .record-tile.is-selected { z-index: 2; }
+.card-detail-page .record-bubble {
+  position: fixed;
+  z-index: 80;
+  max-height: min(58vh, 360px);
+  overflow: auto;
+  padding: 12px 14px 13px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 16px;
+  background: rgba(17,18,22,.96);
+  color: #f4f5f7;
+  box-shadow: 0 16px 36px rgba(0,0,0,.36), 0 3px 10px rgba(0,0,0,.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  backdrop-filter: blur(18px) saturate(1.1);
+  transform-origin: bottom center;
+}
+.card-detail-page .record-bubble::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  background: rgba(17,18,22,.96);
+  border-right: 1px solid rgba(255,255,255,.18);
+  border-bottom: 1px solid rgba(255,255,255,.18);
+  transform: rotate(45deg);
+}
+.card-detail-page .record-bubble-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.card-detail-page .record-bubble-head strong { flex: 1; font-size: 15px; }
+.card-detail-page .record-bubble-head .icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+}
+.card-detail-page .record-bubble-head .icon-btn svg { width: 15px; height: 15px; }
+.card-detail-page .record-bubble-desc {
+  margin: 0 0 8px;
+  color: rgba(244,245,247,.78);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.card-detail-page .record-bubble-facts { display: grid; gap: 4px; }
+.card-detail-page .record-bubble-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.card-detail-page .record-bubble-row > span { flex: 0 0 38px; color: rgba(244,245,247,.52); }
+.card-detail-page .record-bubble-row > b { min-width: 0; color: #f4f5f7; font-weight: 500; overflow-wrap: anywhere; }
+.card-detail-page .record-bubble-row yk-rarity { font-size: 12px; }
+
+@media (min-width: 600px) {
+  .card-detail-page .entry-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-detail-page .record-bubble { transition: none; }
+}
+
+/* Detail-page interaction pass: floating controls, horizontal catch rail and
+   a protected full-screen record detail modal. */
+.card-detail-page {
+  position: relative;
+  overflow: hidden;
+}
+.card-detail-page > .sub-head {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 35;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--head-h);
+  padding: max(10px, env(safe-area-inset-top)) 16px 8px;
+  pointer-events: none;
+}
+.card-detail-page > .sub-head .icon-btn,
+.card-detail-page > .sub-head .detail-head-actions { pointer-events: auto; }
+.card-detail-page > .sub-head h2 {
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.detail-head-actions { display: flex; align-items: center; gap: 8px; }
+.detail-head-actions .icon-btn { flex: none; }
+.card-detail-page > .sub-head > .icon-btn,
+.detail-head-actions .icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.14);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.card-detail-page > .sub-head > .icon-btn:hover,
+.detail-head-actions .icon-btn:hover { background: rgba(255,255,255,.22); }
+
+/* The reflective card owns its rounded shader edge. Do not let the page
+   staging layers paint-clip the glow outside the four corners. */
+.card-detail-page .card-stage,
+.card-detail-page .detail-card-host,
+.card-detail-page .reflective-shell,
+.card-detail-page .reflective-shell .card-front {
+  overflow: visible !important;
+}
+.card-detail-page .reflective-shell .reflective-card__body {
+  overflow: visible !important;
+  contain: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+/* The record rail deliberately exposes the next item to communicate
+   horizontal browsing on narrow screens. */
+.card-detail-page .entry-list {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 4px 16px 14px 0;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.card-detail-page .entry-list::-webkit-scrollbar { display: none; }
+.card-detail-page .entry.record-tile {
+  flex: 0 0 clamp(112px, 31vw, 132px);
+  width: clamp(112px, 31vw, 132px);
+  scroll-snap-align: start;
+}
+.card-detail-page .record-tile > .like {
+  top: auto !important;
+  right: 8px !important;
+  bottom: 8px !important;
+}
+.card-detail-page .record-tile.is-selected {
+  outline: 2px solid rgba(255,255,255,.92);
+  outline-offset: 3px;
+}
+
+/* Full-screen record detail modal. The scrim captures every pointer event so
+   the card page remains visually present but cannot be edited underneath. */
+.card-detail-page.record-modal-open > .page-body { overflow: hidden; }
+.card-detail-page .record-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+}
+.card-detail-page .record-modal-scrim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: rgba(0,0,0,.78);
+  cursor: pointer;
+}
+.card-detail-page .record-modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 420px);
+  max-height: min(78vh, 680px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 24px !important;
+  corner-shape: superellipse(.6);
+  background: #f4f4f5;
+  color: #111216;
+  box-shadow: 0 28px 70px rgba(0,0,0,.42), 0 8px 22px rgba(0,0,0,.24);
+  scrollbar-width: none;
+}
+.card-detail-page .record-modal-panel::-webkit-scrollbar { display: none; }
+.card-detail-page .record-modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.card-detail-page .record-modal-head .eyebrow { color: #71727a; }
+.card-detail-page .record-modal-head h3 { margin: 3px 0 0; font-size: 24px; line-height: 1.15; }
+.card-detail-page .record-modal-head .icon-btn {
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  flex: none;
+  border-radius: 50%;
+  background: #e1e1e5;
+  color: #17181c;
+}
+.card-detail-page .record-modal-photo-wrap {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border-radius: 18px;
+  background: #d7d7dc;
+}
+.card-detail-page .record-modal-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
+.card-detail-page .record-modal-like {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.68);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+}
+.card-detail-page .record-modal-like svg { width: 14px; height: 14px; }
+.card-detail-page .record-modal-desc {
+  margin: 14px 0 12px;
+  color: #4d4e55;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.card-detail-page .record-modal-facts { display: grid; gap: 0; }
+.card-detail-page .record-modal-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-width: 0;
+  padding: 10px 0;
+  border-top: 1px solid #dedee2;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.card-detail-page .record-modal-row > span { flex: 0 0 42px; color: #85868d; }
+.card-detail-page .record-modal-row > b { min-width: 0; color: #17181c; font-weight: 600; overflow-wrap: anywhere; }
+.card-detail-page .record-modal-row yk-rarity { font-size: 12px; }
+
+@media (max-width: 380px) {
+  .card-detail-page > .sub-head { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 6px; padding-inline: 12px; }
+  .card-detail-page > .sub-head > .icon-btn,
+  .detail-head-actions .icon-btn { width: 36px; height: 36px; }
+  .detail-head-actions { gap: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-detail-page .record-modal { transition: none; }
+}
+
+/* Final record-tile geometry: compact 100px squares with a readable photo
+   caption and a high-contrast like count in the image corner. */
+.card-detail-page .entry.record-tile {
+  flex: 0 0 100px !important;
+  width: 100px !important;
+  height: 100px !important;
+  aspect-ratio: auto !important;
+  overflow: hidden !important;
+  border-radius: 16px !important;
+  background: #171719;
+}
+.card-detail-page .record-tile .ph {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: auto !important;
+  object-fit: cover;
+  border-radius: inherit !important;
+}
+.card-detail-page .record-tile-caption {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 22px 8px 7px;
+  color: #fff;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.78) 100%);
+  pointer-events: none;
+}
+.card-detail-page .record-tile-caption b {
+  font: 500 13px/1 var(--mono);
+  letter-spacing: 0;
+}
+.card-detail-page .record-tile-caption b small {
+  margin-left: 2px;
+  font: inherit;
+  font-size: 9px;
+}
+.card-detail-page .record-tile-caption small {
+  overflow: hidden;
+  color: rgba(255,255,255,.78);
+  font-size: 9px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-detail-page .record-tile > .like {
+  top: 7px !important;
+  right: 7px !important;
+  bottom: auto !important;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  padding: 4px 7px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(0,0,0,.62) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  text-shadow: none;
+}
+.card-detail-page .record-tile > .like svg { width: 13px; height: 13px; }
+.card-detail-page .record-tile > .like .num { font: 500 11px/1 var(--mono); }
+
+/* The three detail actions share the same circular return-button treatment. */
+.card-detail-page > .sub-head > .icon-btn,
+.card-detail-page .detail-head-actions .icon-btn {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: #202023 !important;
+  color: #f4f5f7 !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}

@@ -906,11 +906,17 @@ const ReflectiveCard = ({
       pendingPointer = null;
       x.target = clamp(nx, -1, 1);
       y.target = clamp(ny, -1, 1);
-      light.target = on ? 1 : 0;
+      light.target = typeof on === 'number' ? clamp(on, 0, 1) : on ? 1 : 0;
       slowUntil = 0;
       wake();
     };
-    aimRef.current = (nx, ny) => { if (touchId === null) aim(nx, ny); };
+    aimRef.current = (nx, ny, amount) => {
+      if (touchId !== null) return;
+      // Gyro moves the light softly: no 0→1 step, and the reflection pointer follows tilt.
+      pointer.x = clamp(nx, -1, 1) * size.width * 0.5;
+      pointer.y = clamp(ny, -1, 1) * size.height * 0.5;
+      aim(nx, ny, amount ?? 1);
+    };
 
     const aimAt = event => {
       // Read the stable input plane once per animation frame, before style writes.
@@ -1045,32 +1051,54 @@ const ReflectiveCard = ({
     if (!root || !enableMobileTilt) return;
     const input = interactionElement || root;
     let listening = false;
+    // Calibrated, low-passed and dead-zoned tilt: raw sensor jitter (±0.2°)
+    // must never reach the foil, or the high-frequency laser bands strobe.
+    let base = null, fx = 0, fy = 0, sentX = 0, sentY = 0, lastT = 0;
     const onOrientation = event => {
       if (event.beta == null || event.gamma == null) return;
+      const now = performance.now();
+      const dt = lastT ? Math.min(0.1, (now - lastT) / 1000) : 1 / 60;
+      lastT = now;
+      if (!base) base = { b: event.beta, g: event.gamma };
+      base.g += (event.gamma - base.g) * 0.004;
+      base.b += (event.beta - base.b) * 0.004;
       const sensitivity = clamp(mobileTiltSensitivity, 1, 10);
-      aimRef.current?.(
-        clamp((event.gamma * sensitivity) / 150, -1, 1),
-        clamp(((event.beta - 20) * sensitivity) / 150, -1, 1)
-      );
+      const rx = clamp(((event.gamma - base.g) * sensitivity) / 63, -1, 1);
+      const ry = clamp(((event.beta - base.b) * sensitivity) / 63, -1, 1);
+      const k = 1 - Math.exp(-dt / 0.12);
+      fx += (rx - fx) * k;
+      fy += (ry - fy) * k;
+      window.YK_GYRO_LAST = now;
+      if (Math.abs(fx - sentX) < 0.02 && Math.abs(fy - sentY) < 0.02) return;
+      sentX = Number(fx.toFixed(3));
+      sentY = Number(fy.toFixed(3));
+      aimRef.current?.(sentX, sentY, Math.min(1, 0.35 + Math.hypot(sentX, sentY) * 1.3));
     };
     const listen = () => {
       if (listening) return;
       listening = true;
       window.addEventListener('deviceorientation', onOrientation);
     };
+    const Motion = window.DeviceOrientationEvent;
+    const needsPermission = Motion && typeof Motion.requestPermission === 'function';
     const request = () => {
-      const Motion = window.DeviceOrientationEvent;
-      if (Motion && typeof Motion.requestPermission === 'function') {
-        Motion.requestPermission().then(state => {
-          if (state === 'granted') listen();
-        }).catch(() => {});
-      } else {
-        listen();
-      }
+      if (!needsPermission) return listen();
+      if (window.YK_GYRO_PERMISSION === 'granted') return listen();
+      if (window.YK_GYRO_PERMISSION === 'denied') return;
+      Motion.requestPermission().then(state => {
+        window.YK_GYRO_PERMISSION = state;
+        window.dispatchEvent(new CustomEvent('yk-gyro-permission', { detail: state }));
+      }).catch(() => { window.YK_GYRO_PERMISSION = 'denied'; });
     };
+    const onGranted = () => { if (window.YK_GYRO_PERMISSION === 'granted') listen(); };
+    // Always listen on mount: Android WebView / desktop deliver events without a
+    // prompt; on iOS no events arrive until a gesture grants permission.
+    listen();
+    window.addEventListener('yk-gyro-permission', onGranted);
     input.addEventListener('click', request);
     return () => {
       input.removeEventListener('click', request);
+      window.removeEventListener('yk-gyro-permission', onGranted);
       window.removeEventListener('deviceorientation', onOrientation);
     };
   }, [enableMobileTilt, mobileTiltSensitivity, interactionElement]);

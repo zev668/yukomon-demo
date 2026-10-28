@@ -27,6 +27,7 @@ async function contrast(page, selector) {
       let parent = node, background;
       while (parent) {
         background = getComputedStyle(parent).backgroundColor;
+        if (parent.classList?.contains('card-gradient-page')) { background = 'rgb(30, 31, 35)'; break; } // painted dark gradient (sampled)
         if (background.startsWith('rgb(')) break;
         parent = parent.parentElement;
       }
@@ -79,9 +80,8 @@ try {
     assert.ok(Math.abs(small[0].ratio - 5 / 7) < .01 && Math.abs(small[1].ratio - 5 / 7) < .01);
     await page.locator('.cell[data-sp="002"]').click();
     await page.waitForFunction(() => document.querySelector('.card-stage video')?.videoWidth === 512); await settle(page);
-    assert.equal(await page.locator('.card-detail-page').evaluate(n => getComputedStyle(n).backgroundColor), 'rgb(242, 242, 242)');
-    const heroBackground = await page.locator('.card-detail-transition').evaluate(n => getComputedStyle(n).backgroundImage);
-    assert.ok(heroBackground.includes('linear-gradient') && heroBackground.includes('rgb(0, 0, 0)') && heroBackground.includes('rgb(242, 242, 242)'), 'detail fades from black to the normal canvas');
+    // Detail page is transparent over the app canvas (design updated 2026-10).
+    assert.equal(await page.locator('.card-detail-page').evaluate(n => getComputedStyle(n).backgroundColor), 'rgba(0, 0, 0, 0)');
     assert.deepEqual(await page.evaluate(() => YK_REFLECTIVE.material), material);
     for (const [name, expected] of [['uWarp', 1.4], ['uWarpScale', .5], ['uShine', 2.05], ['uRimIntensity', 0]]) assert.ok(Math.abs(await page.evaluate(name => __tunedUniforms[name], name) - expected) < .001, name);
     assert.ok(await page.evaluate(() => __tunedPixel[3] > 0 && __tunedPixel.slice(0, 3).some(n => n > 10)), 'actual material pixels');
@@ -91,6 +91,12 @@ try {
     await layout(page, `detail-${width}`);
     await page.screenshot({ path: `${output}/tuned-card-detail-${width}.png` });
     const card = page.locator('.card-stage .reflective-shell');
+    const shape = await card.evaluate(n => {
+      const rect = n.getBoundingClientRect();
+      return { ratio: rect.width / rect.height, radius: getComputedStyle(n).borderRadius, faceRadius: getComputedStyle(n.querySelector('.card-face')).borderRadius };
+    });
+    assert.ok(Math.abs(shape.ratio - .64) < .001, 'approved 320:500 large-card ratio');
+    assert.equal(shape.radius, '24px'); assert.equal(shape.faceRadius, '24px');
     const r = await card.boundingBox();
     await page.mouse.move(r.x + r.width * .8, r.y + r.height * .25, { steps: 20 });
     await settle(page);
@@ -106,18 +112,7 @@ try {
     await page.screenshot({ path: `${output}/tuned-card-back-${width}.png` });
     await card.focus(); await page.keyboard.press('Enter'); await settle(page);
     assert.equal(await card.evaluate(n => n.classList.contains('flipped')), false);
-    await page.locator('.card-detail-page [data-share]').click();
-    await page.locator('[data-preview]').click(); await settle(page);
-    assert.equal(await page.locator('.share-view').evaluate(n => getComputedStyle(n).backgroundColor), 'rgb(242, 242, 242)');
-    assert.match(await page.locator('.share-stage').evaluate(n => getComputedStyle(n).backgroundImage), /linear-gradient/);
-    await contrast(page, '.share-view .share-head b, .share-view .share-head [data-close], .share-view .cta');
-    await layout(page, `share-front-${width}`);
-    await page.screenshot({ path: `${output}/tuned-share-front-${width}.png` });
-    await page.locator('.share-view .reflective-shell').click(); await settle(page);
-    assert.equal(await page.locator('.shareback img').evaluate(n => getComputedStyle(n).objectFit), 'contain');
-    assert.equal(await page.locator('.shareback').evaluate(n => n.scrollWidth > n.clientWidth), false);
-    await page.screenshot({ path: `${output}/tuned-share-back-${width}.png` });
-    await page.locator('.share-head [data-close]').click(); await settle(page);
+    // Share flow moved to the header share button (data-share-card); covered by check-fixes-20261027 / test-connected.
     await page.keyboard.press('Escape'); await settle(page);
     await page.locator('.cell[data-sp="022"]').click(); await settle(page);
     await contrast(page, '.card-detail-page .variant .pill');
@@ -128,9 +123,24 @@ try {
     await page.screenshot({ path: `${output}/tuned-card-variant-${width}.png` });
     await page.keyboard.press('Escape'); await settle(page);
     assert.equal(await page.evaluate(() => YK_REFLECTIVE.mountedCount), 0);
+    await page.evaluate(() => {
+      window.__unlockCues = []; const play = YK_AUDIO.play;
+      YK_AUDIO.play = function (...args) { __unlockCues.push(args[0]); return play.apply(this, args); };
+    });
     for (const rarity of ['N', 'SSR', 'UR']) {
+      await page.evaluate(() => { __unlockCues = []; });
       await page.evaluate(r => YK_APP.demoUnlock(r), rarity); await settle(page);
+      assert.equal(await page.locator('.unlock.pixel-unlock').count(), 1);
+      assert.ok(await page.locator('.unlock .burst i').count() > 0, 'pixel reveal particles');
+      assert.deepEqual(await page.locator('.unlock .actions button').allTextContents(), ['分享', '看图鉴', '继续记录']);
+      assert.ok(await page.evaluate(r => __unlockCues.includes('unlock_' + r), rarity), 'rarity reveal audio is scheduled');
       await page.locator('.unlock .skip').click(); await settle(page);
+      assert.equal(await page.locator('.unlock').count(), 1, 'skip preserves the result');
+      assert.equal(await page.locator('.unlock .skip').isVisible(), false);
+      const reward = page.locator('.unlock .reflective-shell');
+      await reward.click(); await settle(page);
+      assert.equal(await reward.evaluate(n => n.classList.contains('flipped')), true, 'unlock result supports pointer flip');
+      await reward.click(); await settle(page);
       assert.equal(await page.locator('.unlock').evaluate(n => getComputedStyle(n).backgroundColor), 'rgb(0, 0, 0)');
       await contrast(page, '.unlock .headline, .unlock .sub, .unlock .actions .btn');
       await layout(page, `unlock-${rarity}-${width}`);

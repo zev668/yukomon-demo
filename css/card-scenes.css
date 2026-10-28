@@ -76,3 +76,4 @@
 .card-detail-page .section-h { margin-top: 8px; }
 .share-view .share-stage { --scene-fade-size: clamp(176px, 22dvh, 216px); }
 .share-view .share-foot { background: var(--scene-canvas); }
+.record-more { padding: 16px 0; text-align: center; }

@@ -1,0 +1,88 @@
+/* Unlock staging only. Card surfaces, clipping, tilt and interactive flips stay owned by the card renderer. */
+.unlock.pixel-unlock.liquid-unlock {
+  background: #000 !important;
+}
+.unlock.liquid-unlock::before { content: none; }
+.unlock.liquid-unlock > :is(.pixel-grid,.pixel-noise,.pixel-badge,.glow,.rays,.pillar,.ring,.burst,.flash) { display: none; }
+.unlock.liquid-unlock .headline { text-shadow: none; }
+.unlock.liquid-unlock .unlock-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  contain: strict;
+}
+.unlock-fx > i {
+  position: absolute;
+  left: var(--unlock-x,50%);
+  top: var(--unlock-y,44%);
+  display: block;
+  pointer-events: none;
+  opacity: 0;
+}
+.unlock-fx .unlock-wave {
+  width: var(--unlock-size,280px);
+  aspect-ratio: 1;
+  margin-left: calc(var(--unlock-size,280px) * -.5);
+  margin-top: calc(var(--unlock-size,280px) * -.5);
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  box-shadow: 0 1px 8px -3px currentColor;
+}
+.unlock-fx .unlock-beam {
+  width: 2px;
+  height: 84px;
+  margin: -84px 0 0 -1px;
+  transform-origin: 50% 100%;
+  border-radius: 2px;
+  background: linear-gradient(0deg,transparent,currentColor 68%,transparent);
+}
+.unlock-fx .unlock-spark {
+  width: 3px;
+  height: 3px;
+  margin: -1.5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.unlock.liquid-unlock[data-unlock-rarity="UR"] .unlock-beam:nth-child(3n) { width: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .unlock.liquid-unlock .unlock-fx { display: none; }
+}
+
+/* ---- Unlock actions: capsule glass, matching publish .confirm-btn ---- */
+#app .unlock.pixel-unlock .actions { gap: 10px; width: min(100%, 360px); justify-content: center; }
+#app .unlock.pixel-unlock .actions .btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: 1 1 0; min-width: 0; height: 54px; min-height: 54px; padding: 0 14px;
+  border: 0 !important; border-radius: 999px !important; corner-shape: round !important;
+  font: inherit; font-size: 16px; font-weight: 600; letter-spacing: 0;
+  color: #fff !important; background: rgba(255,255,255,.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.08) !important;
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  transition: transform .12s, background-color .2s; -webkit-tap-highlight-color: transparent;
+}
+#app .unlock.pixel-unlock .actions .btn:hover { background: rgba(255,255,255,.16) !important; }
+#app .unlock.pixel-unlock .actions .btn:active { transform: scale(.97); background: rgba(255,255,255,.2) !important; }
+#app .unlock.pixel-unlock .actions .btn.accent { flex-grow: 1.4; color: #111113 !important; background: #f4f5f7 !important; box-shadow: none !important; }
+#app .unlock.pixel-unlock .actions .btn.accent:hover { background: #e6e8ec !important; }
+#app .unlock.pixel-unlock .actions .btn.accent:active { background: #d9dbe1 !important; }
+@media (max-height: 650px) { #app .unlock.pixel-unlock .actions .btn { height: 46px; min-height: 46px; font-size: 15px; } }
+#app .unlock.pixel-unlock .skip {
+  border-radius: 999px !important; corner-shape: round !important; height: 34px; padding: 0 14px;
+  background: rgba(255,255,255,.12) !important; border: 0 !important; color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.08);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+}
+/* ---- Per-rarity reveal FX (driven by YK_MOTION.unlockTimeline) ---- */
+.unlock-fx .unlock-flash { inset: 0; left: 0; top: 0; width: 100%; height: 100%; background: radial-gradient(circle at var(--unlock-x) var(--unlock-y), #fff 0, color-mix(in srgb, currentColor 60%, #fff) 18%, transparent 62%); }
+.unlock-fx .unlock-glow { width: calc(var(--unlock-size) * 1.5); aspect-ratio: 1; margin: calc(var(--unlock-size) * -.75) 0 0 calc(var(--unlock-size) * -.75); border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, currentColor 55%, transparent) 0, transparent 66%); }
+.unlock-fx .unlock-rays { width: calc(var(--unlock-size) * 2.4); aspect-ratio: 1; margin: calc(var(--unlock-size) * -1.2) 0 0 calc(var(--unlock-size) * -1.2); border-radius: 50%; background: repeating-conic-gradient(from 0deg, color-mix(in srgb, currentColor 50%, transparent) 0 5deg, transparent 5deg 20deg); -webkit-mask: radial-gradient(circle, #000 0 18%, transparent 68%); mask: radial-gradient(circle, #000 0 18%, transparent 68%); }
+.unlock-fx .unlock-shock { width: var(--unlock-size); aspect-ratio: 1; margin: calc(var(--unlock-size) * -.5) 0 0 calc(var(--unlock-size) * -.5); border-radius: 50%; border: 6px solid #fff; box-shadow: 0 0 24px currentColor, inset 0 0 24px currentColor; }
+.unlock-fx .unlock-pixel { width: 7px; height: 7px; margin: -3.5px; background: currentColor; box-shadow: 0 0 0 1px rgba(255,255,255,.35); }
+.unlock[data-unlock-rarity="UR"] .unlock-fx .unlock-glow { background: radial-gradient(circle, rgba(255,214,120,.62) 0, rgba(255,120,210,.25) 38%, transparent 68%); }
+.unlock[data-unlock-rarity="SSR"] .unlock-fx .unlock-glow { background: radial-gradient(circle, rgba(255,206,110,.55) 0, transparent 66%); }
+/* UR full-screen rainbow burst */
+.unlock-fx .unlock-rainbow { left: 0; top: 0; width: 100%; height: 100%; background: conic-gradient(from 0deg at var(--unlock-x) var(--unlock-y), #ff5f6d, #ffc371, #f9f871, #6bf178, #4fc3f7, #7c6cff, #ff6ad5, #ff5f6d); mix-blend-mode: screen; -webkit-mask: radial-gradient(circle at var(--unlock-x) var(--unlock-y), #000 0, rgba(0,0,0,.85) 30%, transparent 75%); mask: radial-gradient(circle at var(--unlock-x) var(--unlock-y), #000 0, rgba(0,0,0,.85) 30%, transparent 75%); }

@@ -1,7 +1,7 @@
 /* Yukomon demo —— 视差卡片渲染 + 陀螺仪/指针驱动
  * 参数与《卡片资源规范》第 3 节梯度总表一致 */
 (function () {
-  const { fishSVG, rng, hash } = window.YK_FISH;
+  const { fishSVG, fishArt, rng, hash } = window.YK_FISH;
 
   const RV = {
     N: { name: '普通', color: '#9AA4AE', layers: 3, offset: 6, rotate: 4, unlockMs: 1200 },
@@ -19,7 +19,6 @@
     cold: { name: '高山冷水', top: '#8fc6dc', bot: '#173a52', floor: '#5c6a72' },
     estuary: { name: '河口咸淡水', top: '#7aa0a8', bot: '#203a44', floor: '#7a6f55' },
   };
-  const STARS = (n) => '★'.repeat(n) + '<i>' + '★'.repeat(5 - n) + '</i>';
 
   // ---------- 场景图层（程序生成，正式版替换为写实场景图） ----------
   function sceneSVG(hab, seed, kind) {
@@ -115,8 +114,7 @@
 
   function renderGallery(sp, o = {}) {
     ensureGalleryDefs();
-    const ur = o.variant === 'ur';
-    const rk = ur ? 'UR' : sp.rarity;
+    const rk = o.variant === 'ur' ? 'UR' : sp.rarity;
     const c = o.card || {};
     const theme = galleryTheme(sp);
     const fish = fishSVG(sp).replace('class="fish-svg"', 'class="fish"');
@@ -124,9 +122,9 @@
     const bubbles = Array.from({ length: 16 }, () => `<span style="left:${(6 + r() * 88).toFixed(1)}%;width:${(1.4 + r() * 3.8).toFixed(2)}cqw;height:${(1.4 + r() * 3.8).toFixed(2)}cqw"></span>`).join('');
     const sparkles = Array.from({ length: 10 }, () => `<b style="left:${(10 + r() * 80).toFixed(1)}%;top:${(26 + r() * 46).toFixed(1)}%;--s:${(3.5 + r() * 4).toFixed(2)}cqw"></b>`).join('');
     const defaultBack = `<section class="b-info"><div class="b-title"><h2>${sp.name}</h2><span class="no">No.${sp.no}</span></div>
-      <div class="latin">${sp.latin}</div><p>${sp.fact || ''}</p><dl>
+      <div class="latin">${sp.latin}</div>${(sp.alias || []).length ? `<div class="b-alias"><span>别称</span>${sp.alias.slice(0, 6).join(' · ')}</div>` : ''}<p>${sp.fact || ''}</p><dl>
         <div><dt>科属</dt><dd>${sp.family || ''}</dd></div><div><dt>分布</dt><dd>${sp.region || ''}</dd></div>
-        <div><dt>体长</dt><dd>${c.bestLengthCm ? `${c.bestLengthCm} cm` : `${sp.commonCm || ''} cm`}</dd></div><div><dt>习性</dt><dd>${sp.method || ''}</dd></div>
+        <div><dt>常见体长</dt><dd>${sp.commonCm || ''} cm</dd></div><div><dt>习性</dt><dd>${sp.method || ''}</dd></div>
       </dl></section>`;
     const shareBack = o.backClass === 'has-design';
     const back = o.back || defaultBack;
@@ -160,17 +158,16 @@
 
   /**
    * @param sp 鱼种
-   * @param o { variant:'normal'|'ur', card: 用户卡片数据, interactive, back: 背面 HTML, giantInfo:{lengthCm, at, city}, size }
+   * @param o { card: 用户卡片数据, interactive, back: 背面 HTML, size }
    */
   function render(sp, o = {}) {
-    // Small cards retain their own renderer and 5:7 layout independently of large cards.
+    // Large cards share the approved material; thumbnails retain their own layout.
     if (!o.thumb && window.YK_REFLECTIVE) return window.YK_REFLECTIVE.create(sp, o);
     if (o.presentation === 'gallery') return renderGallery(sp, o);
-    const ur = o.variant === 'ur';
-    const rk = ur ? 'UR' : sp.rarity;
+    const ur = o.variant === 'ur', rk = ur ? 'UR' : sp.rarity;
     const cfg = RV[rk];
     const seed = hash(sp.slug);
-    const fish = fishSVG(sp);
+    const fish = o.thumb ? fishArt(sp) : fishSVG(sp);
     const L = [];
 
     // —— 按稀有度梯度组装图层 ——
@@ -186,39 +183,28 @@
       L.push(layer(0.4, fish, 'fish'));
       L.push(layer(1, sceneSVG(sp.habitat, seed + 1, 'fg'), 'fg'));
       L.push('<div class="holo holo-rainbow"></div>');
-    } else if (rk === 'SSR') {
+    } else if (rk === 'SSR' || rk === 'UR') {
       L.push(layer(-1, sceneSVG(sp.habitat, seed, 'far'), 'scene'));
       L.push(layer(-0.4, sceneSVG(sp.habitat, seed + 2, 'mid'), 'mid'));
       L.push(layer(0.4, fish, 'fish fish-sway'));
       L.push(layer(1, particles(22, seed, 'pt pt-gold'), 'particles'));
       L.push('<div class="holo holo-gold"></div>');
-    } else {
-      L.push(layer(-1, sceneSVG(sp.habitat, seed, 'far'), 'scene'));
-      L.push(layer(-0.7, '<div class="caustics"></div>', ''));
-      L.push(layer(-0.4, sceneSVG(sp.habitat, seed + 2, 'mid'), 'mid'));
-      L.push(layer(1, particles(30, seed, 'pt pt-rainbow') + particles(10, seed + 7, 'pt pt-splash'), 'particles'));
-      L.push('<div class="holo holo-glitter"></div><div class="holo holo-rainbow"></div><div class="vignette"></div>');
     }
 
     const c = o.card || {};
-    const stars = c.stars || 0;
-    const gi = o.giantInfo;
-    const bottom = ur && gi
-      ? `<div class="ur-plate"><b>巨物 · ${gi.lengthCm}cm</b><span>${fmtDate(gi.at)} · ${gi.city || ''}</span></div>`
-      : `<div class="cd-latin">${sp.latin}</div>
-         <div class="cd-meta"><span class="cd-stars">${stars ? STARS(stars) : ''}</span><span>${HAB[sp.habitat].name}${c.bestLengthCm ? ' · 最大 ' + c.bestLengthCm + 'cm' : ''}</span></div>`;
+    const bottom = ur && o.giantInfo ? `<div class="ur-plate"><b>巨物 · ${o.giantInfo.lengthCm}cm</b><span>${fmtDate(o.giantInfo.at)} · ${o.giantInfo.city || ''}</span></div>` : `<div class="cd-latin">${sp.latin}</div>
+      <div class="cd-meta"><span>${HAB[sp.habitat].name}</span><span>${c.catchCount ? `记录 ${c.catchCount} 次` : '已收集'}</span></div>`;
 
     const front = `
       <div class="card-face card-front">
         <div class="card-clip">${L.join('')}<div class="glare"></div></div>
         ${o.thumb ? '<div class="small-card-foil-area" aria-hidden="true"><div class="yukomon-fish-card__laser small-card-foil"><span class="yukomon-fish-card__laser-glow"></span><span class="yukomon-fish-card__laser-shift"></span></div></div>' : ''}
-        ${ur ? `<div class="ly fish fish-break" style="--d:0.6">${fish}</div>` : ''}
         <div class="frame frame-${rk}"></div>
         <div class="cd-top">
           ${o.thumb ? window.YK_CARD_NUMBER.html(sp.no) : `<span class="cd-no">No.${sp.no}</span>`}
           ${window.YK_RARITY.html(rk, `cd-badge${o.thumb ? ' small-card-rarity' : ''}`, o.thumb ? 'dark' : '')}
         </div>
-        <div class="cd-name">${sp.name}${ur ? '<em>巨物</em>' : ''}</div>
+        <div class="cd-name">${sp.name}</div>
         <div class="cd-bottom">${bottom}</div>
         ${sp.origin === 'invasive' ? '<div class="cd-tag">入侵物种</div>' : ''}
       </div>`;
@@ -275,21 +261,42 @@
   async function requestPermission() {
     const DOE = window.DeviceOrientationEvent;
     if (DOE && typeof DOE.requestPermission === 'function') {
-      try {
-        M.permission = await DOE.requestPermission();
-      } catch (e) {
-        M.permission = 'denied';
+      if (window.YK_GYRO_PERMISSION) M.permission = window.YK_GYRO_PERMISSION;
+      else {
+        try {
+          M.permission = await DOE.requestPermission();
+        } catch (e) {
+          M.permission = 'denied';
+        }
+        // Shared with every ReflectiveCard instance (detail / unlock / share).
+        window.YK_GYRO_PERMISSION = M.permission;
+        window.dispatchEvent(new CustomEvent('yk-gyro-permission', { detail: M.permission }));
       }
       if (M.permission === 'granted') listen();
     } else {
       M.permission = DOE ? 'granted' : 'unsupported';
+      window.YK_GYRO_PERMISSION = M.permission;
       listen();
     }
     return M.permission;
   }
+  // iOS only grants motion access inside a user gesture: ask on the first tap
+  // anywhere (e.g. the publish submit button) so the unlock card already tilts.
+  (function primeGyro() {
+    const DOE = window.DeviceOrientationEvent;
+    listen();
+    if (!DOE || typeof DOE.requestPermission !== 'function') { requestPermission(); return; }
+    const once = () => {
+      document.removeEventListener('touchend', once, true);
+      document.removeEventListener('click', once, true);
+      if (!window.YK_GYRO_PERMISSION) requestPermission();
+    };
+    document.addEventListener('touchend', once, true);
+    document.addEventListener('click', once, true);
+  })();
 
   function gyroActive() {
-    return performance.now() - M.lastGyro < 1500;
+    return performance.now() - Math.max(M.lastGyro, window.YK_GYRO_LAST || 0) < 1500;
   }
 
   // 帧率无关的低通滤波：等效于 60fps 下 v += (target - v) * 0.15
@@ -456,6 +463,6 @@
     return () => mm.revert();
   }
 
-  window.YK_CARD = { render, attach, animate, flip, setFace, requestPermission, gyroActive, RV, HAB, STARS, fmtDate, motion: M };
+  window.YK_CARD = { render, attach, animate, flip, setFace, requestPermission, gyroActive, RV, HAB, fmtDate, motion: M };
 })();
 

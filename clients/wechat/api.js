@@ -4,9 +4,9 @@ function createYukomonApi(baseUrl) {
   if (!/^https:\/\//.test(base)) throw new Error('正式小程序服务需要 HTTPS');
   const storageKey = 'yukomon-session:' + base;
   let token = wx.getStorageSync(storageKey) || '';
-  function request(path, { method = 'GET', data, key } = {}) {
+  function request(path, { method = 'GET', data, key, timeout = 20000 } = {}) {
     return new Promise((resolve, reject) => wx.request({
-      url: base + '/api' + path, method, data, timeout: 20000,
+      url: base + '/api' + path, method, data, timeout,
       header: { Authorization: 'Bearer ' + token, ...(key ? { 'Idempotency-Key': key } : {}) },
       success(response) {
         if (response.statusCode >= 200 && response.statusCode < 300) resolve(response.data);
@@ -32,9 +32,11 @@ function createYukomonApi(baseUrl) {
   return {
     login, request, upload,
     bootstrap: () => request('/bootstrap'),
+    recognize: (mediaId) => request('/recognition', { method: 'POST', data: { mediaId }, timeout: 60000 }),
+    reverseGeocode: (lat, lng) => request('/map/reverse-geocode', { method: 'POST', data: { lat, lng, coordType: 'gcj02' } }),
     createCatch: (data, idempotencyKey) => request('/catches', { method: 'POST', data, key: idempotencyKey }),
     like: (id, liked) => request('/catches/' + id + '/like', { method: 'PUT', data: { liked } }),
-    share: (catchId, ur = false) => request('/shares', { method: 'POST', data: { catchId, ur } }),
+    share: (catchId) => request('/shares', { method: 'POST', data: { catchId } }),
     async logout() { await request('/auth/logout', { method: 'POST' }); token = ''; wx.removeStorageSync(storageKey); }
   };
 }
